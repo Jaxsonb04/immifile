@@ -21,19 +21,17 @@ vi.mock('../release-policy.json', () => ({
 const modules = import.meta.glob('./**/*.ts')
 
 const { createMock } = vi.hoisted(() => ({ createMock: vi.fn() }))
-vi.mock('@anthropic-ai/sdk', () => ({
-	default: class {
-		messages = { create: createMock }
-	},
+vi.mock('./lib/openaiChat', () => ({
+	createChatCompletion: createMock,
 }))
 
 function newT() {
 	return convexTest(schema, modules)
 }
 
-/** Make the mocked Claude call return these extracted facts as a JSON text block. */
+/** Make the mocked OpenAI call return these extracted facts as JSON content. */
 function mockFacts(f: NavigatorFacts) {
-	createMock.mockResolvedValueOnce({ content: [{ type: 'text', text: JSON.stringify(f) }] })
+	createMock.mockResolvedValueOnce({ content: JSON.stringify(f), refused: false })
 }
 
 const FACTS = (o: Partial<NavigatorFacts> = {}): NavigatorFacts => ({
@@ -45,10 +43,10 @@ const FACTS = (o: Partial<NavigatorFacts> = {}): NavigatorFacts => ({
 })
 
 beforeEach(() => {
-	vi.stubEnv('ANTHROPIC_API_KEY', 'test-key')
-	vi.stubEnv('ANTHROPIC_MODEL', 'claude-haiku-4-5')
+	vi.stubEnv('OPENAI_API_KEY', 'test-key')
+	vi.stubEnv('OPENAI_MODEL', 'gpt-5-nano')
 	createMock.mockReset()
-	createMock.mockResolvedValue({ content: [{ type: 'text', text: JSON.stringify(FACTS()) }] })
+	createMock.mockResolvedValue({ content: JSON.stringify(FACTS()), refused: false })
 })
 
 describe('navigator.getRecommendation', () => {
@@ -65,8 +63,8 @@ describe('navigator.getRecommendation', () => {
 		expect(res.usage).toEqual({ used: 1, limit: 20, remaining: 19 })
 		// The configured (cheapest) model is used, with a structured-output format.
 		const params = createMock.mock.calls[0]![0]
-		expect(params.model).toBe('claude-haiku-4-5')
-		expect(params.output_config.format.type).toBe('json_schema')
+		expect(params.model).toBe('gpt-5-nano')
+		expect(params.responseFormat.name).toBe('navigator_facts')
 	})
 
 	test('the deterministic pre-screen overrides a mis-extracted "supported" result', async () => {
@@ -85,7 +83,7 @@ describe('navigator.getRecommendation', () => {
 	})
 
 	test('an out-of-schema model output falls back to needsClarification (never supported)', async () => {
-		createMock.mockResolvedValueOnce({ content: [{ type: 'text', text: 'not json at all' }] })
+		createMock.mockResolvedValueOnce({ content: 'not json at all', refused: false })
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
 
@@ -104,7 +102,7 @@ describe('navigator.getRecommendation', () => {
 		expect(res.recommendation).toEqual({ type: 'needsClarification', missing: 'credential' })
 	})
 
-	test('requires authentication and does not call Anthropic when unauthenticated', async () => {
+	test('requires authentication and does not call OpenAI when unauthenticated', async () => {
 		const t = newT()
 		await expect(
 			t.action(api.navigator.getRecommendation, { message: 'hi' }),
@@ -122,7 +120,7 @@ describe('navigator.getRecommendation', () => {
 	})
 
 	test('fails clearly and consumes no quota when the API key is missing', async () => {
-		vi.stubEnv('ANTHROPIC_API_KEY', '')
+		vi.stubEnv('OPENAI_API_KEY', '')
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
 		await expect(
@@ -132,7 +130,7 @@ describe('navigator.getRecommendation', () => {
 		expect(await alice.query(api.assistantQuota.dailyUsage, {})).toMatchObject({ used: 0 })
 	})
 
-	test('refunds the reserved message when the Anthropic call fails', async () => {
+	test('refunds the reserved message when the OpenAI call fails', async () => {
 		createMock.mockRejectedValueOnce(new Error('network down'))
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })

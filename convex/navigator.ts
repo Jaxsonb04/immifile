@@ -1,6 +1,5 @@
 'use node'
 
-import Anthropic from '@anthropic-ai/sdk'
 import { v } from 'convex/values'
 import { action, env } from './_generated/server'
 import { internal } from './_generated/api'
@@ -11,17 +10,22 @@ import {
 	recommend,
 } from './shared/navigator'
 import { assertFeatureEnabled } from './lib/releaseGate'
+import { createChatCompletion, type OpenAIChatMessage } from './lib/openaiChat'
+import { DEFAULT_ASSISTANT_MODEL } from './shared/assistantModel'
 
-// M1-T2: the safe navigator's Claude call. It extracts ONLY the four
-// NavigatorFacts fields via structured output, validates them at the boundary
-// (Zod), then runs the deterministic classifier (convex/shared/navigator.ts).
-// The model never decides eligibility or picks a form. Secrets stay server-side
-// and the daily quota is shared with the chat assistant (M1-T1).
+// M1-T2: the safe navigator's model call (ported Anthropic → OpenAI
+// 2026-08-08). It extracts ONLY the four NavigatorFacts fields via strict
+// structured output, validates them at the boundary (Zod), then runs the
+// deterministic classifier (convex/shared/navigator.ts). The model never
+// decides eligibility or picks a form. Secrets stay server-side and the daily
+// quota is shared with the chat assistant (M1-T1).
 
 const MAX_MESSAGE_CHARS = 4000
 const MAX_HISTORY_TURNS = 40
-const MAX_OUTPUT_TOKENS = 256
-const DEFAULT_MODEL = 'claude-opus-4-8'
+// GPT-5-family models spend part of this budget on hidden reasoning tokens
+// (pinned to minimal in the transport); 512 leaves the ~80-token JSON payload
+// comfortable headroom where the old Anthropic call used 256.
+const MAX_OUTPUT_TOKENS = 512
 
 const EXTRACTION_SYSTEM = [
 	'You extract structured facts from a user message to a USCIS self-help app.',
@@ -50,7 +54,7 @@ const EXTRACTION_SYSTEM = [
 ].join('\n')
 
 const FACTS_FORMAT = {
-	type: 'json_schema',
+	name: 'navigator_facts',
 	schema: {
 		type: 'object',
 		additionalProperties: false,
@@ -66,7 +70,7 @@ const FACTS_FORMAT = {
 			wantsEligibilityOrOutcomeJudgment: { type: 'boolean' },
 			mentionsUnsupportedMatter: { type: 'boolean' },
 		},
-	},
+	} as Record<string, unknown>,
 } as const
 
 // Safe fallback when the model output can't be validated: treat every field as
@@ -110,46 +114,43 @@ export const getRecommendation = action({
 			throw new Error('A previous message is too long')
 		}
 
-		const apiKey = env.ANTHROPIC_API_KEY
+		const apiKey = env.OPENAI_API_KEY
 		if (!apiKey) {
 			throw new Error('The assistant is not configured')
 		}
-		const model = env.ANTHROPIC_MODEL ?? DEFAULT_MODEL
+		const model = env.OPENAI_MODEL ?? DEFAULT_ASSISTANT_MODEL
 
-		// A billed Claude call; count it against the shared daily quota. Only a
+		// A billed OpenAI call; count it against the shared daily quota. Only a
 		// pre-billing failure refunds (see M1-T1 assistant.ts for the rationale).
 		const usage = await ctx.runMutation(internal.assistantQuota.reserveDailyMessage, {})
 
-		let response: Anthropic.Message
+		let response: { content: string; refused: boolean }
 		try {
-			const anthropic = new Anthropic({ apiKey })
-			const messages: Anthropic.MessageParam[] = [...history, { role: 'user', content: message }]
-			response = await anthropic.messages.create({
+			const messages: OpenAIChatMessage[] = [...history, { role: 'user', content: message }]
+			response = await createChatCompletion({
+				apiKey,
 				model,
-				max_tokens: MAX_OUTPUT_TOKENS,
 				system: EXTRACTION_SYSTEM,
-				output_config: { format: FACTS_FORMAT },
 				messages,
+				maxCompletionTokens: MAX_OUTPUT_TOKENS,
+				responseFormat: FACTS_FORMAT,
 			})
 		} catch (error) {
 			// The call never produced a (billed) response — refund and surface a
-			// generic error without leaking Anthropic internals. Log the underlying
+			// generic error without leaking OpenAI internals. Log the underlying
 			// cause server-side only (never returned to the client).
-			console.error('[navigator] Anthropic extraction failed:', error)
+			console.error('[navigator] OpenAI extraction failed:', error)
 			await ctx.runMutation(internal.assistantQuota.refundDailyMessage, {})
 			throw new Error('The assistant is temporarily unavailable. Please try again.')
 		}
 
 		// The call was billed, so the message counts. Parse defensively: malformed
-		// or off-schema output falls back to "undisclosed" facts, which the
-		// classifier resolves to needsClarification — never `supported`.
+		// or off-schema output (including a refusal, which carries no JSON) falls
+		// back to "undisclosed" facts, which the classifier resolves to
+		// needsClarification — never `supported`.
 		let rawFacts: unknown = null
 		try {
-			const text = response.content
-				.filter((block): block is Anthropic.TextBlock => block.type === 'text')
-				.map((block) => block.text)
-				.join('')
-			rawFacts = JSON.parse(text)
+			rawFacts = JSON.parse(response.content)
 		} catch {
 			rawFacts = null
 		}

@@ -19,13 +19,11 @@ vi.mock('../release-policy.json', () => ({
 
 const modules = import.meta.glob('./**/*.ts')
 
-// Mock the Anthropic SDK so tests never hit the network or need a real key.
-// `vi.hoisted` makes the spy available inside the hoisted `vi.mock` factory.
+// Mock the OpenAI transport so tests never hit the network or need a real
+// key. `vi.hoisted` makes the spy available inside the hoisted factory.
 const { createMock } = vi.hoisted(() => ({ createMock: vi.fn() }))
-vi.mock('@anthropic-ai/sdk', () => ({
-	default: class {
-		messages = { create: createMock }
-	},
+vi.mock('./lib/openaiChat', () => ({
+	createChatCompletion: createMock,
 }))
 
 function newT() {
@@ -33,12 +31,12 @@ function newT() {
 }
 
 function okResponse(text = 'Here is some general information about Form I-90.') {
-	return { stop_reason: 'end_turn', content: [{ type: 'text', text }] }
+	return { content: text, refused: false }
 }
 
 beforeEach(() => {
-	vi.stubEnv('ANTHROPIC_API_KEY', 'test-key')
-	vi.stubEnv('ANTHROPIC_MODEL', 'claude-opus-4-8')
+	vi.stubEnv('OPENAI_API_KEY', 'test-key')
+	vi.stubEnv('OPENAI_MODEL', 'gpt-5-nano')
 	createMock.mockReset()
 	createMock.mockResolvedValue(okResponse())
 })
@@ -56,7 +54,7 @@ describe('assistant.sendMessage', () => {
 
 		// The configured model is used and the user message is the last turn.
 		const params = createMock.mock.calls[0]![0]
-		expect(params.model).toBe('claude-opus-4-8')
+		expect(params.model).toBe('gpt-5-nano')
 		expect(params.messages.at(-1)).toEqual({ role: 'user', content: 'What is Form I-90?' })
 		// The daily query reflects the reservation.
 		expect(await alice.query(api.assistantQuota.dailyUsage, {})).toEqual({
@@ -94,7 +92,7 @@ describe('assistant.sendMessage', () => {
 		expect(JSON.stringify(res)).not.toContain('test-key')
 	})
 
-	test('requires authentication and does not call Anthropic when unauthenticated', async () => {
+	test('requires authentication and does not call OpenAI when unauthenticated', async () => {
 		const t = newT()
 		await expect(t.action(api.assistant.sendMessage, { message: 'hi' })).rejects.toThrow(
 			'Not authenticated',
@@ -133,7 +131,7 @@ describe('assistant.sendMessage', () => {
 			alice.action(api.assistant.sendMessage, { message: 'one too many' }),
 		).rejects.toThrow(/message limit/i)
 
-		// The 21st request never reaches Anthropic.
+		// The 21st request never reaches OpenAI.
 		expect(createMock).toHaveBeenCalledTimes(20)
 		expect(await alice.query(api.assistantQuota.dailyUsage, {})).toEqual({
 			used: 20,
@@ -156,7 +154,7 @@ describe('assistant.sendMessage', () => {
 	})
 
 	test('fails clearly and consumes no quota when the API key is missing', async () => {
-		vi.stubEnv('ANTHROPIC_API_KEY', '')
+		vi.stubEnv('OPENAI_API_KEY', '')
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
 
@@ -167,7 +165,7 @@ describe('assistant.sendMessage', () => {
 		expect(await alice.query(api.assistantQuota.dailyUsage, {})).toMatchObject({ used: 0 })
 	})
 
-	test('refunds the reserved message when the Anthropic call fails', async () => {
+	test('refunds the reserved message when the OpenAI call fails', async () => {
 		createMock.mockRejectedValueOnce(new Error('network down'))
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
@@ -181,21 +179,21 @@ describe('assistant.sendMessage', () => {
 	})
 
 	test('a refusal returns a safe reply and still counts against quota (bounds billed calls)', async () => {
-		createMock.mockResolvedValueOnce({ stop_reason: 'refusal', content: [] })
+		createMock.mockResolvedValueOnce({ content: '', refused: true })
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
 
 		const res = await alice.action(api.assistant.sendMessage, { message: 'do something disallowed' })
 
 		expect(res.reply).toMatch(/general information/i)
-		// A refusal is a billed Anthropic call, so it is NOT refunded — otherwise
+		// A refusal is a billed OpenAI call, so it is NOT refunded — otherwise
 		// refusal-triggering prompts could force unlimited paid calls.
 		expect(res.usage).toEqual({ used: 1, limit: 20, remaining: 19 })
 		expect(await alice.query(api.assistantQuota.dailyUsage, {})).toMatchObject({ used: 1 })
 	})
 
 	test('an empty reply returns a fallback and still counts against quota', async () => {
-		createMock.mockResolvedValueOnce({ stop_reason: 'end_turn', content: [] })
+		createMock.mockResolvedValueOnce({ content: '   ', refused: false })
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
 

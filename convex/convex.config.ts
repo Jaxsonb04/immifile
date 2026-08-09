@@ -8,10 +8,10 @@ const app = defineApp({
 		DEV_SEED_ENABLED: v.optional(v.string()),
 		// Anthropic Messages API for the Claude assistant (convex/assistant.ts).
 		// Deployment secrets only — never exposed to the client. Set with
-		// `npx convex env set ANTHROPIC_API_KEY <key>`; ANTHROPIC_MODEL defaults
-		// to claude-opus-4-8 when unset.
-		ANTHROPIC_API_KEY: v.optional(v.string()),
-		ANTHROPIC_MODEL: v.optional(v.string()),
+		// `npx convex env set OPENAI_API_KEY <key>`; OPENAI_MODEL falls back to
+		// DEFAULT_ASSISTANT_MODEL (convex/shared/assistantModel.ts) when unset.
+		OPENAI_API_KEY: v.optional(v.string()),
+		OPENAI_MODEL: v.optional(v.string()),
 		// Comma-separated, case-insensitive moderator email allowlist (M4-T3,
 		// convex/lib/moderation.ts). Set with
 		// `npx convex env set MODERATOR_EMAILS "mod@immifile.test"`.

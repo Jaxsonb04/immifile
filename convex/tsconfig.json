@@ -10,6 +10,10 @@
     "moduleResolution": "Bundler",
     "jsx": "react-jsx",
     "skipLibCheck": true,
+    /* Explicit so node:fs resolves in test files regardless of which other
+     * @types packages happen to be hoisted (auto-inclusion broke when the
+     * Anthropic SDK stopped pinning @types/node transitively). */
+    "types": ["node"],
     "allowSyntheticDefaultImports": true,
 
     /* These compiler options are required by Convex */

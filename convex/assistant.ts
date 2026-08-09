@@ -1,17 +1,19 @@
 'use node'
 
-import Anthropic from '@anthropic-ai/sdk'
 import { v } from 'convex/values'
 import { action, env } from './_generated/server'
 import { internal } from './_generated/api'
 import type { AssistantUsage } from './assistantQuota'
 import { assertFeatureEnabled } from './lib/releaseGate'
+import { createChatCompletion, type OpenAIChatMessage } from './lib/openaiChat'
+import { DEFAULT_ASSISTANT_MODEL } from './shared/assistantModel'
 
-// M1-T1: the validated Claude backend. A "use node" action so it can use the
-// Anthropic SDK; it holds NO database access itself — authorization and the
-// per-owner daily quota are delegated to internal mutations in assistantQuota.ts
-// (auth propagates to nested calls). ANTHROPIC_API_KEY / ANTHROPIC_MODEL live
-// only in Convex deployment env (convex.config.ts) and never reach the client.
+// M1-T1: the validated model backend (ported Anthropic → OpenAI 2026-08-08).
+// A "use node" action that holds NO database access itself — authorization and
+// the per-owner daily quota are delegated to internal mutations in
+// assistantQuota.ts (auth propagates to nested calls). OPENAI_API_KEY /
+// OPENAI_MODEL live only in Convex deployment env (convex.config.ts) and never
+// reach the client.
 //
 // This is the transport layer. The safe-navigator classification (M1-T2) and
 // the chat UI (M1-T3) build on top of it.
@@ -19,7 +21,6 @@ import { assertFeatureEnabled } from './lib/releaseGate'
 const MAX_MESSAGE_CHARS = 4000
 const MAX_HISTORY_TURNS = 40
 const MAX_OUTPUT_TOKENS = 1024
-const DEFAULT_MODEL = 'claude-opus-4-8'
 
 const SYSTEM_PROMPT = [
 	'You are an informational assistant inside a self-help app that helps people',
@@ -38,10 +39,10 @@ const SYSTEM_PROMPT = [
 type SendMessageResult = { reply: string; usage: AssistantUsage }
 
 /**
- * Send one user message (plus optional device-session history) to Claude and
- * return a validated reply. Enforces the caller's daily quota and keeps all
- * secrets server-side. Anonymous and authenticated owners are treated the same
- * — both carry a server-derived owner identity (ADR-0009).
+ * Send one user message (plus optional device-session history) to the model
+ * and return a validated reply. Enforces the caller's daily quota and keeps
+ * all secrets server-side. Anonymous and authenticated owners are treated the
+ * same — both carry a server-derived owner identity (ADR-0009).
  */
 export const sendMessage = action({
 	args: {
@@ -75,39 +76,39 @@ export const sendMessage = action({
 		}
 
 		// Secret must be present server-side; checked before consuming quota.
-		const apiKey = env.ANTHROPIC_API_KEY
+		const apiKey = env.OPENAI_API_KEY
 		if (!apiKey) {
 			throw new Error('The assistant is not configured')
 		}
-		const model = env.ANTHROPIC_MODEL ?? DEFAULT_MODEL
+		const model = env.OPENAI_MODEL ?? DEFAULT_ASSISTANT_MODEL
 
 		// Reserve one message against the daily quota (auth enforced in here).
-		// The quota bounds *billed Anthropic calls*, so a message is only
-		// refunded when the API call itself fails before Anthropic bills us
-		// (network / API error). A refusal or an empty reply is still a billed
-		// call, so it counts — otherwise a client could force unlimited paid
-		// calls with refusal-triggering prompts while `remaining` never drops.
+		// The quota bounds *billed OpenAI calls*, so a message is only refunded
+		// when the API call itself fails before OpenAI bills us (network / API
+		// error). A refusal or an empty reply is still a billed call, so it
+		// counts — otherwise a client could force unlimited paid calls with
+		// refusal-triggering prompts while `remaining` never drops.
 		const usage = await ctx.runMutation(internal.assistantQuota.reserveDailyMessage, {})
 
-		let response: Anthropic.Message
+		let response: { content: string; refused: boolean }
 		try {
-			const anthropic = new Anthropic({ apiKey })
-			const messages: Anthropic.MessageParam[] = [...history, { role: 'user', content: message }]
-			response = await anthropic.messages.create({
+			const messages: OpenAIChatMessage[] = [...history, { role: 'user', content: message }]
+			response = await createChatCompletion({
+				apiKey,
 				model,
-				max_tokens: MAX_OUTPUT_TOKENS,
 				system: SYSTEM_PROMPT,
 				messages,
+				maxCompletionTokens: MAX_OUTPUT_TOKENS,
 			})
 		} catch {
 			// The call never produced a (billed) response — refund and surface a
-			// generic error without leaking Anthropic internals.
+			// generic error without leaking OpenAI internals.
 			await ctx.runMutation(internal.assistantQuota.refundDailyMessage, {})
 			throw new Error('The assistant is temporarily unavailable. Please try again.')
 		}
 
 		// From here the call was billed; the message counts (no refunds).
-		if (response.stop_reason === 'refusal') {
+		if (response.refused) {
 			return {
 				reply:
 					"I can't help with that request, but I can share general information about the Form I-90 and Form I-765 processes.",
@@ -115,11 +116,7 @@ export const sendMessage = action({
 			}
 		}
 
-		const reply = response.content
-			.filter((block): block is Anthropic.TextBlock => block.type === 'text')
-			.map((block) => block.text)
-			.join('')
-			.trim()
+		const reply = response.content.trim()
 
 		if (reply.length === 0) {
 			return { reply: 'I wasn’t able to generate a response. Please try rephrasing your question.', usage }

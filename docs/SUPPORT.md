@@ -24,7 +24,7 @@ Do not use a GitHub issue for an account-specific request, a privacy request, or
 
 ## Account and data deletion
 
-While signed in, open **Account → Settings → Delete account** to delete the login identity, sessions, saved cases, and associated Immifile data. This is the reliable route — please use it while account access still works.
+While signed in, open **Account → Delete account** to delete the login identity, sessions, saved cases, and associated Immifile data. This is the reliable route — please use it while account access still works.
 
 If sign-in is unavailable, do not post account details publicly. Email [support@immifile.app](mailto:support@immifile.app) with the minimum account information needed to locate the request.
 

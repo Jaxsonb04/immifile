@@ -8,7 +8,7 @@ type PolicySection = {
 	body: string
 }
 
-const EFFECTIVE_DATE = 'August 5, 2026'
+const EFFECTIVE_DATE = 'August 9, 2026'
 const SUPPORT_INFO_URL =
 	process.env.EXPO_PUBLIC_SUPPORT_URL ??
 	'https://github.com/Jaxsonb04/expo-immigration-app/blob/main/docs/SUPPORT.md'
@@ -40,7 +40,7 @@ function PolicyScreen({ intro, sections }: { intro: string; sections: readonly P
 const PRIVACY_SECTIONS: readonly PolicySection[] = [
 	{
 		title: 'Data used by this release',
-		body: 'Immifile creates a temporary account when you continue. If you create a permanent account, we store the name and email you provide plus authentication records. When you save a case, we store its USCIS receipt number and the status notes you enter. We also store small account preferences, such as whether you dismissed an introductory screen, and security records needed to operate the service.',
+		body: 'Immifile creates a temporary account when you continue. If you create a permanent account, we store the name and email you provide plus authentication records. When you save a case, we store its USCIS receipt number and the status notes you enter. If you use the AI assistant, we store only a daily message counter; the conversation itself stays on your device. We also store small account preferences, such as whether you dismissed an introductory screen, and security records needed to operate the service.',
 	},
 	{
 		title: 'How data is used',
@@ -48,11 +48,11 @@ const PRIVACY_SECTIONS: readonly PolicySection[] = [
 	},
 	{
 		title: 'Service providers',
-		body: 'Convex hosts the application backend, database, and authentication components. Vercel hosts the sign-in endpoint every authentication request passes through, and so processes connection metadata such as IP address and user agent. Porkbun forwards the support address and Google provides the destination mailbox. We require each provider that accesses user data to provide the same or equal protection described in this policy and required by the App Store Review Guidelines. Your device opens official USCIS and Department of Justice links in the system browser. The AI assistant, filing workflow, document uploads, and public community are not available in this release.',
+		body: 'Convex hosts the application backend, database, and authentication components. Vercel hosts the sign-in endpoint every authentication request passes through, and so processes connection metadata such as IP address and user agent. When you message the AI assistant, the text you type (and the recent turns of that conversation) is sent to OpenAI to generate the reply; do not include receipt numbers or other sensitive details in assistant messages. Porkbun forwards the support address and Google provides the destination mailbox. We require each provider that accesses user data to provide the same or equal protection described in this policy and required by the App Store Review Guidelines. Your device opens official USCIS and Department of Justice links in the system browser. The filing workflow, document uploads, and public community are not available in this release.',
 	},
 	{
 		title: 'Retention and deletion',
-		body: 'A temporary account becomes eligible for permanent deletion after 48 hours. Cleanup runs hourly, so deletion occurs during an hourly cleanup after eligibility rather than at the exact 48-hour instant; a delayed or failed cleanup is retried later. A permanent account is kept until you delete it. Choose Account, Settings, and Delete account to delete the login identity, sessions, saved cases, and other associated Immifile data. An opaque deletion-protection record may remain for up to one hour only to block requests from a stale session; it contains no saved case content, cannot restore the account, and is then removed.',
+		body: 'A temporary account becomes eligible for permanent deletion after 48 hours. Cleanup runs hourly, so deletion occurs during an hourly cleanup after eligibility rather than at the exact 48-hour instant; a delayed or failed cleanup is retried later. A permanent account is kept until you delete it. Choose Account, then Delete account, to delete the login identity, sessions, saved cases, and other associated Immifile data. An opaque deletion-protection record may remain for up to one hour only to block requests from a stale session; it contains no saved case content, cannot restore the account, and is then removed.',
 	},
 	{
 		title: 'Security and choices',
@@ -60,7 +60,7 @@ const PRIVACY_SECTIONS: readonly PolicySection[] = [
 	},
 	{
 		title: 'Account access in this release',
-		body: 'This release has no self-service password reset and does not verify email addresses. Keep your password safe: there is no automated way back into an account without it, and because Immifile cannot confirm ownership of an unverified address, support cannot reset a password or delete an account on request. Delete your account from Account, Settings, Delete account while you are signed in.',
+		body: 'This release has no self-service password reset and does not verify email addresses. Keep your password safe: there is no automated way back into an account without it, and because Immifile cannot confirm ownership of an unverified address, support cannot reset a password or delete an account on request. Delete your account from the Account tab (Delete account) while you are signed in.',
 	},
 	{
 		title: 'Questions',

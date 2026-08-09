@@ -95,7 +95,7 @@ this audit), **FINDING** (documented, deliberately not fixed here).
    scheme/trustedOrigins are still `immigrationrenewalhelp://` (see
    `docs/internal/FABLE_NOTES.md` "Immifile rename"; `convex/auth.ts:40` must change in
    lockstep with `app.json` and the Better Auth deep-link config).
-3. **Production Convex deploy + env** — set `ANTHROPIC_API_KEY`,
+3. **Production Convex deploy + env** — set `OPENAI_API_KEY`,
    `MODERATOR_EMAILS` on prod; leave `DEV_SEED_ENABLED` unset; verify the
    6-hour news cron registers on prod.
 4. **Better Auth hardening (owner-deferred)** — enable `user.deleteUser` and

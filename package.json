@@ -19,7 +19,6 @@
 		"eas-build-pre-install": "node scripts/validate-release-config.mjs && npx -y hpsetup@4.7.0 native --auto"
 	},
 	"dependencies": {
-		"@anthropic-ai/sdk": "^0.110.0",
 		"@better-auth/expo": "~1.6.22",
 		"@convex-dev/better-auth": "^0.12.5",
 		"@expo-google-fonts/fraunces": "^0.4.1",
@@ -80,7 +79,9 @@
 	"devDependencies": {
 		"@edge-runtime/vm": "^5.0.0",
 		"@resvg/resvg-js": "^2.6.2",
+		"@types/node": "^26.2.0",
 		"@types/react": "~19.2.15",
+		"@types/react-dom": "~19.2.3",
 		"convex-test": "^0.0.54",
 		"eslint": "^9.39.4",
 		"eslint-config-expo": "~57.0.1",
