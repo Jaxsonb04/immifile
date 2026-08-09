@@ -48,7 +48,7 @@ import {
  */
 
 const PRIVACY_POLICY_URL =
-	process.env.EXPO_PUBLIC_PRIVACY_URL ?? 'https://jaxsonb04.github.io/expo-immigration-app/privacy/'
+	process.env.EXPO_PUBLIC_PRIVACY_URL ?? 'https://jaxsonb04.github.io/immifile/privacy/'
 
 export default function WelcomeScreen() {
 	const router = useRouter()

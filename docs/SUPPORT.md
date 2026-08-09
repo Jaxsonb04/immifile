@@ -18,7 +18,7 @@ Include only the minimum information needed to identify the request. Do not send
 
 ## Public issue tracker
 
-The [GitHub issue tracker](https://github.com/Jaxsonb04/expo-immigration-app/issues/new) is supplemental and only suitable for non-sensitive app bugs or general feedback. Creating an issue requires a GitHub account. The issue, its contents, and the reporter’s GitHub username are public.
+The [GitHub issue tracker](https://github.com/Jaxsonb04/immifile/issues/new) is supplemental and only suitable for non-sensitive app bugs or general feedback. Creating an issue requires a GitHub account. The issue, its contents, and the reporter’s GitHub username are public.
 
 Do not use a GitHub issue for an account-specific request, a privacy request, or any message containing personal information.
 

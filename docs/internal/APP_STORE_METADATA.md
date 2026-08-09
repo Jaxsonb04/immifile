@@ -41,10 +41,10 @@ Utilities
 Reference
 
 **Support URL**  
-https://jaxsonb04.github.io/expo-immigration-app/support/
+https://jaxsonb04.github.io/immifile/support/
 
 **Privacy Policy URL**  
-https://jaxsonb04.github.io/expo-immigration-app/privacy/
+https://jaxsonb04.github.io/immifile/privacy/
 
 **Marketing URL**  
 Optional; omit for the first release unless a public product page is available.

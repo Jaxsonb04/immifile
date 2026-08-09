@@ -8,23 +8,23 @@
 ## 0. HOW TO WORK ON THIS (read first)
 
 **The code is on a REMOTE Mac. Your local file tools (Read/Edit/Write/Grep/Glob) do NOT
-see it** — they see an empty laptop. The repo is at `~/develop/expo_immigration_app` on
+see it** — they see an empty laptop. The repo is at `~/develop/immifile` on
 the machine reached by `ssh jaxson-build` (passwordless).
 
 The loop that works:
 
 ```bash
 # read
-ssh jaxson-build 'cat ~/develop/expo_immigration_app/<path>'
-ssh jaxson-build "cd ~/develop/expo_immigration_app && grep -rn 'pattern' src convex"
+ssh jaxson-build 'cat ~/develop/immifile/<path>'
+ssh jaxson-build "cd ~/develop/immifile && grep -rn 'pattern' src convex"
 
 # edit: scp the file down, edit LOCALLY with Edit/Write, scp it back
-scp -q jaxson-build:develop/expo_immigration_app/<path> /tmp/work/
+scp -q jaxson-build:develop/immifile/<path> /tmp/work/
 #   ...edit /tmp/work/<file>...
-scp -q /tmp/work/<file> jaxson-build:develop/expo_immigration_app/<path>
+scp -q /tmp/work/<file> jaxson-build:develop/immifile/<path>
 
 # verify (PATH export is REQUIRED — bun/node are in /usr/local/bin)
-ssh jaxson-build 'export PATH=/usr/local/bin:$PATH && cd ~/develop/expo_immigration_app \
+ssh jaxson-build 'export PATH=/usr/local/bin:$PATH && cd ~/develop/immifile \
   && bun run typecheck && bun run test:once && bunx eslint <changed paths>'
 ```
 
@@ -256,7 +256,7 @@ Still never visually walked: the two full interviews step-by-step (Maestro's
    block" that doesn't exist). **Always dump the AcroForm and read the `TU` tooltips +
    export values before mapping anything.** Recipe:
    ```bash
-   ssh jaxson-build 'export PATH=/usr/local/bin:$PATH && cd ~/develop/expo_immigration_app \
+   ssh jaxson-build 'export PATH=/usr/local/bin:$PATH && cd ~/develop/immifile \
      && cat > d.mjs << "EOF"
    import { readFileSync } from "node:fs"
    import { PDFDocument, PDFName, PDFString, PDFHexString } from "pdf-lib"

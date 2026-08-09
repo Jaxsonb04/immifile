@@ -146,7 +146,7 @@ I won't repeat them in full. The load-bearing ones, restated:
 
 ## First: confirm the ground before you build
 
-1. **Reach the repo and green the baseline.** Repo at `/Users/jaxson/develop/expo_immigration_app`.
+1. **Reach the repo and green the baseline.** Repo at `/Users/jaxson/develop/immifile`.
    Run `npx eslint .`, `bun run typecheck`, and the vitest suite; confirm green before changing
    anything. If it isn't green on a clean checkout, tell me.
 2. **After any Convex change, run `npx convex dev --once`** — the client silently targets

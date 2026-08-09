@@ -11,9 +11,9 @@ type PolicySection = {
 const EFFECTIVE_DATE = 'August 9, 2026'
 const SUPPORT_INFO_URL =
 	process.env.EXPO_PUBLIC_SUPPORT_URL ??
-	'https://github.com/Jaxsonb04/expo-immigration-app/blob/main/docs/SUPPORT.md'
+	'https://jaxsonb04.github.io/immifile/support/'
 const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL
-const PUBLIC_ISSUE_URL = 'https://github.com/Jaxsonb04/expo-immigration-app/issues/new'
+const PUBLIC_ISSUE_URL = 'https://github.com/Jaxsonb04/immifile/issues/new'
 const USCIS_CONTACT_URL = 'https://www.uscis.gov/contactcenter'
 
 function PolicyScreen({ intro, sections }: { intro: string; sections: readonly PolicySection[] }) {
