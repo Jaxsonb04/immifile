@@ -5,6 +5,22 @@ import { describe, expect, test, vi } from 'vitest'
 import { createSessionReconcileScheduler } from '@/lib/session-reconciliation'
 
 describe('createSessionReconcileScheduler', () => {
+	test('does not compete with the auth refresh that clears a deleted account', async () => {
+		let snapshot = { hasSession: true, isPending: false, isRefetching: true }
+		const resolveSession = vi.fn<() => Promise<boolean>>().mockResolvedValue(false)
+		const reconcile = createSessionReconcileScheduler({
+			getSnapshot: () => snapshot,
+			getCookie: () => '',
+			resolveSession,
+		})
+
+		await reconcile()
+		snapshot = { hasSession: false, isPending: false, isRefetching: false }
+		await reconcile()
+
+		expect(resolveSession).not.toHaveBeenCalled()
+	})
+
 	test('runs one trailing reconciliation when a new cookie arrives in flight', async () => {
 		let cookie = 'session-cookie-1'
 		let releaseReconciliation!: () => void
@@ -19,7 +35,7 @@ describe('createSessionReconcileScheduler', () => {
 			})
 			.mockResolvedValue(true)
 		const reconcile = createSessionReconcileScheduler({
-			getSnapshot: () => ({ hasSession: true, isPending: false }),
+			getSnapshot: () => ({ hasSession: true, isPending: false, isRefetching: false }),
 			getCookie: () => cookie,
 			resolveSession,
 		})
@@ -45,7 +61,7 @@ describe('createSessionReconcileScheduler', () => {
 			return true
 		})
 		const reconcile = createSessionReconcileScheduler({
-			getSnapshot: () => ({ hasSession: true, isPending: false }),
+			getSnapshot: () => ({ hasSession: true, isPending: false, isRefetching: false }),
 			getCookie: () => `session-cookie-${cookieVersion}`,
 			resolveSession,
 		})

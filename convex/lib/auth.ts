@@ -1,6 +1,6 @@
 import type { MutationCtx, QueryCtx } from '../_generated/server'
 
-async function assertOwnerIsActive(ctx: QueryCtx | MutationCtx, ownerId: string): Promise<void> {
+async function assertOwnerIsActive(ctx: MutationCtx, ownerId: string): Promise<void> {
 	const deletion = await ctx.db
 		.query('accountDeletionTombstones')
 		.withIndex('by_ownerId', (q) => q.eq('ownerId', ownerId))
@@ -8,6 +8,10 @@ async function assertOwnerIsActive(ctx: QueryCtx | MutationCtx, ownerId: string)
 	if (deletion !== null) {
 		throw new Error('Account deletion is in progress')
 	}
+}
+
+function isMutationCtx(ctx: QueryCtx | MutationCtx): ctx is MutationCtx {
+	return 'insert' in ctx.db
 }
 
 /**
@@ -18,7 +22,14 @@ async function assertOwnerIsActive(ctx: QueryCtx | MutationCtx, ownerId: string)
 export async function getOwnerId(ctx: QueryCtx | MutationCtx): Promise<string | null> {
 	const identity = await ctx.auth.getUserIdentity()
 	if (identity === null) return null
-	await assertOwnerIsActive(ctx, identity.tokenIdentifier)
+	// Deletion tombstones are intentionally write gates. A reactive query may
+	// rerun after the app-data purge but before Better Auth removes the identity;
+	// allowing that read to resolve against the now-empty tables lets the client
+	// finish deleting the identity. Mutations remain blocked so a stale JWT can
+	// never recreate data after its deletion phase has passed.
+	if (isMutationCtx(ctx)) {
+		await assertOwnerIsActive(ctx, identity.tokenIdentifier)
+	}
 	return identity.tokenIdentifier
 }
 
@@ -45,7 +56,9 @@ export async function getAccountIdentity(
 ): Promise<{ ownerId: string; isAnonymous: boolean } | null> {
 	const identity = await ctx.auth.getUserIdentity()
 	if (identity === null) return null
-	await assertOwnerIsActive(ctx, identity.tokenIdentifier)
+	if (isMutationCtx(ctx)) {
+		await assertOwnerIsActive(ctx, identity.tokenIdentifier)
+	}
 	const isAnonymous = (identity as { isAnonymous?: boolean | null }).isAnonymous === true
 	return { ownerId: identity.tokenIdentifier, isAnonymous }
 }

@@ -33,7 +33,7 @@ export default function CasesTab() {
 					body="Save a USCIS receipt number, record updates from your notices, and jump to the official status tool."
 					features={[
 						{
-							icon: 'ticket',
+							icon: 'receipt-text',
 							title: 'Track by receipt number',
 							detail: 'Keep the number from your USCIS notice close at hand.',
 						},

@@ -12,6 +12,7 @@ import authConfig from './auth.config'
 import { authEmailWebhookConfig, sendPasswordResetEmail } from './shared/authEmail'
 import { CONVEX_JWT_EXPIRATION_SECONDS } from './shared/authSecurity'
 import { socialProvidersForRelease } from './shared/socialProviders'
+import { trustedAuthOrigins } from './shared/authOrigins'
 
 export const authComponent = createClient<DataModel>(components.betterAuth)
 
@@ -25,8 +26,11 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 	const authEmail = authEmailWebhookConfig(env)
 
 	return betterAuth({
-		// Must match the app scheme in app.json (used for deep-link auth callbacks).
-		trustedOrigins: ['immigrationrenewalhelp://', 'https://auth.immifile.app'],
+		// Expo Go's dynamic exp:// origin is honored only where a deployment
+		// explicitly opted in (dev); see trustedAuthOrigins for why production
+		// must never trust that client-controlled header.
+		trustedOrigins: (request) =>
+			trustedAuthOrigins(request, env.AUTH_TRUST_EXPO_DEV_ORIGINS === 'true'),
 		database: authComponent.adapter(ctx),
 		// NOTE: rate limiting is NOT active, and cannot be configured here.
 		//

@@ -52,7 +52,6 @@ const ALWAYS_ALLOWED_EXACT_PATHS = [
 	'/new-case',
 	'/resources',
 	'/account',
-	'/account/settings',
 	'/account/privacy',
 	'/account/terms',
 	'/account/support',

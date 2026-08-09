@@ -13,6 +13,8 @@ const preferenceKey = literals(
 	'casesIntroDismissed',
 	'forumIntroDismissed',
 	'accountIntroDismissed',
+	'resourcesIntroDismissed',
+	'assistantIntroDismissed',
 )
 
 export const getPreference = query({

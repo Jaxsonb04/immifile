@@ -153,13 +153,11 @@ export const listApplications = query({
 			.query('applications')
 			.withIndex('by_ownerId_and_status', (q) => q.eq('ownerId', ownerId))
 			.take(100)
-		const applicantNames = new Map<string, string>()
-		for (const application of applications) {
-			if (!applicantNames.has(application.applicantId)) {
-				const applicant = await ctx.db.get('applicants', application.applicantId)
-				applicantNames.set(application.applicantId, applicant?.displayName ?? 'Unknown')
-			}
-		}
+		const applicantIds = [...new Set(applications.map((application) => application.applicantId))]
+		const applicants = await Promise.all(applicantIds.map((id) => ctx.db.get('applicants', id)))
+		const applicantNames = new Map(
+			applicantIds.map((id, index) => [id, applicants[index]?.displayName ?? 'Unknown']),
+		)
 		return applications
 			.map((application) => ({
 				...application,

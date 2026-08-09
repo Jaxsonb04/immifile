@@ -21,11 +21,11 @@ export default function TabsLayout() {
 					<NativeTabs.Trigger.Label>Forms</NativeTabs.Trigger.Label>
 				</NativeTabs.Trigger>
 				<NativeTabs.Trigger name="cases">
-					<NativeTabs.Trigger.Icon sf="tray.full.fill" md="inbox" />
+					<NativeTabs.Trigger.Icon sf="folder.fill" md="folder" />
 					<NativeTabs.Trigger.Label>Cases</NativeTabs.Trigger.Label>
 				</NativeTabs.Trigger>
 				<NativeTabs.Trigger name="resources">
-					<NativeTabs.Trigger.Icon sf="safari.fill" md="language" />
+					<NativeTabs.Trigger.Icon sf="books.vertical.fill" md="menu_book" />
 					<NativeTabs.Trigger.Label>Resources</NativeTabs.Trigger.Label>
 				</NativeTabs.Trigger>
 				<NativeTabs.Trigger name="assistant" hidden={!isReleaseTabVisible('assistant')}>

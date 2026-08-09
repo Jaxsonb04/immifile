@@ -1,6 +1,7 @@
 type SessionSnapshot = {
 	hasSession: boolean
 	isPending: boolean
+	isRefetching: boolean
 }
 
 type SessionReconcileDependencies = {
@@ -32,7 +33,10 @@ export function createSessionReconcileScheduler({
 		if (inFlight !== null) return inFlight
 
 		const snapshot = getSnapshot()
-		if (snapshot.isPending) return Promise.resolve()
+		// Better Auth already owns an in-progress refresh. Starting the recovery
+		// loop here would abort/replace it, especially when deletion clears the
+		// cookie and publishes its signed-out state.
+		if (snapshot.isPending || snapshot.isRefetching) return Promise.resolve()
 
 		const key = reconciliationKey(snapshot, getCookie())
 		if (!key) {

@@ -27,6 +27,41 @@ afterEach(() => {
 	vi.unstubAllGlobals()
 })
 
+describe('Better Auth trusted origins', () => {
+	test('accepts an Expo Go development origin when the deployment opted in', async () => {
+		vi.stubEnv('AUTH_TRUST_EXPO_DEV_ORIGINS', 'true')
+		const t = newT()
+		const response = await t.fetch('/api/auth/sign-up/email', {
+			method: 'POST',
+			headers: new Headers({
+				'content-type': 'application/json',
+				// The upgrade flow begins from an anonymous account, so the request
+				// carries its existing session cookie and Better Auth enforces CSRF.
+				cookie: 'better-auth.session_token=stale-development-session',
+				'expo-origin': 'exp://10.0.0.215:8081',
+			}),
+			body: JSON.stringify({
+				name: 'Expo Go Test',
+				email: 'expo-go@example.com',
+				password: PASSWORD,
+			}),
+		})
+
+		expect(response.status).toBe(200)
+	})
+
+	// Origin REJECTION cannot be integration-tested here: this harness runs
+	// without a configured Base URL, and Better Auth then skips origin
+	// enforcement entirely (even `origin: https://evil.example.com` with a
+	// session cookie returns 200 — while the live deployment 403s the same
+	// request). The negative side of the policy is pinned two other ways:
+	// convex/shared/authOrigins.test.ts proves the expo-origin allowance is
+	// off without AUTH_TRUST_EXPO_DEV_ORIGINS, and live-deployment probes
+	// (2026-08-08) confirmed cookie-carrying requests get 403 INVALID_ORIGIN
+	// for both an untrusted browser origin and an expo-origin with the flag
+	// unset, and 200 with the flag set.
+})
+
 describe('Better Auth account deletion', () => {
 	test('deletion tombstone outlives every previously issued Convex JWT', () => {
 		expect(DELETION_TOMBSTONE_TTL_MS).toBeGreaterThan(CONVEX_JWT_EXPIRATION_SECONDS * 1000)

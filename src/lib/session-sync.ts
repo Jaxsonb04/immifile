@@ -11,6 +11,7 @@ type SessionAtomValue = {
 		user?: { id?: string }
 	} | null
 	isPending?: boolean
+	isRefetching?: boolean
 	refetch: (params?: { query?: { disableCookieCache?: boolean } }) => Promise<unknown>
 }
 
@@ -35,9 +36,17 @@ export function getPersistedSessionCookie(): string {
 }
 
 /** Whether the reactive atom currently reflects an authenticated session. */
-export function getSessionSnapshot(): { hasSession: boolean; isPending: boolean } {
+export function getSessionSnapshot(): {
+	hasSession: boolean
+	isPending: boolean
+	isRefetching: boolean
+} {
 	const value = getSessionAtom().get()
-	return { hasSession: !!value.data?.session, isPending: !!value.isPending }
+	return {
+		hasSession: !!value.data?.session,
+		isPending: !!value.isPending,
+		isRefetching: !!value.isRefetching,
+	}
 }
 
 /** Subscribe to reactive session changes; returns an unsubscribe function. */
@@ -98,6 +107,33 @@ export async function ensureSessionResolved(expectedUserId?: string): Promise<bo
 	for (let attempt = 0; attempt < SESSION_RESOLVE_ATTEMPTS; attempt += 1) {
 		const refreshed = await refetchSessionAtom(atom)
 		if (refreshed && matchesExpectedSession()) return true
+		if (attempt < SESSION_RESOLVE_ATTEMPTS - 1) {
+			await new Promise((resolve) => setTimeout(resolve, SESSION_RESOLVE_INTERVAL_MS))
+		}
+	}
+	return false
+}
+
+/**
+ * Deletion counterpart of `ensureSessionResolved`: drive the atom (cookie
+ * cache bypassed) until it reflects a signed-out state.
+ *
+ * Better Auth's anonymous plugin refreshes the session atom on
+ * `/sign-in/anonymous` but not on `/delete-anonymous-user`, so after an
+ * identity deletion the app keeps rendering the deleted account until the
+ * cached Convex JWT expires — and a retried delete then fails with 401. A
+ * single post-delete refetch is not enough either: it can race the expo
+ * plugin's cookie clearing and settle signed-in off the still-cached
+ * `session_data` cookie, which is why the cache is bypassed here.
+ *
+ * Bounded like `ensureSessionResolved`; returns whether the atom reads
+ * signed-out when it finishes.
+ */
+export async function ensureSignedOut(): Promise<boolean> {
+	const atom = getSessionAtom()
+	for (let attempt = 0; attempt < SESSION_RESOLVE_ATTEMPTS; attempt += 1) {
+		await refetchSessionAtom(atom)
+		if (!atom.get().data?.session) return true
 		if (attempt < SESSION_RESOLVE_ATTEMPTS - 1) {
 			await new Promise((resolve) => setTimeout(resolve, SESSION_RESOLVE_INTERVAL_MS))
 		}

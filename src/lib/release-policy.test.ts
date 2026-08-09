@@ -23,7 +23,7 @@ describe('first App Store release policy', () => {
 	test('pins review-sensitive features off until a deliberate release change', () => {
 		expect(RELEASE_FEATURES).toEqual({
 			filingPreparation: false,
-			assistant: false,
+			assistant: true,
 			community: false,
 			socialLogin: false,
 			passwordRecovery: false,
@@ -41,7 +41,7 @@ describe('first App Store release policy', () => {
 		expect(cronsSource).toContain('if (releasePolicy.community)')
 	})
 
-	test('ships only the stable tracker, official resources, and account tabs', () => {
+	test('ships the stable tracker, official resources, assistant, and account tabs', () => {
 		const tabs: ReleaseTab[] = [
 			'(forms)',
 			'cases',
@@ -50,7 +50,7 @@ describe('first App Store release policy', () => {
 			'community',
 			'account',
 		]
-		expect(tabs.filter(isReleaseTabVisible)).toEqual(['cases', 'resources', 'account'])
+		expect(tabs.filter(isReleaseTabVisible)).toEqual(['cases', 'resources', 'assistant', 'account'])
 	})
 
 	test.each([
@@ -67,7 +67,7 @@ describe('first App Store release policy', () => {
 		'/interview/app_1',
 		'/account/details',
 		'/account/documents/doc_1',
-		'/assistant/',
+		'/account/settings',
 		'/community',
 		'/community/post_1',
 		'/new-post',
@@ -91,8 +91,9 @@ describe('first App Store release policy', () => {
 		'/cases/case_1',
 		'/new-case',
 		'/resources',
+		'/assistant',
+		'/assistant/',
 		'/account',
-		'/account/settings',
 		'/account/privacy',
 		'/account/terms',
 		'/account/support',

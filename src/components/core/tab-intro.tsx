@@ -14,7 +14,11 @@ import Animated, {
 } from 'react-native-reanimated'
 import { initialWindowMetrics, useSafeAreaInsets } from 'react-native-safe-area-context'
 
-// Staggered rise for the intro content, the Welcome screen's entrance idiom.
+// Staggered rise for the intro content. Welcome deliberately no longer uses
+// this — it owns a bespoke recording entrance (sheet-of-record-hero.tsx), and
+// a signature that plays on five screens is not a signature. Tab intros keep
+// the stagger on purpose: their content IS the payload, and staggering aids
+// reading order through real text.
 const rise = (order: number) =>
 	FadeInDown.duration(320)
 		.delay(80 + order * 90)
@@ -26,14 +30,21 @@ const DISMISS_DURATION_MS = 340
 const DISMISS_EASING = Easing.out(Easing.cubic)
 
 type PrefKey =
-	'formsIntroDismissed' | 'casesIntroDismissed' | 'forumIntroDismissed' | 'accountIntroDismissed'
+	| 'formsIntroDismissed'
+	| 'casesIntroDismissed'
+	| 'forumIntroDismissed'
+	| 'accountIntroDismissed'
+	| 'resourcesIntroDismissed'
+	| 'assistantIntroDismissed'
 
 /** Height of the transparent large-title header the intro sits below. */
 const LARGE_TITLE_HEADER_HEIGHT = 96
 /** Clearance for the floating iOS tab bar so the "Got it" button clears it — the
  * bar stays visible during the intro (hiding/covering it lagged the native tab
- * switch by a frame and glimpsed the tab first). */
-const TAB_BAR_CLEARANCE = 108
+ * switch by a frame and glimpsed the tab first). Measured against the iOS 26
+ * floating bar, which rises ~82pt above the screen bottom (~48pt of that past
+ * the home-indicator inset added below), leaving ~24pt of air under the button. */
+const TAB_BAR_CLEARANCE = 72
 
 export type TabIntroFeature = {
 	icon: ComponentProps<typeof StyledLucideIcon>['name']
@@ -102,9 +113,9 @@ export function TabIntro({
 	const { height, fontScale } = useWindowDimensions()
 	// iPhone SE class — standard text sizes compress into one screen.
 	const compact = height < 750
-	// Dynamic Type can make even compact spacing taller than the frame. Keep the
-	// normal one-screen presentation, but provide a real scroll path for large
-	// accessibility sizes so the acknowledgement button always stays reachable.
+	// The teaching content scrolls whenever it outgrows the frame; the button
+	// below it never does. Bounce and the indicator stay off until Dynamic Type
+	// makes overflow the norm, so the common one-screen case still feels static.
 	const scrollForAccessibility = fontScale > 1.2
 	const dismissed = useQuery(api.preferences.getPreference, { key: prefKey })
 	const setPreference = useMutation(api.preferences.setPreference)
@@ -143,7 +154,12 @@ export function TabIntro({
 
 	function dismiss() {
 		if (dismissing) return
-		void setPreference({ key: prefKey, value: true })
+		// Best-effort marker. During account deletion the server's write gate
+		// rejects this mutation while the intro can briefly re-mount over the
+		// purged tab — a failed write must not surface as an uncaught error.
+		setPreference({ key: prefKey, value: true }).catch((error) => {
+			if (__DEV__) console.warn('tab-intro: could not persist the seen marker', error)
+		})
 		setDismissing(true)
 	}
 
@@ -173,7 +189,6 @@ export function TabIntro({
 					<ScrollView
 						className="flex-1"
 						contentContainerStyle={{ flexGrow: 1 }}
-						scrollEnabled={scrollForAccessibility}
 						bounces={scrollForAccessibility}
 						showsVerticalScrollIndicator={scrollForAccessibility}
 					>
@@ -211,13 +226,18 @@ export function TabIntro({
 						{/* min-h keeps real air between the last feature row and the button
 						    even when the content runs tall. */}
 						<View className={compact ? 'min-h-2 grow' : 'min-h-6 grow'} />
-
-						<Animated.View entering={rise(3)} className="pb-tight">
-							<Button onPress={dismiss}>
-								<Button.Label maxFontSizeMultiplier={1.5}>Got it</Button.Label>
-							</Button>
-						</Animated.View>
 					</ScrollView>
+
+					{/* The acknowledgement lives OUTSIDE the ScrollView. Inside it, a
+					    frame too short for the content sheared the button's bottom edge
+					    off instead of scrolling; as a sibling it is laid out before the
+					    scroll area gets the remaining height, so it is always whole and
+					    always tappable. */}
+					<Animated.View entering={rise(3)} className="pt-card">
+						<Button onPress={dismiss}>
+							<Button.Label maxFontSizeMultiplier={1.5}>Got it</Button.Label>
+						</Button>
+					</Animated.View>
 				</Animated.View>
 			) : null}
 		</View>

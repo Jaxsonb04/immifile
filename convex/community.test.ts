@@ -441,10 +441,12 @@ describe('account deletion cascade wipes all forum data', () => {
 		// Bob's post survives with its commentCount decremented for alice's erased comment.
 		const survivor = await t.query(api.community.getPost, { postId: bobPost })
 		expect(survivor?.commentCount).toBe(0)
-		// Alice's profile is gone (covered by the inventory above), and her
-		// previously issued session cannot read or recreate owner-scoped data.
-		await expect(alice.query(api.community.getMyProfile, {})).rejects.toThrow(
-			/deletion is in progress/i,
-		)
+		// Alice's profile is gone. Her previously issued session can observe the
+		// empty state while Better Auth finishes deleting the identity, but the
+		// tombstone still prevents that session from recreating owner-scoped data.
+		await expect(alice.query(api.community.getMyProfile, {})).resolves.toBeNull()
+		await expect(
+			alice.mutation(api.community.createPost, { title: 'Stale', body: 'session' }),
+		).rejects.toThrow(/deletion is in progress/i)
 	})
 })

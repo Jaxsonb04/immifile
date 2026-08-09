@@ -10,6 +10,10 @@ const RETENTION_HOURS = TEMP_ACCOUNT_RETENTION_MS / HOUR_MS
  */
 export const TEMP_ACCOUNT_START_DISCLOSURE = `To browse without signing up, Immifile creates a temporary account that remembers your intro choices. This account and its data become eligible for permanent deletion after ${RETENTION_HOURS} hours, then hourly cleanup removes them. Create an account before saving a case.`
 
+/** One-line version of the disclosure for the Welcome screen, where the full
+ * paragraph overwhelmed the entry moment. The exact hour boundary stays. */
+export const TEMP_ACCOUNT_WELCOME_NOTE = `Continue starts a temporary account — deleted after ${RETENTION_HOURS} hours unless you sign up.`
+
 /** Calm phrasing of time left before the 48-hour deletion (M6-T4). */
 export function deletionTimeLeftCopy(deleteAt: number, now: number): string {
 	const remaining = deleteAt - now

@@ -204,6 +204,33 @@ describe('account deletion contract', () => {
 		})
 	})
 
+	test('a stale deletion session can read empty state but cannot recreate data', async () => {
+		const t = newT()
+		const staleSession = t.withIdentity({ subject: 'alice', isAnonymous: true })
+
+		await staleSession.mutation(api.preferences.setPreference, {
+			key: 'casesIntroDismissed',
+			value: true,
+		})
+		await staleSession.action(api.account.deleteAccountData, {})
+
+		// Reactive reads can rerun between the app-data purge and Better Auth
+		// deleting the identity. They must resolve to the now-empty account state
+		// rather than crash the UI and interrupt the identity-deletion request.
+		await expect(
+			staleSession.query(api.preferences.getPreference, { key: 'casesIntroDismissed' }),
+		).resolves.toBe(false)
+
+		// The short-lived tombstone is still a write gate: an old JWT cannot
+		// recreate owner data after its deletion phase has completed.
+		await expect(
+			staleSession.mutation(api.preferences.setPreference, {
+				key: 'casesIntroDismissed',
+				value: true,
+			}),
+		).rejects.toThrow(/deletion is in progress/i)
+	})
+
 	test('deleteAccountData refuses a credentialed session (password path only)', async () => {
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })

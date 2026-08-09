@@ -19,10 +19,10 @@ const NOT_IN_RELEASE = /not available in this release/i
 const firstPage = { numItems: 10, cursor: null }
 
 describe('release policy is enforced on the server, not only in the UI', () => {
-	test('the shipped policy still has every review-sensitive feature off', () => {
+	test('the shipped policy matches the reviewed release surface', () => {
 		expect(releasePolicy).toEqual({
 			filingPreparation: false,
-			assistant: false,
+			assistant: true,
 			community: false,
 			socialLogin: false,
 			passwordRecovery: false,
@@ -79,16 +79,16 @@ describe('release policy is enforced on the server, not only in the UI', () => {
 		)
 	})
 
-	test('assistant actions are closed before any quota or model call', async () => {
+	// The assistant ships in this release. Prove the gate is open with the
+	// quota query (it calls assertFeatureEnabled('assistant') first, and it is
+	// the only assistant surface that never reaches the OpenAI API — the
+	// actions would attempt a real model call once past the gate).
+	test('assistant surfaces are open in this release', async () => {
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
-		await expect(alice.action(api.assistant.sendMessage, { message: 'hi' })).rejects.toThrow(
-			NOT_IN_RELEASE,
-		)
-		await expect(
-			alice.action(api.navigator.getRecommendation, { message: 'hi' }),
-		).rejects.toThrow(NOT_IN_RELEASE)
-		await expect(alice.query(api.assistantQuota.dailyUsage, {})).rejects.toThrow(NOT_IN_RELEASE)
+		await expect(alice.query(api.assistantQuota.dailyUsage, {})).resolves.toMatchObject({
+			used: 0,
+		})
 	})
 
 	test('the filing-linkage read on the shipping Cases surface is closed', async () => {
