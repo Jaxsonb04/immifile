@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router'
-import { Typography } from 'heroui-native'
+import { cn, Typography } from 'heroui-native'
 import { useRef } from 'react'
-import { ScrollView, View } from 'react-native'
+import { ScrollView, useWindowDimensions, View } from 'react-native'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -38,10 +38,16 @@ function greetingTurn(firstName: string | null): ChatTurn {
 	}
 }
 
+/** Above this text scale the disclaimer and the quota can no longer share a
+ * row: the quota refuses to shrink, so the disclaimer is squeezed to about one
+ * character per line and the resulting column of letters grows tall enough to
+ * push the entire transcript off screen. Stacked, both simply wrap. */
+const STACK_FOOTER_FONT_SCALE = 1.2
+
 /** Always-visible reminder placed where the user acts (above the composer). */
-function DisclaimerBar() {
+function DisclaimerBar({ isStacked }: { isStacked: boolean }) {
 	return (
-		<View className="flex-1 flex-row items-center gap-tight">
+		<View className={cn('flex-row items-center gap-tight', !isStacked && 'flex-1')}>
 			<InfoIcon size={13} className="text-muted" />
 			<Typography.Paragraph color="muted" className="flex-1 text-xs leading-snug">
 				General information only — not legal advice.
@@ -50,18 +56,22 @@ function DisclaimerBar() {
 	)
 }
 
-function QuotaNote({ used, limit }: { used: number; limit: number }) {
+function QuotaNote({
+	used,
+	limit,
+	isStacked,
+}: {
+	used: number
+	limit: number
+	isStacked: boolean
+}) {
 	const remaining = Math.max(0, limit - used)
-	if (remaining <= 0) {
-		return (
-			<Typography.Paragraph color="muted" className="shrink-0 text-xs tabular-nums">
-				Limit reached — resets tomorrow
-			</Typography.Paragraph>
-		)
-	}
+	// `shrink-0` protects the count from being crushed by the disclaimer while
+	// they share a row; stacked it would instead force its own overflow.
+	const className = cn('text-xs tabular-nums', !isStacked && 'shrink-0')
 	return (
-		<Typography.Paragraph color="muted" className="shrink-0 text-xs tabular-nums">
-			{remaining} of {limit} left today
+		<Typography.Paragraph color="muted" className={className}>
+			{remaining <= 0 ? 'Limit reached — resets tomorrow' : `${remaining} of ${limit} left today`}
 		</Typography.Paragraph>
 	)
 }
@@ -76,6 +86,8 @@ type RecommendationContent = Extract<AssistantContent, { kind: 'recommendation' 
  */
 export function AssistantScreen() {
 	const insets = useSafeAreaInsets()
+	const { fontScale } = useWindowDimensions()
+	const isFooterStacked = fontScale >= STACK_FOOTER_FONT_SCALE
 	const router = useRouter()
 	const { turns, usage, isSending, canSend, outOfMessages, send, retry } = useAssistantChat()
 	const { firstName } = useViewer()
@@ -146,9 +158,20 @@ export function AssistantScreen() {
 						canSend={canSend}
 						outOfMessages={outOfMessages}
 					/>
-					<View className="flex-row items-center gap-control">
-						<DisclaimerBar />
-						{usage ? <QuotaNote used={usage.used} limit={usage.limit} /> : null}
+					<View
+						className={cn(
+							'gap-tight',
+							!isFooterStacked && 'flex-row items-center gap-control',
+						)}
+					>
+						<DisclaimerBar isStacked={isFooterStacked} />
+						{usage ? (
+							<QuotaNote
+								used={usage.used}
+								limit={usage.limit}
+								isStacked={isFooterStacked}
+							/>
+						) : null}
 					</View>
 				</View>
 			</KeyboardStickyView>

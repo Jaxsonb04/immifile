@@ -1,13 +1,38 @@
 import { Button, Spinner, Typography } from 'heroui-native'
 import type { ReactNode } from 'react'
-import { View } from 'react-native'
+import { ScrollView, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type { StyledIconComponent } from '@/components/styled-icon'
 
-/** Centered, full-height container shared by every screen state. */
+/** Matches src/components/core/tab-intro.tsx: enough air that the last element
+ * clears the floating tab bar instead of sitting behind it. */
+const TAB_BAR_CLEARANCE = 72
+
+/**
+ * Centered, full-height container shared by every screen state.
+ *
+ * A ScrollView rather than a plain View: at accessibility text sizes this
+ * content outgrows the viewport, and a fixed centered box has nowhere to put
+ * the overflow — it bleeds up into the large title and down under the tab bar,
+ * unreachable. `grow` keeps the content centered while it fits and only starts
+ * scrolling once it doesn't.
+ *
+ * Note there is no top padding and no `contentInsetAdjustmentBehavior`: both
+ * push the centered content down far enough that the trailing action lands
+ * behind the tab bar at ordinary text sizes.
+ */
 function StateShell({ children }: { children: ReactNode }) {
+	const insets = useSafeAreaInsets()
 	return (
-		<View className="flex-1 items-center justify-center gap-gutter bg-background px-8">{children}</View>
+		<ScrollView
+			className="flex-1 bg-background"
+			contentContainerClassName="grow items-center justify-center gap-gutter px-8"
+			contentContainerStyle={{ paddingBottom: insets.bottom + TAB_BAR_CLEARANCE }}
+			showsVerticalScrollIndicator={false}
+		>
+			{children}
+		</ScrollView>
 	)
 }
 
