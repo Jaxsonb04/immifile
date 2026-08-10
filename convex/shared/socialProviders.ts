@@ -3,6 +3,22 @@ import releasePolicy from '../../release-policy.json'
 
 type AuthEnvironment = Record<string, string | undefined>
 
+const FALLBACK_AUTH_ORIGIN = 'https://auth.immifile.app'
+
+/**
+ * Where the provider sends the user back after consent.
+ *
+ * Derived from this deployment's own auth origin rather than hardcoded:
+ * production answers on auth.immifile.app but dev answers on its
+ * `*.convex.site`, and a hardcoded production callback silently bounces a dev
+ * sign-in to production, where the state does not match. Both URLs have to be
+ * registered with the provider — consoles accept a list.
+ */
+function callbackUrl(env: AuthEnvironment, provider: 'google' | 'apple'): string {
+	const origin = (env.BETTER_AUTH_URL || FALLBACK_AUTH_ORIGIN).replace(/\/+$/, '')
+	return `${origin}/api/auth/callback/${provider}`
+}
+
 /**
  * Social providers are server-gated by the same machine-readable policy as
  * the client. Credentials left in a deployment cannot silently re-enable an
@@ -18,7 +34,7 @@ export function socialProvidersForRelease(
 		providers.google = {
 			clientId: env.GOOGLE_CLIENT_ID,
 			clientSecret: env.GOOGLE_CLIENT_SECRET,
-			redirectURI: 'https://auth.immifile.app/api/auth/callback/google',
+			redirectURI: callbackUrl(env, 'google'),
 		}
 	}
 	if (env.APPLE_CLIENT_ID && env.APPLE_CLIENT_SECRET) {
@@ -28,7 +44,7 @@ export function socialProvidersForRelease(
 			// The browser flow needs an explicit callback, exactly like Google;
 			// `appBundleIdentifier` only covers native id-token verification, so
 			// without this Apple sign-in fails at the redirect.
-			redirectURI: 'https://auth.immifile.app/api/auth/callback/apple',
+			redirectURI: callbackUrl(env, 'apple'),
 			appBundleIdentifier: 'dev.uing.immigrationrenewalhelp',
 		}
 	}

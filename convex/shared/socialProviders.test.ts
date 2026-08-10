@@ -29,6 +29,32 @@ describe('release authentication providers', () => {
 		expect(socialProvidersForRelease({ GOOGLE_CLIENT_ID: 'google-id' })).toEqual({})
 		expect(socialProvidersForRelease({ APPLE_CLIENT_SECRET: 'apple-secret' })).toEqual({})
 	})
+
+	// A hardcoded production callback bounces a dev sign-in to production, where
+	// the OAuth state does not match and the flow dies confusingly.
+	test('the callback follows the deployment its own auth origin', () => {
+		const providers = socialProvidersForRelease({
+			...GOOGLE,
+			...APPLE,
+			BETTER_AUTH_URL: 'https://wandering-jaguar-543.convex.site',
+		})
+		expect(providers.google).toMatchObject({
+			redirectURI: 'https://wandering-jaguar-543.convex.site/api/auth/callback/google',
+		})
+		expect(providers.apple).toMatchObject({
+			redirectURI: 'https://wandering-jaguar-543.convex.site/api/auth/callback/apple',
+		})
+	})
+
+	test('a trailing slash on the auth origin does not double up in the callback', () => {
+		const providers = socialProvidersForRelease({
+			...GOOGLE,
+			BETTER_AUTH_URL: 'https://auth.immifile.app/',
+		})
+		expect(providers.google).toMatchObject({
+			redirectURI: 'https://auth.immifile.app/api/auth/callback/google',
+		})
+	})
 })
 
 // The client renders its buttons from this list, so anything it reports must be
