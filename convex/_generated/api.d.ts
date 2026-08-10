@@ -11,7 +11,6 @@
 import type * as account from "../account.js";
 import type * as applicants from "../applicants.js";
 import type * as applications from "../applications.js";
-import type * as assistant from "../assistant.js";
 import type * as assistantQuota from "../assistantQuota.js";
 import type * as auth from "../auth.js";
 import type * as cases from "../cases.js";
@@ -45,6 +44,7 @@ import type * as shared_evidenceRequirements from "../shared/evidenceRequirement
 import type * as shared_interviewSteps from "../shared/interviewSteps.js";
 import type * as shared_interviewValidation from "../shared/interviewValidation.js";
 import type * as shared_navigator from "../shared/navigator.js";
+import type * as shared_navigatorPrompt from "../shared/navigatorPrompt.js";
 import type * as shared_news from "../shared/news.js";
 import type * as shared_readiness from "../shared/readiness.js";
 import type * as shared_renewals from "../shared/renewals.js";
@@ -64,7 +64,6 @@ declare const fullApi: ApiFromModules<{
   account: typeof account;
   applicants: typeof applicants;
   applications: typeof applications;
-  assistant: typeof assistant;
   assistantQuota: typeof assistantQuota;
   auth: typeof auth;
   cases: typeof cases;
@@ -98,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   "shared/interviewSteps": typeof shared_interviewSteps;
   "shared/interviewValidation": typeof shared_interviewValidation;
   "shared/navigator": typeof shared_navigator;
+  "shared/navigatorPrompt": typeof shared_navigatorPrompt;
   "shared/news": typeof shared_news;
   "shared/readiness": typeof shared_readiness;
   "shared/renewals": typeof shared_renewals;

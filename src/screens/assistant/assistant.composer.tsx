@@ -38,7 +38,11 @@ export function Composer({ onSend, isSending, canSend, outOfMessages }: Composer
 			<InputGroup.Input
 				value={value}
 				onChangeText={setValue}
-				placeholder={outOfMessages ? 'Daily message limit reached' : 'Describe your situation…'}
+				// Scoped rather than open-ended ("Describe your situation…" invited
+				// questions the navigator can only deflect).
+				placeholder={
+					outOfMessages ? 'Daily message limit reached' : 'Work permit or green card question…'
+				}
 				multiline
 				editable={!outOfMessages}
 				className="max-h-32 min-h-11 py-control"

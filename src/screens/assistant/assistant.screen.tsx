@@ -27,7 +27,12 @@ function greetingTurn(firstName: string | null): ChatTurn {
 		kind: 'assistant',
 		content: {
 			kind: 'text',
-			text: `${hi} I can help you figure out which form to prepare — a work permit (Form I-765) or a green card (Form I-90). Tell me what you need, and I’ll point you to the right one. I share general information only, not legal advice.`,
+			// Names the two forms and the five situations up front, and points at
+			// the taps first: the suggestions below cover every supported case
+			// deterministically, while free text has to survive extraction. Setting
+			// that expectation is what keeps an off-topic question feeling like a
+			// scope boundary rather than a refusal.
+			text: `${hi} I help with two USCIS forms — a work permit (Form I-765) or a green card (Form I-90). Pick the closest match below, or describe your situation in your own words. I share general information only, not legal advice.`,
 			suggestions: OPENING_REPLIES,
 		},
 	}

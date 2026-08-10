@@ -14,6 +14,7 @@
 		"typecheck": "tsc --noEmit",
 		"test": "vitest",
 		"test:once": "vitest run --passWithNoTests",
+		"eval:navigator": "bun run scripts/eval-navigator.ts",
 		"release:config": "node scripts/validate-release-config.mjs",
 		"release:remote-check": "node scripts/check-production-readiness.mjs",
 		"eas-build-pre-install": "node scripts/validate-release-config.mjs && npx -y hpsetup@4.7.0 native --auto"

@@ -4,6 +4,11 @@
 
 export type OpenAIChatMessage = { role: 'user' | 'assistant'; content: string }
 
+/** GPT-5-family hidden-reasoning budget. Higher levels spend more completion
+ * tokens (and latency) before answering, so `maxCompletionTokens` must leave
+ * room for them. */
+export type OpenAIReasoningEffort = 'minimal' | 'low' | 'medium' | 'high'
+
 export type OpenAIChatRequest = {
 	apiKey: string
 	model: string
@@ -12,6 +17,9 @@ export type OpenAIChatRequest = {
 	maxCompletionTokens: number
 	/** When set, forces strict JSON-schema structured output. */
 	responseFormat?: { name: string; schema: Record<string, unknown> }
+	/** Defaults to 'minimal'. Raise it only with eval evidence that the extra
+	 * tokens buy accuracy — see scripts/eval-navigator.ts --effort. */
+	reasoningEffort?: OpenAIReasoningEffort
 }
 
 export type OpenAIChatResult = {
@@ -36,10 +44,10 @@ export async function createChatCompletion(request: OpenAIChatRequest): Promise<
 		max_completion_tokens: request.maxCompletionTokens,
 	}
 	// GPT-5-family models spend completion budget on hidden reasoning tokens;
-	// pin reasoning and verbosity to the floor so the cheap tier stays cheap.
-	// Older models reject these parameters, so send them only where they apply.
+	// default both knobs to the floor so the cheap tier stays cheap. Older
+	// models reject these parameters, so send them only where they apply.
 	if (request.model.startsWith('gpt-5')) {
-		body.reasoning_effort = 'minimal'
+		body.reasoning_effort = request.reasoningEffort ?? 'minimal'
 		body.verbosity = 'low'
 	}
 	if (request.responseFormat) {

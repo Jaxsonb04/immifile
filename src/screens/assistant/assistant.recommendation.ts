@@ -24,7 +24,13 @@ const SITUATION_REPLIES: SuggestedReply[] = [
 ]
 
 /** Opening suggestions that each carry a COMPLETE supported situation, so the
- * common cases resolve in one tap without walking the clarification loop. */
+ * common cases resolve in one tap without walking the clarification loop.
+ *
+ * This list is the product surface: there is one entry per situation the app
+ * actually supports, so a user who taps rather than types can always reach a
+ * recommendation deterministically, without depending on the extractor. Keep it
+ * exhaustive — a supported situation missing from here is only reachable
+ * through free text, which is the fragile path. */
 export const OPENING_REPLIES: SuggestedReply[] = [
 	{
 		id: 'open-i765-renewal',
@@ -40,6 +46,11 @@ export const OPENING_REPLIES: SuggestedReply[] = [
 		id: 'open-i765-replacement',
 		label: 'Replace a lost work permit',
 		message: 'I need to replace my lost work permit.',
+	},
+	{
+		id: 'open-i90-replacement',
+		label: 'Replace a lost green card',
+		message: 'I need to replace my lost, stolen, or damaged green card.',
 	},
 	{
 		id: 'open-i765-initial',
