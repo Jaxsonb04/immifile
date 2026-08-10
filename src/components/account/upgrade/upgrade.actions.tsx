@@ -1,13 +1,22 @@
 import { authClient } from '@/lib/auth-client'
 import { PASSWORD_RECOVERY_ENABLED } from '@/lib/password-recovery'
+import { RELEASE_FEATURES } from '@/lib/release-policy'
 import { ensureSessionResolved } from '@/lib/session-sync'
 import { useRouter } from 'expo-router'
-import { Button, Input, Label, Spinner, TextField, Typography } from 'heroui-native'
+import { Button, Input, Label, Separator, Spinner, TextField, Typography } from 'heroui-native'
+import { SocialAuthButton, type SocialAuthButtonProvider } from 'heroui-native-pro'
 import { useEffect, useRef, useState } from 'react'
 import { Alert, View } from 'react-native'
 import { useCredentialedAccountReadiness } from '../account.session'
 
 export type UpgradeMode = 'create' | 'sign-in'
+
+// Google is the only social provider shipped today. Apple is planned and
+// gated behind its env vars server-side — add it back here the day those are
+// set, so this surface never shows a button that errors "provider not
+// configured" (this list must stay in sync with src/app/sign-in.tsx).
+type SocialProvider = Extract<SocialAuthButtonProvider, 'apple' | 'google'>
+const SOCIAL_PROVIDERS: SocialProvider[] = ['google']
 
 /**
  * The reusable email account form that replaces the current anonymous session
@@ -102,6 +111,27 @@ export function UpgradeActions({
 		}
 	}
 
+	async function handleSocialUpgrade(provider: SocialProvider): Promise<void> {
+		setPending(true)
+		try {
+			const { error } = await authClient.signIn.social({ provider, callbackURL: '/' })
+			if (error) {
+				Alert.alert('Could not continue', error.message ?? 'Please try again.')
+				return
+			}
+			// Resolves after the OAuth browser flow persists the linked session
+			// cookie (or the user dismisses it). Drive the reactive atom so the
+			// `isCredentialedReady` upgrade transition isn't stranded by the
+			// refetch race; a dismissed browser simply never resolves, so stay
+			// silent.
+			await ensureSessionResolved()
+		} catch (err) {
+			Alert.alert('Something went wrong', err instanceof Error ? err.message : 'Please try again.')
+		} finally {
+			setPending(false)
+		}
+	}
+
 	if (isCredentialed && !isCredentialedReady) {
 		return (
 			<View className="items-center gap-control py-section">
@@ -120,6 +150,29 @@ export function UpgradeActions({
 
 	return (
 		<View className="gap-section">
+			{RELEASE_FEATURES.socialLogin ? (
+				<>
+					<View className="gap-control">
+						{SOCIAL_PROVIDERS.map((provider) => (
+							<SocialAuthButton
+								key={provider}
+								provider={provider}
+								isDisabled={pending}
+								onPress={() => handleSocialUpgrade(provider)}
+							/>
+						))}
+					</View>
+
+					<View className="flex-row items-center gap-card">
+						<Separator className="flex-1" />
+						<Typography.Paragraph color="muted" className="text-sm">
+							or use email
+						</Typography.Paragraph>
+						<Separator className="flex-1" />
+					</View>
+				</>
+			) : null}
+
 			<View className="gap-card">
 				{mode === 'create' ? (
 					<TextField>

@@ -25,7 +25,7 @@ describe('first App Store release policy', () => {
 			filingPreparation: false,
 			assistant: true,
 			community: false,
-			socialLogin: false,
+			socialLogin: true,
 			passwordRecovery: false,
 		})
 	})

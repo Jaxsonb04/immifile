@@ -24,7 +24,7 @@ describe('release policy is enforced on the server, not only in the UI', () => {
 			filingPreparation: false,
 			assistant: true,
 			community: false,
-			socialLogin: false,
+			socialLogin: true,
 			passwordRecovery: false,
 		})
 	})

@@ -1,13 +1,20 @@
 import { authClient } from '@/lib/auth-client'
 import { PASSWORD_RECOVERY_ENABLED } from '@/lib/password-recovery'
+import { RELEASE_FEATURES } from '@/lib/release-policy'
 import { ensureSessionResolved } from '@/lib/session-sync'
 import { useRouter } from 'expo-router'
-import { Button, Input, Label, TextField, Typography } from 'heroui-native'
+import { Button, Input, Label, Separator, TextField, Typography } from 'heroui-native'
+import { SocialAuthButton, type SocialAuthButtonProvider } from 'heroui-native-pro'
 import { useState } from 'react'
 import { Alert, Text, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 type Mode = 'sign-in' | 'sign-up'
+
+// Keep in sync with src/components/account/upgrade/upgrade.actions.tsx —
+// only providers whose server credentials are configured may appear here.
+type SocialProvider = Extract<SocialAuthButtonProvider, 'apple' | 'google'>
+const SOCIAL_PROVIDERS: SocialProvider[] = ['google']
 
 /**
  * Dedicated sign-in screen for returning users, pushed from the Welcome screen
@@ -59,6 +66,25 @@ export default function SignInScreen() {
 		}
 	}
 
+	async function handleSocialAuth(provider: SocialProvider): Promise<void> {
+		setPending(true)
+		try {
+			const { error } = await authClient.signIn.social({ provider, callbackURL: '/' })
+			if (error) {
+				Alert.alert('Could not continue', error.message ?? 'Please try again.')
+				return
+			}
+			// Resolves once the OAuth browser flow persists the session cookie (or
+			// the user dismisses the browser, which simply never resolves a
+			// session — stay silent in that case).
+			await ensureSessionResolved()
+		} catch (err) {
+			Alert.alert('Something went wrong', err instanceof Error ? err.message : 'Please try again.')
+		} finally {
+			setPending(false)
+		}
+	}
+
 	return (
 		<KeyboardAwareScrollView
 			contentContainerClassName="p-gutter gap-card"
@@ -76,6 +102,29 @@ export default function SignInScreen() {
 						: 'Sign in to return to your saved cases.'}
 				</Typography.Paragraph>
 			</View>
+
+			{RELEASE_FEATURES.socialLogin ? (
+				<>
+					<View className="gap-control">
+						{SOCIAL_PROVIDERS.map((provider) => (
+							<SocialAuthButton
+								key={provider}
+								provider={provider}
+								isDisabled={pending}
+								onPress={() => handleSocialAuth(provider)}
+							/>
+						))}
+					</View>
+
+					<View className="flex-row items-center gap-card">
+						<Separator className="flex-1" />
+						<Typography.Paragraph color="muted" className="text-sm">
+							or use email
+						</Typography.Paragraph>
+						<Separator className="flex-1" />
+					</View>
+				</>
+			) : null}
 
 			<View className="gap-card">
 				{isSignUp ? (
