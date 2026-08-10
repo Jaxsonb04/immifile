@@ -6,6 +6,13 @@ const DEFAULT_TITLE = 'Save your progress'
 const DEFAULT_DESCRIPTION =
 	'Create an account to keep everything you’ve entered and pick up where you left off on any device.'
 
+/** Heading shown when the upgrade form is toggled to its sign-in mode — the
+ * create-account pitch would mislabel that form. */
+export const SIGN_IN_RECAP: InvestedProgress = {
+	title: 'Sign in',
+	description: 'Welcome back — everything you saved is right where you left it.',
+}
+
 /**
  * Small, props-driven recap of invested effort shown above the upgrade actions.
  * Falls back to generic copy when a caller does not supply a recap.

@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Alert, View } from 'react-native'
 import { useCredentialedAccountReadiness } from '../account.session'
 
-type UpgradeMode = 'create' | 'sign-in'
+export type UpgradeMode = 'create' | 'sign-in'
 
 /**
  * The reusable email account form that replaces the current anonymous session
@@ -19,10 +19,29 @@ type UpgradeMode = 'create' | 'sign-in'
  * identity is removed. `onUpgraded` fires only when the local session and
  * Convex agree on the same non-anonymous user.
  */
-export function UpgradeActions({ onUpgraded }: { onUpgraded?: () => void }) {
+export function UpgradeActions({
+	onUpgraded,
+	onModeChange,
+}: {
+	onUpgraded?: () => void
+	/** Fired when the user switches between create-account and sign-in, so the
+	 * hosting surface can swap its heading to match. */
+	onModeChange?: (mode: UpgradeMode) => void
+}) {
 	const router = useRouter()
 	const { isCredentialed, isCredentialedReady } = useCredentialedAccountReadiness()
 	const [mode, setMode] = useState<UpgradeMode>('create')
+
+	function switchMode(): void {
+		setMode((current) => {
+			const next: UpgradeMode = current === 'create' ? 'sign-in' : 'create'
+			onModeChange?.(next)
+			return next
+		})
+		// The password never carries across modes: a half-typed new password must
+		// not silently ride along into a sign-in attempt (and vice versa).
+		setPassword('')
+	}
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
@@ -155,11 +174,7 @@ export function UpgradeActions({ onUpgraded }: { onUpgraded?: () => void }) {
 							: 'Sign in'}
 				</Button.Label>
 			</Button>
-			<Button
-				variant="ghost"
-				isDisabled={pending}
-				onPress={() => setMode((current) => (current === 'create' ? 'sign-in' : 'create'))}
-			>
+			<Button variant="ghost" isDisabled={pending} onPress={switchMode}>
 				<Button.Label>
 					{mode === 'create' ? 'Already have an account? Sign in' : 'Need an account? Create one'}
 				</Button.Label>

@@ -105,15 +105,18 @@ for (const dependency of [
 	assert(!pkg.dependencies?.[dependency], `${dependency} must not be installed`)
 }
 
+// The assistant ships in this release (release-policy.json assistant: true,
+// pinned by src/lib/release-policy.test.ts and convex/releaseGate.test.ts),
+// so it is deliberately absent from this pinned-off list.
 for (const feature of [
 	'filingPreparation',
-	'assistant',
 	'community',
 	'socialLogin',
 	'passwordRecovery',
 ]) {
 	assert(policy[feature] === false, `${feature} must be pinned off for the first review build`)
 }
+assert(policy.assistant === true, 'assistant must be enabled for this release (see release-policy tests)')
 assert(
 	eas.build?.production?.environment === 'production',
 	'EAS production profile must use production env',

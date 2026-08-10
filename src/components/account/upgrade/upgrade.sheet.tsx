@@ -1,8 +1,9 @@
 import { BottomSheet } from 'heroui-native'
+import { useState } from 'react'
 import { View } from 'react-native'
 import type { InvestedProgress } from '../account.data'
-import { InvestedProgressRecap } from './upgrade.invested-progress-recap'
-import { UpgradeActions } from './upgrade.actions'
+import { InvestedProgressRecap, SIGN_IN_RECAP } from './upgrade.invested-progress-recap'
+import { UpgradeActions, type UpgradeMode } from './upgrade.actions'
 
 type UpgradeSheetProps = {
 	/** Controlled open state. */
@@ -21,6 +22,9 @@ type UpgradeSheetProps = {
  * user to a credentialed account in place and auto-resumes via `onUpgraded`.
  */
 export function UpgradeSheet({ isOpen, recap, onUpgraded, onDismiss }: UpgradeSheetProps) {
+	// In sign-in mode the create-account pitch ("Create an account to save…")
+	// would mislabel the form, so the heading swaps to the sign-in recap.
+	const [mode, setMode] = useState<UpgradeMode>('create')
 	return (
 		<BottomSheet
 			isOpen={isOpen}
@@ -34,8 +38,8 @@ export function UpgradeSheet({ isOpen, recap, onUpgraded, onDismiss }: UpgradeSh
 				<BottomSheet.Overlay />
 				<BottomSheet.Content>
 					<View className="gap-section px-section pb-8 pt-tight">
-						<InvestedProgressRecap recap={recap} />
-						<UpgradeActions onUpgraded={onUpgraded} />
+						<InvestedProgressRecap recap={mode === 'sign-in' ? SIGN_IN_RECAP : recap} />
+						<UpgradeActions onUpgraded={onUpgraded} onModeChange={setMode} />
 					</View>
 				</BottomSheet.Content>
 			</BottomSheet.Portal>

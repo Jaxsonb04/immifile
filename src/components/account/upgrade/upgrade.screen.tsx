@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
 import { accountGateStore, useAccountGateRequest } from '../account.data'
-import { InvestedProgressRecap } from './upgrade.invested-progress-recap'
-import { UpgradeActions } from './upgrade.actions'
+import { InvestedProgressRecap, SIGN_IN_RECAP } from './upgrade.invested-progress-recap'
+import { UpgradeActions, type UpgradeMode } from './upgrade.actions'
 
 /**
  * Full-screen upgrade surface: the invested-progress recap plus the shared
@@ -17,6 +17,8 @@ export function UpgradeScreen() {
 	const router = useRouter()
 	const request = useAccountGateRequest()
 	const settledRef = useRef(false)
+	// Sign-in mode swaps the create-account heading for the sign-in recap.
+	const [mode, setMode] = useState<UpgradeMode>('create')
 
 	// If the modal is dismissed (swipe/back) without upgrading, park any awaiting
 	// gated action so the caller can stop. The settled guard prevents a
@@ -48,8 +50,8 @@ export function UpgradeScreen() {
 				contentContainerStyle={{ flexGrow: 1, padding: 24, gap: 24 }}
 				keyboardShouldPersistTaps="handled"
 			>
-				<InvestedProgressRecap recap={request?.recap} />
-				<UpgradeActions onUpgraded={handleUpgraded} />
+				<InvestedProgressRecap recap={mode === 'sign-in' ? SIGN_IN_RECAP : request?.recap} />
+				<UpgradeActions onUpgraded={handleUpgraded} onModeChange={setMode} />
 			</ScrollView>
 		</KeyboardAvoidingView>
 	)

@@ -14,8 +14,11 @@ import { type ApplicationKind, type FormType, isSupportedSituation } from './app
 export const navigatorFactsShape = z.object({
 	credential: z.enum(['workPermit', 'greenCard', 'other', 'unclear']),
 	situation: z.enum(['firstTime', 'renewal', 'replacement', 'unclear']),
-	// True when the user asks anything requiring legal judgment: eligibility,
-	// approval/denial prediction, which form to file, RFE/denial strategy.
+	// True when the user asks for legal judgment about their case: eligibility
+	// categories, approval/denial prediction, RFE/denial strategy. Plain
+	// "which form do I need?" routing between the two supported forms is the
+	// app's purpose and does NOT set this flag (2026-08-09: it previously did,
+	// which made the assistant deflect its own advertised use case).
 	wantsEligibilityOrOutcomeJudgment: z.boolean(),
 	// True when the user mentions any USCIS matter other than a work permit
 	// (I-765) or green card (I-90): asylum, family petition, citizenship, a visa,
