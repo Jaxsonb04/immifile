@@ -1,20 +1,15 @@
 import { authClient } from '@/lib/auth-client'
 import { PASSWORD_RECOVERY_ENABLED } from '@/lib/password-recovery'
-import { RELEASE_FEATURES } from '@/lib/release-policy'
 import { ensureSessionResolved } from '@/lib/session-sync'
+import { useSocialProviders, type SocialProvider } from '@/lib/social-login'
 import { useRouter } from 'expo-router'
 import { Button, Input, Label, Separator, TextField, Typography } from 'heroui-native'
-import { SocialAuthButton, type SocialAuthButtonProvider } from 'heroui-native-pro'
+import { SocialAuthButton } from 'heroui-native-pro'
 import { useState } from 'react'
 import { Alert, Text, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 type Mode = 'sign-in' | 'sign-up'
-
-// Keep in sync with src/components/account/upgrade/upgrade.actions.tsx —
-// only providers whose server credentials are configured may appear here.
-type SocialProvider = Extract<SocialAuthButtonProvider, 'apple' | 'google'>
-const SOCIAL_PROVIDERS: SocialProvider[] = ['google']
 
 /**
  * Dedicated sign-in screen for returning users, pushed from the Welcome screen
@@ -24,6 +19,7 @@ const SOCIAL_PROVIDERS: SocialProvider[] = ['google']
  */
 export default function SignInScreen() {
 	const router = useRouter()
+	const socialProviders = useSocialProviders()
 	const [mode, setMode] = useState<Mode>('sign-in')
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
@@ -103,10 +99,10 @@ export default function SignInScreen() {
 				</Typography.Paragraph>
 			</View>
 
-			{RELEASE_FEATURES.socialLogin ? (
+			{socialProviders.length > 0 ? (
 				<>
 					<View className="gap-control">
-						{SOCIAL_PROVIDERS.map((provider) => (
+						{socialProviders.map((provider) => (
 							<SocialAuthButton
 								key={provider}
 								provider={provider}

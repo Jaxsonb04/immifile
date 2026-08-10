@@ -1,14 +1,12 @@
 import { describe, expect, test } from 'vitest'
-import { socialProvidersForRelease } from './socialProviders'
+import { configuredSocialProviderIds, socialProvidersForRelease } from './socialProviders'
+
+const GOOGLE = { GOOGLE_CLIENT_ID: 'google-id', GOOGLE_CLIENT_SECRET: 'google-secret' }
+const APPLE = { APPLE_CLIENT_ID: 'apple-id', APPLE_CLIENT_SECRET: 'apple-secret' }
 
 describe('release authentication providers', () => {
 	test('Google activates when the deployment carries its OAuth credentials', () => {
-		expect(
-			socialProvidersForRelease({
-				GOOGLE_CLIENT_ID: 'google-id',
-				GOOGLE_CLIENT_SECRET: 'google-secret',
-			}),
-		).toEqual({
+		expect(socialProvidersForRelease(GOOGLE)).toEqual({
 			google: {
 				clientId: 'google-id',
 				clientSecret: 'google-secret',
@@ -17,21 +15,35 @@ describe('release authentication providers', () => {
 		})
 	})
 
-	test('Apple activates alongside Google when its credentials are present', () => {
-		const providers = socialProvidersForRelease({
-			GOOGLE_CLIENT_ID: 'google-id',
-			GOOGLE_CLIENT_SECRET: 'google-secret',
-			APPLE_CLIENT_ID: 'apple-id',
-			APPLE_CLIENT_SECRET: 'apple-secret',
+	test('Apple carries an explicit callback so the browser flow can complete', () => {
+		const providers = socialProvidersForRelease(APPLE)
+		expect(providers.apple).toMatchObject({
+			clientId: 'apple-id',
+			clientSecret: 'apple-secret',
+			redirectURI: 'https://auth.immifile.app/api/auth/callback/apple',
+			appBundleIdentifier: 'dev.uing.immigrationrenewalhelp',
 		})
-		expect(Object.keys(providers).sort()).toEqual(['apple', 'google'])
-	})
-
-	test('a deployment without credentials exposes no social providers', () => {
-		expect(socialProvidersForRelease({})).toEqual({})
 	})
 
 	test('a partial credential pair does not activate a provider', () => {
 		expect(socialProvidersForRelease({ GOOGLE_CLIENT_ID: 'google-id' })).toEqual({})
+		expect(socialProvidersForRelease({ APPLE_CLIENT_SECRET: 'apple-secret' })).toEqual({})
+	})
+})
+
+// The client renders its buttons from this list, so anything it reports must be
+// a provider a user can actually finish signing in with — see
+// convex/socialLogin.ts.
+describe('provider ids advertised to the client', () => {
+	test('reports only the providers whose credentials are present', () => {
+		expect(configuredSocialProviderIds({})).toEqual([])
+		expect(configuredSocialProviderIds(GOOGLE)).toEqual(['google'])
+		expect(configuredSocialProviderIds({ ...GOOGLE, ...APPLE })).toEqual(['apple', 'google'])
+	})
+
+	test('never leaks credential values, only provider names', () => {
+		const ids = configuredSocialProviderIds({ ...GOOGLE, ...APPLE })
+		expect(ids.join(' ')).not.toMatch(/secret|id-/)
+		expect(ids).toEqual(ids.filter((id) => /^[a-z]+$/.test(id)))
 	})
 })

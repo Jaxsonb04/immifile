@@ -1,22 +1,15 @@
 import { authClient } from '@/lib/auth-client'
 import { PASSWORD_RECOVERY_ENABLED } from '@/lib/password-recovery'
-import { RELEASE_FEATURES } from '@/lib/release-policy'
 import { ensureSessionResolved } from '@/lib/session-sync'
+import { useSocialProviders, type SocialProvider } from '@/lib/social-login'
 import { useRouter } from 'expo-router'
 import { Button, Input, Label, Separator, Spinner, TextField, Typography } from 'heroui-native'
-import { SocialAuthButton, type SocialAuthButtonProvider } from 'heroui-native-pro'
+import { SocialAuthButton } from 'heroui-native-pro'
 import { useEffect, useRef, useState } from 'react'
 import { Alert, View } from 'react-native'
 import { useCredentialedAccountReadiness } from '../account.session'
 
 export type UpgradeMode = 'create' | 'sign-in'
-
-// Google is the only social provider shipped today. Apple is planned and
-// gated behind its env vars server-side — add it back here the day those are
-// set, so this surface never shows a button that errors "provider not
-// configured" (this list must stay in sync with src/app/sign-in.tsx).
-type SocialProvider = Extract<SocialAuthButtonProvider, 'apple' | 'google'>
-const SOCIAL_PROVIDERS: SocialProvider[] = ['google']
 
 /**
  * The reusable email account form that replaces the current anonymous session
@@ -39,6 +32,7 @@ export function UpgradeActions({
 }) {
 	const router = useRouter()
 	const { isCredentialed, isCredentialedReady } = useCredentialedAccountReadiness()
+	const socialProviders = useSocialProviders()
 	const [mode, setMode] = useState<UpgradeMode>('create')
 
 	function switchMode(): void {
@@ -150,10 +144,10 @@ export function UpgradeActions({
 
 	return (
 		<View className="gap-section">
-			{RELEASE_FEATURES.socialLogin ? (
+			{socialProviders.length > 0 ? (
 				<>
 					<View className="gap-control">
-						{SOCIAL_PROVIDERS.map((provider) => (
+						{socialProviders.map((provider) => (
 							<SocialAuthButton
 								key={provider}
 								provider={provider}

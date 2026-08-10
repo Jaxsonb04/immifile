@@ -52,6 +52,7 @@ import type * as shared_reviewModel from "../shared/reviewModel.js";
 import type * as shared_screening from "../shared/screening.js";
 import type * as shared_socialProviders from "../shared/socialProviders.js";
 import type * as shared_tempAccounts from "../shared/tempAccounts.js";
+import type * as socialLogin from "../socialLogin.js";
 import type * as tempAccounts from "../tempAccounts.js";
 
 import type {
@@ -105,6 +106,7 @@ declare const fullApi: ApiFromModules<{
   "shared/screening": typeof shared_screening;
   "shared/socialProviders": typeof shared_socialProviders;
   "shared/tempAccounts": typeof shared_tempAccounts;
+  socialLogin: typeof socialLogin;
   tempAccounts: typeof tempAccounts;
 }>;
 
