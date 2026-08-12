@@ -3,7 +3,16 @@ import { PASSWORD_RECOVERY_ENABLED } from '@/lib/password-recovery'
 import { ensureSessionResolved } from '@/lib/session-sync'
 import { useSocialProviders, type SocialProvider } from '@/lib/social-login'
 import { useRouter } from 'expo-router'
-import { Button, Input, Label, Separator, Spinner, TextField, Typography } from 'heroui-native'
+import {
+	Button,
+	Input,
+	Label,
+	Separator,
+	Spinner,
+	TextField,
+	Typography,
+	useBottomSheetAwareHandlers,
+} from 'heroui-native'
 import { SocialAuthButton } from 'heroui-native-pro'
 import { useEffect, useRef, useState } from 'react'
 import { Alert, View } from 'react-native'
@@ -33,6 +42,7 @@ export function UpgradeActions({
 	const router = useRouter()
 	const { isCredentialed, isCredentialedReady } = useCredentialedAccountReadiness()
 	const socialProviders = useSocialProviders()
+	const bottomSheetInputHandlers = useBottomSheetAwareHandlers()
 	const [mode, setMode] = useState<UpgradeMode>('create')
 
 	function switchMode(): void {
@@ -184,6 +194,7 @@ export function UpgradeActions({
 							autoCapitalize="words"
 							textContentType="name"
 							editable={!pending}
+							{...bottomSheetInputHandlers}
 						/>
 					</TextField>
 				) : null}
@@ -199,6 +210,7 @@ export function UpgradeActions({
 						keyboardType="email-address"
 						textContentType="emailAddress"
 						editable={!pending}
+						{...bottomSheetInputHandlers}
 					/>
 				</TextField>
 
@@ -212,9 +224,15 @@ export function UpgradeActions({
 						autoCapitalize="none"
 						textContentType={mode === 'create' ? 'newPassword' : 'password'}
 						editable={!pending}
+						{...bottomSheetInputHandlers}
 					/>
 				</TextField>
 			</View>
+			{mode === 'create' && !PASSWORD_RECOVERY_ENABLED ? (
+				<Typography.Paragraph color="muted" className="text-center text-xs leading-relaxed">
+					Password reset isn’t available yet. Choose a password you can keep.
+				</Typography.Paragraph>
+			) : null}
 
 			<Button isDisabled={pending} onPress={handleEmailUpgrade}>
 				<Button.Label>

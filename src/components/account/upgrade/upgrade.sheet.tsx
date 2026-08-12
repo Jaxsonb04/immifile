@@ -1,6 +1,8 @@
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet'
 import { BottomSheet } from 'heroui-native'
 import { useState } from 'react'
 import { View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { InvestedProgress } from '../account.data'
 import { InvestedProgressRecap, SIGN_IN_RECAP } from './upgrade.invested-progress-recap'
 import { UpgradeActions, type UpgradeMode } from './upgrade.actions'
@@ -25,6 +27,7 @@ export function UpgradeSheet({ isOpen, recap, onUpgraded, onDismiss }: UpgradeSh
 	// In sign-in mode the create-account pitch ("Create an account to save…")
 	// would mislabel the form, so the heading swaps to the sign-in recap.
 	const [mode, setMode] = useState<UpgradeMode>('create')
+	const insets = useSafeAreaInsets()
 	return (
 		<BottomSheet
 			isOpen={isOpen}
@@ -36,11 +39,22 @@ export function UpgradeSheet({ isOpen, recap, onUpgraded, onDismiss }: UpgradeSh
 		>
 			<BottomSheet.Portal>
 				<BottomSheet.Overlay />
-				<BottomSheet.Content>
-					<View className="gap-section px-section pb-8 pt-tight">
-						<InvestedProgressRecap recap={mode === 'sign-in' ? SIGN_IN_RECAP : recap} />
-						<UpgradeActions onUpgraded={onUpgraded} onModeChange={setMode} />
-					</View>
+				<BottomSheet.Content
+					snapPoints={['92%']}
+					enableOverDrag={false}
+					enableDynamicSizing={false}
+					keyboardBehavior="extend"
+					contentContainerClassName="h-full"
+				>
+					<BottomSheetScrollView
+						keyboardShouldPersistTaps="handled"
+						contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+					>
+						<View className="gap-section px-section pt-tight">
+							<InvestedProgressRecap recap={mode === 'sign-in' ? SIGN_IN_RECAP : recap} />
+							<UpgradeActions onUpgraded={onUpgraded} onModeChange={setMode} />
+						</View>
+					</BottomSheetScrollView>
 				</BottomSheet.Content>
 			</BottomSheet.Portal>
 		</BottomSheet>
