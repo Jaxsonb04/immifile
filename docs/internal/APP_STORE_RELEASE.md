@@ -100,7 +100,7 @@ after eligibility, offline/error states, Dynamic Type, VoiceOver labels, and
 disabled-route deep links.
 
 Before that physical-device gate, run the development simulator regression pass
-with the live Codex side-panel workflow in `docs/internal/FABLE_NOTES.md`. The
+with the live Codex side-panel workflow in `docs/internal/SIMULATOR_QA.md`. The
 continuous stream is the preferred way to catch transient auth/intro frames;
 pair it with accessibility snapshots and the iPhone SE-class layout pass. Use a
 fresh temporary account for the iOS 26/native-tabs large-title regression gate,

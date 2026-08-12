@@ -58,48 +58,10 @@ works: `echo -n "text" | xcrun simctl pbcopy booted`, then Maestro
 
 ## Default simulator QA: live stream in the Codex side panel (2026-08-10)
 
-**Summary:** use `serve-sim` in Codex's right-side browser panel for the
-default development QA pass. A continuous stream is materially better than
-isolated screenshots for auth handoffs, intro flashes, delayed insertions,
-animation overlap, and repeated navigator mounts. It also keeps the app and
-the QA conversation visible together. This improves transient visual evidence;
-it does **not** replace accessibility snapshots, logs, assertions, the compact
-simulator, or the production-profile physical-device release gate.
-
-Working recipe:
-
-```sh
-# Start the current JS bundle for the installed development client.
-bunx expo start --dev-client --clear --port 8081
-
-# Launch the installed app on the chosen booted simulator.
-xcrun simctl launch <SIMULATOR_UDID> dev.uing.immigrationrenewalhelp
-
-# Start/discover the stream. Never assume port 3100.
-npx serve-sim --detach -q
-npx serve-sim --list -q
-```
-
-Open the returned `url` in Codex's right-side browser panel. Keep that panel
-open through the entire interaction and pair what it shows with the helper's
-read-only evidence endpoints (`/ax`, `/foreground`, `/config`) and Metro/native
-logs. Prefer accessibility-label taps derived from `/ax`; coordinates are a
-fallback only after normalizing against `/config`.
-
-For transition bugs, record or sample the stream from the frame before the tap
-through the final settled frame. Assert both absence and presence: for example,
-no live case content/tab bar/header action before `Got it`, then exactly one
-reveal afterward. Repeat first-login and deletion transitions at least three
-times, and run layout-sensitive surfaces on the iPhone SE-class simulator at
-standard and accessibility text sizes. Use a fresh temporary account when the
-test depends on one-time preferences; do not erase a simulator unless that
-destructive reset was explicitly authorized.
-
-Cleanup when the pass is complete:
-
-```sh
-npx serve-sim --kill
-```
+The repository-wide source of truth is now
+[`SIMULATOR_QA.md`](./SIMULATOR_QA.md). It retains the live Codex side-panel
+workflow learned here and adds the device matrix, native frame recording,
+transition assertions, evidence format, and release-surface checklist.
 
 ### NativeTabs / large-title regression gate
 
