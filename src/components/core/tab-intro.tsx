@@ -252,7 +252,7 @@ export function TabIntro({
 		</>
 	)
 	return (
-		<TabIntroTransitionContext value={acknowledged}>
+		<TabIntroTransitionContext value={contentAccessible}>
 			{renderToolbar?.(chromeHidden)}
 			<View collapsable={false} className="flex-1 bg-background">
 				<View
@@ -280,18 +280,14 @@ export function TabIntro({
 					>
 						{showIntro ? (
 							<>
-								{scrollForAccessibility ? (
-									<ScrollView
-										className="flex-1"
-										contentContainerStyle={{ flexGrow: 1 }}
-										bounces
-										showsVerticalScrollIndicator
-									>
-										{teachingContent}
-									</ScrollView>
-								) : (
-									<View className="flex-1">{teachingContent}</View>
-								)}
+								<ScrollView
+									className="flex-1"
+									contentContainerStyle={{ flexGrow: 1 }}
+									bounces={scrollForAccessibility}
+									showsVerticalScrollIndicator={scrollForAccessibility}
+								>
+									{teachingContent}
+								</ScrollView>
 
 								{/* The acknowledgement lives OUTSIDE the ScrollView. Inside it, a
 					    frame too short for the content sheared the button's bottom edge

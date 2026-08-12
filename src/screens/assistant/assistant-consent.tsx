@@ -1,12 +1,14 @@
 import { StyledLucideIcon } from '@/components/styled-icon'
+import { TabIntroTransitionContext } from '@/components/core/tab-intro-transition'
 import { Stack, useRouter } from 'expo-router'
 import { Button, Surface, Typography, useThemeColor } from 'heroui-native'
-import type { ComponentProps } from 'react'
+import { use, type ComponentProps } from 'react'
 import { ScrollView, useWindowDimensions, View } from 'react-native'
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ASSISTANT_CONSENT_COPY } from './assistant-consent-copy'
+import { shouldUseAssistantContentHeader } from './assistant-header-state'
 
 type ConsentDetailProps = {
 	icon: ComponentProps<typeof StyledLucideIcon>['name']
@@ -43,6 +45,8 @@ export function AssistantConsent({
 	const { height, fontScale } = useWindowDimensions()
 	const router = useRouter()
 	const backgroundColor = useThemeColor('background')
+	const contentAccessible = use(TabIntroTransitionContext)
+	const ownsHeader = shouldUseAssistantContentHeader(contentAccessible)
 	const compact = height < 750
 	// Standard text is deliberately a single, non-scrolling decision surface.
 	// Large Dynamic Type keeps a real scroll path instead of clipping disclosure
@@ -51,16 +55,20 @@ export function AssistantConsent({
 
 	return (
 		<View className="flex-1 bg-background">
-			<Stack.Title>Assistant</Stack.Title>
-			<Stack.Screen
-				options={{
-					title: 'Assistant',
-					headerLargeTitle: false,
-					headerTransparent: false,
-					headerShadowVisible: false,
-					headerStyle: { backgroundColor },
-				}}
-			/>
+			{ownsHeader ? (
+				<>
+					<Stack.Title>Assistant</Stack.Title>
+					<Stack.Screen
+						options={{
+							title: 'Assistant',
+							headerLargeTitle: false,
+							headerTransparent: false,
+							headerShadowVisible: false,
+							headerStyle: { backgroundColor },
+						}}
+					/>
+				</>
+			) : null}
 			<ScrollView
 				className="flex-1"
 				contentInsetAdjustmentBehavior="automatic"

@@ -1,5 +1,6 @@
 import { createContext } from 'react'
 
-/** Scoped to one TabIntro so its root ScrollView can repair native geometry
- * after the final acknowledgement commit. */
+/** True when a TabIntro's live content and native chrome are exposed. Root
+ * content uses it to defer header ownership and repair native geometry after
+ * the final cover-removal commit. */
 export const TabIntroTransitionContext = createContext(false)
