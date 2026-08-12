@@ -3,6 +3,8 @@ import type { NativeTabsProps } from 'expo-router/unstable-native-tabs'
 import { colorKit, useThemeColor } from 'heroui-native'
 import { Platform } from 'react-native'
 
+import { supportsNativeTabMinimize } from './native-tabs-platform'
+
 /**
  * A hook to get the layout style for the app
  */
@@ -69,7 +71,9 @@ export const useTabLayoutStyle = () => {
 		tabBarStyle: {
 			blurEffect: 'systemChromeMaterial',
 			disableTransparentOnScrollEdge: true,
-			minimizeBehavior: 'onScrollDown',
+			...(supportsNativeTabMinimize(Platform.OS, Platform.Version)
+				? { minimizeBehavior: 'onScrollDown' as const }
+				: {}),
 			// iOS keeps the pure material (no paint over the blur); Android gets
 			// an opaque surface bar.
 			backgroundColor: Platform.select({
