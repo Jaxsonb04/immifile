@@ -1,9 +1,10 @@
 import { Button, Spinner, Typography } from 'heroui-native'
 import type { ReactNode } from 'react'
 import { ScrollView, View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { initialWindowMetrics, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type { StyledIconComponent } from '@/components/styled-icon'
+import { getStableStateShellBottomPadding } from './screen-state-layout'
 
 /** Matches src/components/core/tab-intro.tsx: enough air that the last element
  * clears the floating tab bar instead of sitting behind it. */
@@ -24,11 +25,16 @@ const TAB_BAR_CLEARANCE = 72
  */
 function StateShell({ children }: { children: ReactNode }) {
 	const insets = useSafeAreaInsets()
+	const bottomPadding = getStableStateShellBottomPadding({
+		initialBottomInset: initialWindowMetrics?.insets.bottom,
+		liveBottomInset: insets.bottom,
+		tabBarClearance: TAB_BAR_CLEARANCE,
+	})
 	return (
 		<ScrollView
 			className="flex-1 bg-background"
 			contentContainerClassName="grow items-center justify-center gap-gutter px-8"
-			contentContainerStyle={{ paddingBottom: insets.bottom + TAB_BAR_CLEARANCE }}
+			contentContainerStyle={{ paddingBottom: bottomPadding }}
 			showsVerticalScrollIndicator={false}
 		>
 			{children}
