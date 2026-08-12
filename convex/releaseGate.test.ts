@@ -86,6 +86,11 @@ describe('release policy is enforced on the server, not only in the UI', () => {
 	test('assistant surfaces are open in this release', async () => {
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
+		// Build 11 did not send a day cache key. Keep that client working while
+		// Build 12+ uses the key to resubscribe exactly at UTC midnight.
+		await expect(alice.query(api.assistantQuota.dailyUsage, {})).resolves.toMatchObject({
+			used: 0,
+		})
 		await expect(
 			alice.query(api.assistantQuota.dailyUsage, { day: 'test-day' }),
 		).resolves.toMatchObject({

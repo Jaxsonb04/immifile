@@ -76,7 +76,7 @@ export const dailyUsage = query({
 	// The client UTC day is a cache key: changing it at midnight forces a fresh
 	// subscription even when yesterday's usage row receives no further writes.
 	// The server still derives the authoritative day from its own clock below.
-	args: { day: v.string() },
+	args: { day: v.optional(v.string()) },
 	handler: async (ctx): Promise<AssistantUsage> => {
 		assertFeatureEnabled('assistant')
 		const ownerId = await requireOwnerId(ctx)
