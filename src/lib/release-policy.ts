@@ -18,6 +18,11 @@ type ReleaseFeatures = {
 export const RELEASE_FEATURES: Readonly<ReleaseFeatures> = Object.freeze(releaseFeatures)
 
 export const RELEASE_HOME_PATH = '/cases' as const
+export const RELEASE_SIGNED_OUT_PATH = '/welcome' as const
+
+export function getReleaseRedirectPath(authenticated: boolean) {
+	return authenticated ? RELEASE_HOME_PATH : RELEASE_SIGNED_OUT_PATH
+}
 
 export type ReleaseTab = '(forms)' | 'cases' | 'resources' | 'assistant' | 'community' | 'account'
 

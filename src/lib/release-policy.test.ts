@@ -5,6 +5,8 @@ import { describe, expect, test } from 'vitest'
 import {
 	RELEASE_FEATURES,
 	RELEASE_HOME_PATH,
+	RELEASE_SIGNED_OUT_PATH,
+	getReleaseRedirectPath,
 	isReleasePathBlocked,
 	isReleaseTabVisible,
 	releaseApplicationLink,
@@ -108,6 +110,9 @@ describe('first App Store release policy', () => {
 
 	test('redirect destination is retained and hidden application links are stripped', () => {
 		expect(RELEASE_HOME_PATH).toBe('/cases')
+		expect(RELEASE_SIGNED_OUT_PATH).toBe('/welcome')
+		expect(getReleaseRedirectPath(true)).toBe('/cases')
+		expect(getReleaseRedirectPath(false)).toBe('/welcome')
 		expect(isReleasePathBlocked(RELEASE_HOME_PATH)).toBe(false)
 		expect(releaseApplicationLink('app_1')).toBeUndefined()
 		expect(releaseApplicationLink(null)).toBeUndefined()

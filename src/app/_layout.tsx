@@ -8,7 +8,7 @@ import { Providers } from '@/components/providers'
 import { useLayoutStyle } from '@/hooks/use-layout-style'
 import { useSessionReconciler } from '@/hooks/use-session-reconciler'
 import { resolveAuthRouteState } from '@/lib/auth-route-state'
-import { RELEASE_HOME_PATH, isReleasePathBlocked } from '@/lib/release-policy'
+import { getReleaseRedirectPath, isReleasePathBlocked } from '@/lib/release-policy'
 import { useState } from 'react'
 import '../global.css'
 
@@ -68,8 +68,8 @@ const AppContent = () => {
 	// A hidden tab is not a security or deep-link boundary. Apply the release
 	// policy before any disabled route mounts so restored state, custom-scheme
 	// links, and auth callbacks cannot reveal filing/AI/community screens.
-	if (authRoute.authenticated && isReleasePathBlocked(pathname)) {
-		return <Redirect href={RELEASE_HOME_PATH} />
+	if (isReleasePathBlocked(pathname)) {
+		return <Redirect href={getReleaseRedirectPath(Boolean(authRoute.authenticated))} />
 	}
 
 	return (
