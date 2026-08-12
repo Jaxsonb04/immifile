@@ -3,7 +3,7 @@ import { PASSWORD_RECOVERY_ENABLED } from '@/lib/password-recovery'
 import { ensureSessionResolved } from '@/lib/session-sync'
 import { useSocialProviders, type SocialProvider } from '@/lib/social-login'
 import { useRouter } from 'expo-router'
-import { Button, Input, Label, Separator, TextField, Typography } from 'heroui-native'
+import { Button, Input, Label, Separator, Spinner, TextField, Typography } from 'heroui-native'
 import { SocialAuthButton } from 'heroui-native-pro'
 import { useState } from 'react'
 import { Alert, Text, View } from 'react-native'
@@ -92,6 +92,30 @@ export default function SignInScreen() {
 		} finally {
 			setPending(false)
 		}
+	}
+
+	if (socialProviders === undefined) {
+		return (
+			<KeyboardAwareScrollView
+				contentContainerClassName="min-h-96 p-gutter gap-card"
+				contentInsetAdjustmentBehavior="automatic"
+			>
+				<View className="gap-hairline pt-hairline">
+					<Text className="font-display text-title text-foreground">
+						{isSignUp ? 'Create your account' : 'Welcome back'}
+					</Text>
+					<Typography.Paragraph color="muted" className="text-[15px]">
+						{isSignUp
+							? 'Save cases and keep your account across devices.'
+							: 'Sign in to return to your saved cases.'}
+					</Typography.Paragraph>
+				</View>
+				<View className="min-h-64 items-center justify-center gap-control">
+					<Spinner accessibilityLabel="Loading sign-in options" />
+					<Typography.Paragraph color="muted">Loading sign-in options…</Typography.Paragraph>
+				</View>
+			</KeyboardAwareScrollView>
+		)
 	}
 
 	return (

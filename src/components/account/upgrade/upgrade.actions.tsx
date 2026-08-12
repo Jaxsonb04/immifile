@@ -157,6 +157,14 @@ export function UpgradeActions({
 			</View>
 		)
 	}
+	if (socialProviders === undefined) {
+		return (
+			<View className="min-h-64 items-center justify-center gap-control py-section">
+				<Spinner accessibilityLabel="Loading account options" />
+				<Typography.Paragraph color="muted">Loading account options…</Typography.Paragraph>
+			</View>
+		)
+	}
 
 	return (
 		<View className="gap-section">
