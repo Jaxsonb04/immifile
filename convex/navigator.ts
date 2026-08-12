@@ -2,7 +2,7 @@
 
 import { v } from 'convex/values'
 import { action, env } from './_generated/server'
-import { internal } from './_generated/api'
+import { api, internal } from './_generated/api'
 import type { AssistantUsage } from './assistantQuota'
 import {
 	type AssistantRecommendation,
@@ -67,6 +67,13 @@ export const getRecommendation = action({
 		}
 		if (history.some((turn) => turn.content.length > MAX_MESSAGE_CHARS)) {
 			throw new Error('A previous message is too long')
+		}
+
+		const hasOpenAIConsent = await ctx.runQuery(api.preferences.getPreference, {
+			key: 'assistantOpenAIConsent',
+		})
+		if (!hasOpenAIConsent) {
+			throw new Error('OpenAI consent is required before using the assistant')
 		}
 
 		const apiKey = env.OPENAI_API_KEY
