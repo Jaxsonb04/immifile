@@ -139,13 +139,13 @@ export default function WelcomeScreen() {
 				</View>
 			</View>
 
-			{/* Continue, Sign in, the 48-hour disclosure and the Privacy policy
-			    link are ONE block and must stay one block. Their arrival time is
-			    a compliance surface, not a design variable: the disclosure is a
-			    documented pre-creation commitment (RELEASE_AUDIT_2026-07-27:445)
-			    and the privacy link is what App Review looks for on the first
-			    screen. Neither may ever be less visible than the button it
-			    qualifies, at any frame. Do not stagger these children. */}
+			{/* The 48-hour disclosure, Privacy policy, Continue, and Sign in are
+			    ONE block and must stay one block. Their arrival time is a compliance
+			    surface, not a design variable: the disclosure is a documented
+			    pre-creation commitment (RELEASE_AUDIT_2026-07-27:445), and the
+			    privacy link is what App Review looks for on the first screen. Keep
+			    the disclosure before Continue so the bottom-anchored actions remain
+			    easy to reach without weakening informed consent. */}
 			<View
 				className={
 					compact
@@ -153,6 +153,18 @@ export default function WelcomeScreen() {
 						: 'gap-control px-section pt-10 pb-safe-offset-6'
 				}
 			>
+				<Text className="text-center text-xs leading-relaxed text-muted">
+					{TEMP_ACCOUNT_WELCOME_NOTE}
+				</Text>
+				<Pressable
+					accessibilityRole="link"
+					accessibilityLabel="Open Immifile privacy policy"
+					className="self-center px-control py-tight"
+					hitSlop={8}
+					onPress={() => void openPrivacyPolicy()}
+				>
+					<Text className="font-medium text-sm text-accent underline">Privacy policy</Text>
+				</Pressable>
 				<Button size="lg" isDisabled={pending} onPress={handleContinue}>
 					<Button.Label maxFontSizeMultiplier={1.5}>
 						{pending ? 'Opening…' : 'Continue'}
@@ -166,18 +178,6 @@ export default function WelcomeScreen() {
 				>
 					<Button.Label maxFontSizeMultiplier={1.5}>Sign in</Button.Label>
 				</Button>
-				<Text className="pt-tight text-center text-xs leading-relaxed text-muted">
-					{TEMP_ACCOUNT_WELCOME_NOTE}
-				</Text>
-				<Pressable
-					accessibilityRole="link"
-					accessibilityLabel="Open Immifile privacy policy"
-					className="self-center px-control py-tight"
-					hitSlop={8}
-					onPress={() => void openPrivacyPolicy()}
-				>
-					<Text className="font-medium text-sm text-accent underline">Privacy policy</Text>
-				</Pressable>
 			</View>
 		</ScrollView>
 	)
