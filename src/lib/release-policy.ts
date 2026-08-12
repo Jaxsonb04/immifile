@@ -18,11 +18,6 @@ type ReleaseFeatures = {
 export const RELEASE_FEATURES: Readonly<ReleaseFeatures> = Object.freeze(releaseFeatures)
 
 export const RELEASE_HOME_PATH = '/cases' as const
-export const RELEASE_SIGNED_OUT_PATH = '/welcome' as const
-
-export function getReleaseRedirectPath(authenticated: boolean) {
-	return authenticated ? RELEASE_HOME_PATH : RELEASE_SIGNED_OUT_PATH
-}
 
 export type ReleaseTab = '(forms)' | 'cases' | 'resources' | 'assistant' | 'community' | 'account'
 
@@ -52,11 +47,7 @@ const FILING_PATHS = [
 
 const COMMUNITY_PATHS = ['/community', '/new-post', '/community-rules', '/moderation'] as const
 
-// `/` is a redirect-only trampoline (src/app/home.tsx), not the disabled
-// filing surface. Let that one owner choose Welcome versus Cases so the root
-// guard never mounts a second competing Redirect during sign-out.
 const ALWAYS_ALLOWED_EXACT_PATHS = [
-	'/',
 	'/cases',
 	'/new-case',
 	'/resources',
@@ -95,7 +86,7 @@ export function isReleasePathBlocked(rawPathname: string): boolean {
 
 	if (
 		RELEASE_FEATURES.filingPreparation &&
-		FILING_PATHS.some((route) => matchesPath(pathname, route))
+		(pathname === '/' || FILING_PATHS.some((route) => matchesPath(pathname, route)))
 	) {
 		return false
 	}
