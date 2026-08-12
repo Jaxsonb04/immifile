@@ -1,3 +1,4 @@
+import { v } from 'convex/values'
 import { internalMutation, query } from './_generated/server'
 import { requireOwnerId } from './lib/auth'
 import { assertFeatureEnabled } from './lib/releaseGate'
@@ -72,7 +73,10 @@ export const refundDailyMessage = internalMutation({
 
 /** The caller's current daily assistant usage, for the chat UI's remaining-count. */
 export const dailyUsage = query({
-	args: {},
+	// The client UTC day is a cache key: changing it at midnight forces a fresh
+	// subscription even when yesterday's usage row receives no further writes.
+	// The server still derives the authoritative day from its own clock below.
+	args: { day: v.string() },
 	handler: async (ctx): Promise<AssistantUsage> => {
 		assertFeatureEnabled('assistant')
 		const ownerId = await requireOwnerId(ctx)

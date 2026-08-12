@@ -1,6 +1,7 @@
 import { Button, InputGroup, Spinner, useThemeColor } from 'heroui-native'
 import { useState } from 'react'
 import { FadeIn, ReduceMotion } from 'react-native-reanimated'
+import { MAX_ASSISTANT_MESSAGE_CHARS } from '@convex/shared/assistantLimits'
 
 import { styledIcon } from '@/components/styled-icon'
 
@@ -38,6 +39,7 @@ export function Composer({ onSend, isSending, canSend, outOfMessages }: Composer
 			<InputGroup.Input
 				value={value}
 				onChangeText={setValue}
+				maxLength={MAX_ASSISTANT_MESSAGE_CHARS}
 				// Scoped rather than open-ended ("Describe your situation…" invited
 				// questions the navigator can only deflect).
 				placeholder={

@@ -86,7 +86,9 @@ describe('release policy is enforced on the server, not only in the UI', () => {
 	test('assistant surfaces are open in this release', async () => {
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
-		await expect(alice.query(api.assistantQuota.dailyUsage, {})).resolves.toMatchObject({
+		await expect(
+			alice.query(api.assistantQuota.dailyUsage, { day: 'test-day' }),
+		).resolves.toMatchObject({
 			used: 0,
 		})
 	})

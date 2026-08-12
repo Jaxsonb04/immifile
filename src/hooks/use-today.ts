@@ -1,16 +1,33 @@
 import { useSyncExternalStore } from 'react'
 
-// Today's ISO date as an external store, quantized to the hour so the snapshot
-// is referentially stable (render-purity-safe way to read the clock; the date
-// itself only changes at midnight).
-const HOUR_MS = 60 * 60 * 1000
-const subscribeHourTick = (onTick: () => void): (() => void) => {
-	const id = setInterval(onTick, HOUR_MS)
-	return () => clearInterval(id)
+// Small buffer avoids an early timer firing in the last milliseconds of the
+// old UTC day and then waiting another full day to publish the new snapshot.
+const DAY_BOUNDARY_BUFFER_MS = 50
+
+export function millisecondsUntilNextUtcDay(now: number): number {
+	const date = new Date(now)
+	const nextUtcMidnight = Date.UTC(
+		date.getUTCFullYear(),
+		date.getUTCMonth(),
+		date.getUTCDate() + 1,
+	)
+	return Math.max(1, nextUtcMidnight - now + DAY_BOUNDARY_BUFFER_MS)
+}
+
+const subscribeUtcDay = (onDayChange: () => void): (() => void) => {
+	let timer: ReturnType<typeof setTimeout>
+	const schedule = () => {
+		timer = setTimeout(() => {
+			onDayChange()
+			schedule()
+		}, millisecondsUntilNextUtcDay(Date.now()))
+	}
+	schedule()
+	return () => clearTimeout(timer)
 }
 const currentIsoDay = () => new Date().toISOString().slice(0, 10)
 
 /** Today as YYYY-MM-DD (UTC), stable within the hour. */
 export function useToday(): string {
-	return useSyncExternalStore(subscribeHourTick, currentIsoDay, currentIsoDay)
+	return useSyncExternalStore(subscribeUtcDay, currentIsoDay, currentIsoDay)
 }

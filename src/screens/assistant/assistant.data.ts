@@ -2,6 +2,8 @@ import { api } from '@convex/_generated/api'
 import { useAction, useQuery } from 'convex/react'
 import { useCallback, useRef, useState } from 'react'
 
+import { useToday } from '@/hooks/use-today'
+
 import { describeRecommendation } from './assistant.recommendation'
 import type { ChatTurn } from './assistant.types'
 
@@ -38,7 +40,8 @@ export type AssistantChat = ReturnType<typeof useAssistantChat>
 
 export function useAssistantChat() {
 	const getRecommendation = useAction(api.navigator.getRecommendation)
-	const usage = useQuery(api.assistantQuota.dailyUsage, {})
+	const utcDay = useToday()
+	const usage = useQuery(api.assistantQuota.dailyUsage, { day: utcDay })
 
 	const [turns, setTurns] = useState<ChatTurn[]>([])
 	const [isSending, setIsSending] = useState(false)

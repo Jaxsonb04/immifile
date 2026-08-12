@@ -3,6 +3,7 @@ import { convexTest } from 'convex-test'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { api } from './_generated/api'
 import schema from './schema'
+import { MAX_ASSISTANT_MESSAGE_CHARS } from './shared/assistantLimits'
 import type { NavigatorFacts } from './shared/navigator'
 
 // This suite exercises the feature implementation itself, so it runs with the
@@ -134,7 +135,9 @@ describe('navigator.getRecommendation', () => {
 			alice.action(api.navigator.getRecommendation, { message: 'renew my green card' }),
 		).rejects.toThrow(/consent/i)
 		expect(createMock).not.toHaveBeenCalled()
-		expect(await alice.query(api.assistantQuota.dailyUsage, {})).toMatchObject({ used: 0 })
+		expect(await alice.query(api.assistantQuota.dailyUsage, { day: 'test-day' })).toMatchObject({
+			used: 0,
+		})
 	})
 
 	test('rejects empty input before consuming quota', async () => {
@@ -143,6 +146,17 @@ describe('navigator.getRecommendation', () => {
 		await expect(
 			alice.action(api.navigator.getRecommendation, { message: '   ' }),
 		).rejects.toThrow(/empty/i)
+		expect(createMock).not.toHaveBeenCalled()
+	})
+
+	test('rejects input beyond the composer boundary before calling OpenAI', async () => {
+		const t = newT()
+		const alice = t.withIdentity({ subject: 'alice' })
+		await expect(
+			alice.action(api.navigator.getRecommendation, {
+				message: 'x'.repeat(MAX_ASSISTANT_MESSAGE_CHARS + 1),
+			}),
+		).rejects.toThrow(/too long/i)
 		expect(createMock).not.toHaveBeenCalled()
 	})
 
@@ -158,7 +172,9 @@ describe('navigator.getRecommendation', () => {
 			alice.action(api.navigator.getRecommendation, { message: 'renew my green card' }),
 		).rejects.toThrow(/not configured/i)
 		expect(createMock).not.toHaveBeenCalled()
-		expect(await alice.query(api.assistantQuota.dailyUsage, {})).toMatchObject({ used: 0 })
+		expect(await alice.query(api.assistantQuota.dailyUsage, { day: 'test-day' })).toMatchObject({
+			used: 0,
+		})
 	})
 
 	test('refunds the reserved message when the OpenAI call fails', async () => {
@@ -172,6 +188,8 @@ describe('navigator.getRecommendation', () => {
 		await expect(
 			alice.action(api.navigator.getRecommendation, { message: 'renew my green card' }),
 		).rejects.toThrow(/temporarily unavailable/i)
-		expect(await alice.query(api.assistantQuota.dailyUsage, {})).toMatchObject({ used: 0 })
+		expect(await alice.query(api.assistantQuota.dailyUsage, { day: 'test-day' })).toMatchObject({
+			used: 0,
+		})
 	})
 })

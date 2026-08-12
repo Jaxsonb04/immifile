@@ -15,6 +15,7 @@ import { AssistantConsent } from './assistant-consent'
 import { resolveAssistantConsentState } from './assistant-consent-state'
 import { useAssistantChat } from './assistant.data'
 import { Message } from './assistant.message'
+import { assistantQuotaCopy } from './assistant-quota-copy'
 import { OPENING_REPLIES } from './assistant.recommendation'
 import type { AssistantContent, ChatTurn } from './assistant.types'
 
@@ -75,7 +76,7 @@ function QuotaNote({
 	const className = cn('text-xs tabular-nums', !isStacked && 'shrink-0')
 	return (
 		<Typography.Paragraph color="muted" className={className}>
-			{remaining <= 0 ? 'Limit reached — resets tomorrow' : `${remaining} of ${limit} left today`}
+			{assistantQuotaCopy(remaining, limit)}
 		</Typography.Paragraph>
 	)
 }

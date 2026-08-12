@@ -106,7 +106,7 @@ const OUT_OF_SCOPE_COPY: Record<OutOfScopeReason, string> = {
 	unsupportedSituation:
 		'A first green card isn’t requested with Form I-90 — that form only renews or replaces a card you already have. If you’re applying for a green card for the first time, an immigration attorney can point you to the right process. If you already have a card, I can help with these:',
 	legalAdvice:
-		'I can share general information about the process, but I can’t give legal advice or predict how a case will turn out. For questions about eligibility, categories, or a specific decision, please talk with a qualified immigration attorney or an accredited representative. If you’d like, I can still help you prepare the paperwork itself:',
+		'I can share general information about the process, but I can’t give legal advice or predict how a case will turn out. For questions about eligibility, categories, or a specific decision, please talk with a qualified immigration attorney or an accredited representative. I can still help identify which of these two supported USCIS forms matches the situation you describe:',
 }
 
 /** The way forward offered with each out-of-scope reply. */
@@ -128,7 +128,7 @@ export function describeRecommendation(rec: AssistantRecommendation): AssistantC
 				kind: 'recommendation',
 				formType: rec.formType,
 				applicationKind: rec.applicationKind,
-				lead: 'Based on what you shared, this looks like the form below. I can help you get it ready — nothing is filed until you review and confirm.',
+				lead: 'Based on what you shared, this looks like the official USCIS form below. Open it to review the current instructions on USCIS.gov.',
 				title: situationTitle(rec.formType, rec.applicationKind),
 				formLabel: formLabel(rec.formType),
 			}

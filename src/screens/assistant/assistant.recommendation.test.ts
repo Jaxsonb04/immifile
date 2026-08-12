@@ -25,6 +25,8 @@ describe('describeRecommendation — supported', () => {
 			expect(content.applicationKind).toBe(applicationKind)
 			expect(content.formLabel).toBe(formLabel(formType))
 			expect(content.title).toBe(situationTitle(formType, applicationKind))
+			expect(content.lead).toMatch(/USCIS/i)
+			expect(content.lead).not.toMatch(/get it ready|prepare|file it/i)
 			// Cards carry no suggested replies and never leak the field code.
 			expect(content).not.toHaveProperty('suggestions')
 		},
@@ -90,6 +92,7 @@ describe('describeRecommendation — outOfScope', () => {
 		const content = describeRecommendation({ type: 'outOfScope', reason: 'legalAdvice' })
 		if (content.kind !== 'text') throw new Error('expected text')
 		expect(content.text).toMatch(/can’t give legal advice|cannot give legal advice/i)
+		expect(content.text).not.toMatch(/prepare the paperwork|get it ready/i)
 	})
 
 	test('first-green-card dead end offers only card-holder paths', () => {

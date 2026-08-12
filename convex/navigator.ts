@@ -12,6 +12,7 @@ import {
 import { assertFeatureEnabled } from './lib/releaseGate'
 import { createChatCompletion, type OpenAIChatMessage } from './lib/openaiChat'
 import { DEFAULT_ASSISTANT_MODEL } from './shared/assistantModel'
+import { MAX_ASSISTANT_MESSAGE_CHARS } from './shared/assistantLimits'
 import { EXTRACTION_SYSTEM, FACTS_FORMAT } from './shared/navigatorPrompt'
 
 // M1-T2: the safe navigator's model call (ported Anthropic → OpenAI
@@ -21,7 +22,6 @@ import { EXTRACTION_SYSTEM, FACTS_FORMAT } from './shared/navigatorPrompt'
 // decides eligibility or picks a form. Secrets stay server-side and the daily
 // quota is shared with the chat assistant (M1-T1).
 
-const MAX_MESSAGE_CHARS = 4000
 const MAX_HISTORY_TURNS = 40
 // GPT-5-family models spend part of this budget on hidden reasoning tokens
 // (pinned to minimal in the transport); 512 leaves the ~80-token JSON payload
@@ -58,14 +58,14 @@ export const getRecommendation = action({
 		if (message.length === 0) {
 			throw new Error('Message cannot be empty')
 		}
-		if (message.length > MAX_MESSAGE_CHARS) {
+		if (message.length > MAX_ASSISTANT_MESSAGE_CHARS) {
 			throw new Error('Message is too long')
 		}
 		const history = args.history ?? []
 		if (history.length > MAX_HISTORY_TURNS) {
 			throw new Error('Conversation is too long')
 		}
-		if (history.some((turn) => turn.content.length > MAX_MESSAGE_CHARS)) {
+		if (history.some((turn) => turn.content.length > MAX_ASSISTANT_MESSAGE_CHARS)) {
 			throw new Error('A previous message is too long')
 		}
 
