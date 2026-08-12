@@ -2,6 +2,16 @@ import { describe, expect, test } from 'vitest'
 import { trustedAuthOrigins } from './authOrigins'
 
 describe('Better Auth origin policy', () => {
+	test('trusts the branded development and production auth origins', () => {
+		expect(trustedAuthOrigins()).toEqual(
+			expect.arrayContaining(['https://auth-dev.immifile.app', 'https://auth.immifile.app']),
+		)
+	})
+
+	test('trusts Apple as the origin of its form-post OAuth callback', () => {
+		expect(trustedAuthOrigins()).toContain('https://appleid.apple.com')
+	})
+
 	test('trusts an Expo Go origin only on a request marked by the Expo client', () => {
 		const expoOrigin = 'exp://10.0.0.215:8081'
 		const expoRequest = new Request('https://auth.immifile.app/api/auth/sign-up/email', {

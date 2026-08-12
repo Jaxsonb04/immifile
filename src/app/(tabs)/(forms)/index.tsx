@@ -32,20 +32,22 @@ export default function FormsTab() {
 			>
 				Forms
 			</Stack.Title>
-			<Stack.Toolbar placement="right">
-				<Stack.Toolbar.Button
-					icon="folder.fill"
-					accessibilityLabel="Document vault"
-					onPress={() => router.push('/documents')}
-				/>
-			</Stack.Toolbar>
-
 			<TabIntro
 				prefKey="formsIntroDismissed"
 				hero={<FilingStackHero width={104} />}
 				title={'Let’s get your\nrenewal moving.'}
 				body={TEMP_ACCOUNT_START_DISCLOSURE}
 				contentStartsBelowHeader
+				renderToolbar={(hidden) => (
+					<Stack.Toolbar placement="right">
+						<Stack.Toolbar.Button
+							hidden={hidden}
+							icon="folder.fill"
+							accessibilityLabel="Document vault"
+							onPress={() => router.push('/documents')}
+						/>
+					</Stack.Toolbar>
+				)}
 				features={[
 					{
 						icon: 'messages-square',

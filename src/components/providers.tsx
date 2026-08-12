@@ -1,4 +1,3 @@
-import { ConvexBetterAuthProvider, type AuthClient } from '@convex-dev/better-auth/react'
 import { Fraunces_600SemiBold } from '@expo-google-fonts/fraunces'
 import {
 	Inter_400Regular,
@@ -13,7 +12,7 @@ import { HeroUINativeProvider } from 'heroui-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
 import { AccountGateProvider } from '@/components/account'
-import { authClient } from '@/lib/auth-client'
+import { ImmifileConvexAuthProvider } from '@/components/immifile-convex-auth-provider'
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router'
 import { useCallback } from 'react'
 import { KeyboardAvoidingView, Platform } from 'react-native'
@@ -74,11 +73,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 		return null
 	}
 
-	// Cast required: the provider's `AuthClient` type infers `useSession().data`
-	// as `never`, so a concrete client (with the expo plugin) isn't structurally
-	// assignable. Call-site inference on `authClient.*` is unaffected.
 	return (
-		<ConvexBetterAuthProvider client={convex} authClient={authClient as unknown as AuthClient}>
+		<ImmifileConvexAuthProvider client={convex}>
 			<GestureHandlerRootView style={{ flex: 1 }}>
 				<KeyboardProvider>
 					<AppContent>
@@ -87,6 +83,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 					</AppContent>
 				</KeyboardProvider>
 			</GestureHandlerRootView>
-		</ConvexBetterAuthProvider>
+		</ImmifileConvexAuthProvider>
 	)
 }

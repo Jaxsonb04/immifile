@@ -17,20 +17,22 @@ export default function CasesTab() {
 			>
 				Cases
 			</Stack.Title>
-			<Stack.Toolbar placement="right">
-				<Stack.Toolbar.Button
-					icon="plus"
-					accessibilityLabel="New case"
-					onPress={() => router.push('/new-case')}
-				/>
-			</Stack.Toolbar>
-
 			<View className="flex-1">
 				<TabIntro
 					prefKey="casesIntroDismissed"
 					hero={<CaseTrackingHero width={108} />}
 					title={'Keep every case\nwithin reach.'}
 					body="Save a USCIS receipt number, record updates from your notices, and jump to the official status tool."
+					renderToolbar={(hidden) => (
+						<Stack.Toolbar placement="right">
+							<Stack.Toolbar.Button
+								hidden={hidden}
+								icon="plus"
+								accessibilityLabel="New case"
+								onPress={() => router.push('/new-case')}
+							/>
+						</Stack.Toolbar>
+					)}
 					features={[
 						{
 							icon: 'receipt-text',

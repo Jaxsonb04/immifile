@@ -7,7 +7,9 @@ import { RouteErrorBoundary } from '@/components/core'
 import { Providers } from '@/components/providers'
 import { useLayoutStyle } from '@/hooks/use-layout-style'
 import { useSessionReconciler } from '@/hooks/use-session-reconciler'
+import { resolveAuthRouteState } from '@/lib/auth-route-state'
 import { RELEASE_HOME_PATH, isReleasePathBlocked } from '@/lib/release-policy'
+import { useState } from 'react'
 import '../global.css'
 
 export const unstable_settings = {
@@ -30,16 +32,32 @@ const AppContent = () => {
 	const layoutStyle = useLayoutStyle()
 	const { isLoading, isAuthenticated } = useConvexAuth()
 	const pathname = usePathname()
+	const [authHistory, setAuthHistory] = useState(() => ({
+		isLoading,
+		isAuthenticated,
+		lastSettledAuthenticated: isLoading ? null : isAuthenticated,
+	}))
+	if (authHistory.isLoading !== isLoading || authHistory.isAuthenticated !== isAuthenticated) {
+		setAuthHistory({
+			isLoading,
+			isAuthenticated,
+			lastSettledAuthenticated: isLoading ? authHistory.lastSettledAuthenticated : isAuthenticated,
+		})
+	}
 
 	// Backstop the sign-in refetch race from any path (see useSessionReconciler):
 	// if a session cookie is persisted but the reactive atom is stranded
 	// signed-out, re-drive resolution so the guard below flips to the app.
 	useSessionReconciler()
 
-	// Wait for Convex to resolve the persisted session before deciding which
-	// route group to show, otherwise the sign-in screen flashes for already
-	// authenticated users on cold start.
-	if (isLoading) {
+	const authRoute = resolveAuthRouteState(authHistory.lastSettledAuthenticated, {
+		isLoading,
+		isAuthenticated,
+	})
+
+	// Only the initial hydration gets a full-screen loader. During later token
+	// refreshes retain the last guard so the Stack is never destroyed/recreated.
+	if (authRoute.showBootLoader) {
 		return (
 			<View className="flex-1 items-center justify-center bg-background">
 				<Spinner />
@@ -50,14 +68,14 @@ const AppContent = () => {
 	// A hidden tab is not a security or deep-link boundary. Apply the release
 	// policy before any disabled route mounts so restored state, custom-scheme
 	// links, and auth callbacks cannot reveal filing/AI/community screens.
-	if (isAuthenticated && isReleasePathBlocked(pathname)) {
+	if (authRoute.authenticated && isReleasePathBlocked(pathname)) {
 		return <Redirect href={RELEASE_HOME_PATH} />
 	}
 
 	return (
 		<Stack screenOptions={layoutStyle}>
 			<Stack.Screen name="home" options={{ headerShown: false }} />
-			<Stack.Protected guard={!isAuthenticated}>
+			<Stack.Protected guard={!authRoute.authenticated}>
 				{/* Anonymous-first onboarding (ADR-0009). `welcome` creates a
 				    temporary session for the read-only release surfaces; account
 				    gates protect persistent case writes. */}
@@ -77,7 +95,7 @@ const AppContent = () => {
 					}}
 				/>
 			</Stack.Protected>
-			<Stack.Protected guard={isAuthenticated}>
+			<Stack.Protected guard={Boolean(authRoute.authenticated)}>
 				<Stack.Screen name="(tabs)" options={{ headerShown: false, title: 'Home' }} />
 				{/* Root-level modal slots present above the tab bar. */}
 				<Stack.Screen

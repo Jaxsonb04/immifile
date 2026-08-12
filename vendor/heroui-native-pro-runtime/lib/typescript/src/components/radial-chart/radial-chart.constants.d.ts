@@ -1,0 +1,48 @@
+import type { RadialChartDomainBound } from './radial-chart.types';
+/**
+ * Display name constants for the `RadialChart` compound component parts.
+ */
+export declare const DISPLAY_NAME: {
+    readonly ROOT: "HeroUINative.RadialChart.Root";
+    readonly BAR: "HeroUINative.RadialChart.Bar";
+};
+/**
+ * Default angle-axis domain — `"auto"` resolves the upper bound from the data.
+ */
+export declare const DEFAULT_DOMAIN: [RadialChartDomainBound, RadialChartDomainBound];
+/**
+ * Default start angle in degrees (clockwise from 12 o'clock).
+ * Matches the web `RadialChart` default of `90`.
+ */
+export declare const DEFAULT_START_ANGLE = 90;
+/**
+ * Default end angle in degrees (clockwise from 12 o'clock). With `startAngle=90`, a sweep of
+ * `360°` clockwise produces a full ring track.
+ */
+export declare const DEFAULT_END_ANGLE = -270;
+/**
+ * Default inner radius of the bar area as a percentage of the chart's outer radius.
+ */
+export declare const DEFAULT_INNER_RADIUS = "40%";
+/**
+ * Default outer radius of the bar area as a percentage of the chart's outer radius.
+ */
+export declare const DEFAULT_OUTER_RADIUS = "100%";
+/**
+ * Default bar thickness in pixels (stroke width of each concentric ring).
+ */
+export declare const DEFAULT_BAR_SIZE = 10;
+/**
+ * Default gap in pixels between adjacent concentric rings.
+ */
+export declare const DEFAULT_BAR_GAP = 4;
+/**
+ * Default corner radius for rounded bar caps. Values `> 0` enable round stroke caps.
+ */
+export declare const DEFAULT_CORNER_RADIUS = 12;
+/**
+ * Fraction of `min(canvasWidth, canvasHeight) / 2` used as the chart's maximum radius
+ * before applying `innerRadius` / `outerRadius` percentage offsets.
+ */
+export declare const DEFAULT_RADIUS_PADDING = 1;
+//# sourceMappingURL=radial-chart.constants.d.ts.map

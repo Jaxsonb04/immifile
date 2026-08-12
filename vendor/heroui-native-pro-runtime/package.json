@@ -1,0 +1,370 @@
+{
+  "name": "heroui-native-pro",
+  "version": "1.0.0-beta.5",
+  "description": "Beautiful, fast and modern React Native UI library",
+  "main": "./lib/module/index.js",
+  "types": "./lib/typescript/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/typescript/src/index.d.ts",
+      "default": "./lib/module/index.js"
+    },
+    "./styles": "./lib/module/styles/index.css",
+    "./package.json": "./package.json",
+    "./hooks": {
+      "types": "./lib/typescript/src/helpers/external/hooks/index.d.ts",
+      "default": "./lib/module/helpers/external/hooks/index.js"
+    },
+    "./utils": {
+      "types": "./lib/typescript/src/helpers/external/utils/index.d.ts",
+      "default": "./lib/module/helpers/external/utils/index.js"
+    },
+    "./area-chart": {
+      "types": "./lib/typescript/src/components/area-chart/index.d.ts",
+      "default": "./lib/module/components/area-chart/index.js"
+    },
+    "./badge": {
+      "types": "./lib/typescript/src/components/badge/index.d.ts",
+      "default": "./lib/module/components/badge/index.js"
+    },
+    "./bar-chart": {
+      "types": "./lib/typescript/src/components/bar-chart/index.d.ts",
+      "default": "./lib/module/components/bar-chart/index.js"
+    },
+    "./calendar": {
+      "types": "./lib/typescript/src/components/calendar/index.d.ts",
+      "default": "./lib/module/components/calendar/index.js"
+    },
+    "./calendar-year-picker": {
+      "types": "./lib/typescript/src/components/calendar-year-picker/index.d.ts",
+      "default": "./lib/module/components/calendar-year-picker/index.js"
+    },
+    "./chart-crosshair": {
+      "types": "./lib/typescript/src/components/chart-crosshair/index.d.ts",
+      "default": "./lib/module/components/chart-crosshair/index.js"
+    },
+    "./chart-indicator": {
+      "types": "./lib/typescript/src/components/chart-indicator/index.d.ts",
+      "default": "./lib/module/components/chart-indicator/index.js"
+    },
+    "./chart-tooltip": {
+      "types": "./lib/typescript/src/components/chart-tooltip/index.d.ts",
+      "default": "./lib/module/components/chart-tooltip/index.js"
+    },
+    "./composed-chart": {
+      "types": "./lib/typescript/src/components/composed-chart/index.d.ts",
+      "default": "./lib/module/components/composed-chart/index.js"
+    },
+    "./date-field": {
+      "types": "./lib/typescript/src/components/date-field/index.d.ts",
+      "default": "./lib/module/components/date-field/index.js"
+    },
+    "./date-picker": {
+      "types": "./lib/typescript/src/components/date-picker/index.d.ts",
+      "default": "./lib/module/components/date-picker/index.js"
+    },
+    "./date-range-picker": {
+      "types": "./lib/typescript/src/components/date-range-picker/index.d.ts",
+      "default": "./lib/module/components/date-range-picker/index.js"
+    },
+    "./date-time-picker": {
+      "types": "./lib/typescript/src/components/date-time-picker/index.d.ts",
+      "default": "./lib/module/components/date-time-picker/index.js"
+    },
+    "./empty-state": {
+      "types": "./lib/typescript/src/components/empty-state/index.d.ts",
+      "default": "./lib/module/components/empty-state/index.js"
+    },
+    "./line-chart": {
+      "types": "./lib/typescript/src/components/line-chart/index.d.ts",
+      "default": "./lib/module/components/line-chart/index.js"
+    },
+    "./number-field": {
+      "types": "./lib/typescript/src/components/number-field/index.d.ts",
+      "default": "./lib/module/components/number-field/index.js"
+    },
+    "./number-pad": {
+      "types": "./lib/typescript/src/components/number-pad/index.d.ts",
+      "default": "./lib/module/components/number-pad/index.js"
+    },
+    "./number-stepper": {
+      "types": "./lib/typescript/src/components/number-stepper/index.d.ts",
+      "default": "./lib/module/components/number-stepper/index.js"
+    },
+    "./number-value": {
+      "types": "./lib/typescript/src/components/number-value/index.d.ts",
+      "default": "./lib/module/components/number-value/index.js"
+    },
+    "./pie-chart": {
+      "types": "./lib/typescript/src/components/pie-chart/index.d.ts",
+      "default": "./lib/module/components/pie-chart/index.js"
+    },
+    "./progress-bar": {
+      "types": "./lib/typescript/src/components/progress-bar/index.d.ts",
+      "default": "./lib/module/components/progress-bar/index.js"
+    },
+    "./progress-button": {
+      "types": "./lib/typescript/src/components/progress-button/index.d.ts",
+      "default": "./lib/module/components/progress-button/index.js"
+    },
+    "./progress-circle": {
+      "types": "./lib/typescript/src/components/progress-circle/index.d.ts",
+      "default": "./lib/module/components/progress-circle/index.js"
+    },
+    "./radar-chart": {
+      "types": "./lib/typescript/src/components/radar-chart/index.d.ts",
+      "default": "./lib/module/components/radar-chart/index.js"
+    },
+    "./radial-chart": {
+      "types": "./lib/typescript/src/components/radial-chart/index.d.ts",
+      "default": "./lib/module/components/radial-chart/index.js"
+    },
+    "./radio-button-group": {
+      "types": "./lib/typescript/src/components/radio-button-group/index.d.ts",
+      "default": "./lib/module/components/radio-button-group/index.js"
+    },
+    "./range-calendar": {
+      "types": "./lib/typescript/src/components/range-calendar/index.d.ts",
+      "default": "./lib/module/components/range-calendar/index.js"
+    },
+    "./rating": {
+      "types": "./lib/typescript/src/components/rating/index.d.ts",
+      "default": "./lib/module/components/rating/index.js"
+    },
+    "./segment": {
+      "types": "./lib/typescript/src/components/segment/index.d.ts",
+      "default": "./lib/module/components/segment/index.js"
+    },
+    "./slide-button": {
+      "types": "./lib/typescript/src/components/slide-button/index.d.ts",
+      "default": "./lib/module/components/slide-button/index.js"
+    },
+    "./social-auth-button": {
+      "types": "./lib/typescript/src/components/social-auth-button/index.d.ts",
+      "default": "./lib/module/components/social-auth-button/index.js"
+    },
+    "./split-view": {
+      "types": "./lib/typescript/src/components/split-view/index.d.ts",
+      "default": "./lib/module/components/split-view/index.js"
+    },
+    "./stepper": {
+      "types": "./lib/typescript/src/components/stepper/index.d.ts",
+      "default": "./lib/module/components/stepper/index.js"
+    },
+    "./time-picker": {
+      "types": "./lib/typescript/src/components/time-picker/index.d.ts",
+      "default": "./lib/module/components/time-picker/index.js"
+    },
+    "./toggle-button": {
+      "types": "./lib/typescript/src/components/toggle-button/index.d.ts",
+      "default": "./lib/module/components/toggle-button/index.js"
+    },
+    "./toggle-button-group": {
+      "types": "./lib/typescript/src/components/toggle-button-group/index.d.ts",
+      "default": "./lib/module/components/toggle-button-group/index.js"
+    },
+    "./trend-chip": {
+      "types": "./lib/typescript/src/components/trend-chip/index.d.ts",
+      "default": "./lib/module/components/trend-chip/index.js"
+    },
+    "./wheel-date-time-picker": {
+      "types": "./lib/typescript/src/components/wheel-date-time-picker/index.d.ts",
+      "default": "./lib/module/components/wheel-date-time-picker/index.js"
+    },
+    "./wheel-picker": {
+      "types": "./lib/typescript/src/components/wheel-picker/index.d.ts",
+      "default": "./lib/module/components/wheel-picker/index.js"
+    },
+    "./wheel-picker-group": {
+      "types": "./lib/typescript/src/components/wheel-picker-group/index.d.ts",
+      "default": "./lib/module/components/wheel-picker-group/index.js"
+    },
+    "./wheel-time-picker": {
+      "types": "./lib/typescript/src/components/wheel-time-picker/index.d.ts",
+      "default": "./lib/module/components/wheel-time-picker/index.js"
+    },
+    "./widget": {
+      "types": "./lib/typescript/src/components/widget/index.d.ts",
+      "default": "./lib/module/components/widget/index.js"
+    }
+  },
+  "files": [
+    "lib",
+    "android",
+    "ios",
+    "cpp",
+    "*.podspec",
+    "react-native.config.js",
+    "!ios/build",
+    "!android/build",
+    "!android/gradle",
+    "!android/gradlew",
+    "!android/gradlew.bat",
+    "!android/local.properties",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
+    "!**/.*",
+    "!**/*.d.ts.map"
+  ],
+  "scripts": {
+    "example": "yarn workspace heroui-native-example",
+    "test": "jest",
+    "typecheck": "bash ./scripts/typecheck.sh",
+    "lint": "eslint \"src/**/*.{ts,tsx}\" \"example/src/**/*.{ts,tsx}\"",
+    "clean": "del-cli lib",
+    "minify": "node scripts/minify.js",
+    "prepare": "bob build",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s --commit-path .",
+    "release": "bumpp --execute='yarn changelog' --all",
+    "prepack": "node scripts/update-exports.js prepack",
+    "postpack": "node scripts/update-exports.js postpack"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "android",
+    "hero ui",
+    "hero ui native"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/heroui-inc/heroui-native.git"
+  },
+  "author": "HeroUI <support@heroui.com> (https://github.com/heroui-inc)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/heroui-inc/heroui-native/issues"
+  },
+  "homepage": "https://github.com/heroui-inc/heroui-native#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "x-vendor-source-devDependencies": {
+    "@commitlint/config-conventional": "^19.6.0",
+    "@eslint/compat": "^1.2.7",
+    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/js": "^9.22.0",
+    "@evilmartians/lefthook": "^1.5.0",
+    "@gorhom/bottom-sheet": "^5.2.14",
+    "@internationalized/date": "^3.12.0",
+    "@internationalized/number": "^3.6.6",
+    "@react-native-community/cli": "latest",
+    "@react-native/babel-preset": "0.78.2",
+    "@react-native/eslint-config": "^0.78.0",
+    "@react-native/jest-preset": "0.85.3",
+    "@shopify/react-native-skia": "^2.6.2",
+    "@types/jest": "^29.5.5",
+    "@types/react": "^19.0.12",
+    "babel-plugin-module-resolver": "^5.0.2",
+    "babel-plugin-transform-remove-imports": "^1.8.0",
+    "bumpp": "^9.10.2",
+    "changelogithub": "^13.16.0",
+    "commitlint": "^19.6.1",
+    "conventional-changelog": "^7.1.1",
+    "del-cli": "^5.1.0",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "heroui-native": "^1.0.4",
+    "jest": "^29.7.0",
+    "prettier": "^3.0.3",
+    "prettier-plugin-organize-imports": "^4.1.0",
+    "react": "19.2.3",
+    "react-native": "0.85.3",
+    "react-native-builder-bob": "^0.40.12",
+    "react-native-gesture-handler": "~2.31.1",
+    "react-native-reanimated": "4.3.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "react-native-svg": "15.15.4",
+    "react-native-worklets": "0.8.3",
+    "tailwind-merge": "^3.4.0",
+    "tailwind-variants": "^3.2.2",
+    "tailwindcss": "^4.1.17",
+    "terser": "^5.47.1",
+    "typescript": "^5.8.3",
+    "uniwind": "1.6.3",
+    "victory-native": "^41.25.0"
+  },
+  "peerDependencies": {
+    "@internationalized/date": "^3.12.0",
+    "@internationalized/number": "^3.6.6",
+    "@shopify/react-native-skia": ">=2.0.0",
+    "heroui-native": "^1.0.4",
+    "victory-native": "^41.20.2"
+  },
+  "peerDependenciesMeta": {
+    "@internationalized/date": {
+      "optional": true
+    },
+    "@internationalized/number": {
+      "optional": true
+    },
+    "@shopify/react-native-skia": {
+      "optional": true
+    },
+    "victory-native": {
+      "optional": true
+    }
+  },
+  "workspaces": [
+    "example"
+  ],
+  "packageManager": "yarn@3.6.1",
+  "jest": {
+    "preset": "@react-native/jest-preset",
+    "modulePathIgnorePatterns": [
+      "<rootDir>/example/node_modules",
+      "<rootDir>/lib/"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "bumpp": {
+    "commit": true,
+    "confirm": true,
+    "push": true,
+    "tag": true,
+    "release": "prompt"
+  },
+  "prettier": {
+    "quoteProps": "consistent",
+    "singleQuote": true,
+    "tabWidth": 2,
+    "trailingComma": "es5",
+    "useTabs": false,
+    "plugins": [
+      "prettier-plugin-organize-imports"
+    ]
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      [
+        "module",
+        {
+          "esm": true,
+          "configFile": true,
+          "sourceMaps": false
+        }
+      ],
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  },
+  "create-react-native-library": {
+    "languages": "js",
+    "type": "library",
+    "version": "0.51.1"
+  }
+}

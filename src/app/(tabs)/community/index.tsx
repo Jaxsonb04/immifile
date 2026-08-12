@@ -21,27 +21,30 @@ export default function ForumTab() {
 			>
 				Community
 			</Stack.Title>
-			<Stack.Toolbar placement="right">
-				{isModerator === true ? (
-					<Stack.Toolbar.Button
-						icon="shield"
-						accessibilityLabel="Moderation queue"
-						onPress={() => router.push('/moderation')}
-					/>
-				) : null}
-				<Stack.Toolbar.Button
-					icon="plus"
-					accessibilityLabel="New post"
-					onPress={() => router.push('/new-post')}
-				/>
-			</Stack.Toolbar>
-
 			<View className="flex-1">
 				<TabIntro
 					prefKey="forumIntroDismissed"
 					hero={<CommunityHero width={140} />}
 					title={'You’re not\nfiling alone.'}
 					body="Compare notes with people on the same road — and keep up with what USCIS announces."
+					renderToolbar={(hidden) => (
+						<Stack.Toolbar placement="right">
+							{isModerator === true ? (
+								<Stack.Toolbar.Button
+									hidden={hidden}
+									icon="shield"
+									accessibilityLabel="Moderation queue"
+									onPress={() => router.push('/moderation')}
+								/>
+							) : null}
+							<Stack.Toolbar.Button
+								hidden={hidden}
+								icon="plus"
+								accessibilityLabel="New post"
+								onPress={() => router.push('/new-post')}
+							/>
+						</Stack.Toolbar>
+					)}
 					features={[
 						{
 							icon: 'heart-handshake',

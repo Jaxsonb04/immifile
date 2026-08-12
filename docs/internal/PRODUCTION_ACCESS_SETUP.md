@@ -18,6 +18,9 @@ printing secret values.
 | `HEROUI_KEY`               | Use the trusted vendor key beginning with `hp_` | EAS `production`, visibility `secret`          | Git, Expo `EXPO_PUBLIC_*`, chat                              |
 | `HEROUI_AUTH_TOKEN`        | Use the same trusted `hp_` key                  | EAS `production`, visibility `secret`          | Git, Expo `EXPO_PUBLIC_*`, chat                              |
 | `BETTER_AUTH_SECRET`       | Generate a new random production-only value     | Convex production environment                  | EAS, Git, chat                                               |
+| `OPENAI_API_KEY`           | OpenAI project key with launch-ready capacity   | Convex production environment                  | EAS, Expo `EXPO_PUBLIC_*`, Git, chat                         |
+| `GOOGLE_CLIENT_SECRET`     | Google OAuth web client                         | Convex development and production environments | EAS, Expo `EXPO_PUBLIC_*`, Git, chat                         |
+| `APPLE_PRIVATE_KEY`        | Apple Sign in with Apple `.p8` key              | Convex development and production environments | EAS, Expo `EXPO_PUBLIC_*`, Git, chat                         |
 | `AUTH_EMAIL_WEBHOOK_TOKEN` | Future password-recovery release only           | Convex production and the private webhook host | The mobile app, Git, chat                                    |
 | Email-provider API key     | Future password-recovery release only           | Private webhook host only                      | Convex unless it directly calls the provider, EAS, Git, chat |
 
@@ -48,8 +51,11 @@ npx convex login status
 npx convex env list --names-only --deployment jaxson-bie:immifile:prod
 ```
 
-Production code is deployed and currently expects `BETTER_AUTH_SECRET`,
-`BETTER_AUTH_URL`, and `DEV_SEED_ENABLED`.
+Production code requires `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
+`DEV_SEED_ENABLED`, and `OPENAI_API_KEY`. Optional social login is deployment
+gated: Google requires `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`; Apple
+requires `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, and
+`APPLE_PRIVATE_KEY`.
 
 ## 2. Set Convex production secrets
 
@@ -67,7 +73,19 @@ history. For each command, paste the value at the prompt:
 ```sh
 npx convex env set BETTER_AUTH_SECRET --prod
 npx convex env set BETTER_AUTH_URL --prod
+npx convex env set OPENAI_API_KEY --prod
+npx convex env set GOOGLE_CLIENT_ID --prod
+npx convex env set GOOGLE_CLIENT_SECRET --prod
 npx convex env set DEV_SEED_ENABLED false --prod
+```
+
+After the Apple Developer account activates, also set the four Apple values:
+
+```sh
+npx convex env set APPLE_CLIENT_ID --prod
+npx convex env set APPLE_TEAM_ID --prod
+npx convex env set APPLE_KEY_ID --prod
+npx convex env set APPLE_PRIVATE_KEY --from-file /absolute/path/to/AuthKey_KEYID.p8 --prod
 ```
 
 Verify names only:
@@ -215,16 +233,18 @@ Do not submit until both URLs are public, stable, and match the app.
 
 In App Store Connect:
 
-1. Accept all pending agreements and confirm tax/banking requirements applicable
+1. Wait for the Apple Developer membership to become active, then accept all pending agreements and confirm tax/banking requirements applicable
    to the account.
-2. Create the app record for bundle ID
+2. Confirm the activated account’s Team ID matches `ios.appleTeamId` in
+   `app.json`; update the source value if it does not.
+3. Create the App ID, Sign in with Apple service/key, and app record for bundle ID
    `dev.uing.immigrationrenewalhelp`.
-3. Complete App Privacy from the reviewed draft in
+4. Complete App Privacy from the reviewed draft in
    `docs/internal/APP_STORE_METADATA.md`.
-4. Add the public privacy and support URLs.
-5. Create a dedicated production demo account for App Review and put its
+5. Add the public privacy and support URLs.
+6. Create a dedicated production demo account for App Review and put its
    credentials only in App Store Connect review notes.
-6. Upload the production EAS build, answer export-compliance questions, select
+7. Upload the production EAS build, answer export-compliance questions, select
    the build, and submit it for review.
 
 Never send Apple credentials, two-factor codes, certificates, or the demo
@@ -235,10 +255,10 @@ password through chat.
 After all manual setup:
 
 ```sh
-npm run release:config
-npm run typecheck
-npm run lint
-npm run test:once
+bun run release:config
+bun run typecheck
+bun run lint
+bun run test:once
 npx expo-doctor
 npx expo export --platform ios
 ```
@@ -247,7 +267,7 @@ Load the public EAS production variables locally without exposing
 `HEROUI_KEY`, then run:
 
 ```sh
-npm run release:remote-check
+bun run release:remote-check
 ```
 
 Finally, install the production-profile build on a physical iPhone and complete

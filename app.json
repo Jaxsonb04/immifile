@@ -12,7 +12,11 @@
 		"ios": {
 			"supportsTablet": false,
 			"bundleIdentifier": "dev.uing.immigrationrenewalhelp",
-			"appleTeamId": "F8V4932HJN",
+			"appleTeamId": "3Q888B9386",
+			"usesAppleSignIn": true,
+			"entitlements": {
+				"com.apple.developer.applesignin": ["Default"]
+			},
 			"config": {
 				"usesNonExemptEncryption": false
 			},

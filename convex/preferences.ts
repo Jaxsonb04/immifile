@@ -15,6 +15,7 @@ const preferenceKey = literals(
 	'accountIntroDismissed',
 	'resourcesIntroDismissed',
 	'assistantIntroDismissed',
+	'assistantOpenAIConsent',
 )
 
 export const getPreference = query({

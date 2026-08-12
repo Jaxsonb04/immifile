@@ -18,6 +18,6 @@ module.exports = defineConfig([
     },
   },
 	{
-		ignores: ['.expo', 'convex/_generated'],
+		ignores: ['.expo', 'convex/_generated', 'vendor/heroui-native-pro-runtime'],
 	},
 ])

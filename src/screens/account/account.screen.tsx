@@ -1,11 +1,16 @@
 import { TempAccountCard, useAccountSession, useViewer } from '@/components/account'
 import { BodyScrollView } from '@/components/core'
 import { styledIcon, type StyledIconComponent } from '@/components/styled-icon'
-import { resolveAccountDeletionMode } from '@/lib/account-deletion'
+import {
+	confirmAndDeleteSocialAccount,
+	resolveAccountDeletionMode,
+	resolveCredentialedDeletionMethod,
+	type SocialDeletionProvider,
+} from '@/lib/account-deletion'
 import { authClient } from '@/lib/auth-client'
 import { humanErrorMessage } from '@/lib/error-message'
 import { RELEASE_FEATURES } from '@/lib/release-policy'
-import { ensureSignedOut } from '@/lib/session-sync'
+import { ensureSessionResolved, ensureSignedOutAfterDeletion } from '@/lib/session-sync'
 import { useMyBlocks, useUnblockAuthor } from '@/screens/community/community.data'
 import { api } from '@convex/_generated/api'
 import { useAction } from 'convex/react'
@@ -30,9 +35,14 @@ const PROVIDER_LABELS: Record<string, string> = {
 	credential: 'Email & password',
 }
 
-/** The linked sign-in method(s), e.g. "Google" — loaded once, best-effort. */
-function useProviderLabel(isCredentialed: boolean): string | null {
-	const [label, setLabel] = useState<string | null>(null)
+type LinkedAccountState = {
+	providerIds: string[] | undefined
+	label: string | null
+}
+
+/** The linked sign-in method(s), e.g. "Google" — loaded once per session. */
+function useLinkedAccounts(isCredentialed: boolean): LinkedAccountState {
+	const [providerIds, setProviderIds] = useState<string[] | undefined>()
 	useEffect(() => {
 		if (!isCredentialed) return
 		let cancelled = false
@@ -40,19 +50,19 @@ function useProviderLabel(isCredentialed: boolean): string | null {
 			.listAccounts()
 			.then(({ data }) => {
 				if (cancelled || !data) return
-				const labels = data.map(
-					(account) => PROVIDER_LABELS[account.providerId] ?? account.providerId,
-				)
-				if (labels.length > 0) setLabel([...new Set(labels)].join(', '))
+				setProviderIds([...new Set(data.map((account) => account.providerId))])
 			})
 			.catch(() => {
-				// Cosmetic only — the row renders fine without a provider value.
+				// Fail closed for deletion when the linked method cannot be verified.
+				if (!cancelled) setProviderIds([])
 			})
 		return () => {
 			cancelled = true
 		}
 	}, [isCredentialed])
-	return label
+	if (!isCredentialed) return { providerIds: [], label: null }
+	const labels = providerIds?.map((id) => PROVIDER_LABELS[id] ?? id) ?? []
+	return { providerIds, label: labels.length > 0 ? labels.join(', ') : null }
 }
 
 /**
@@ -204,13 +214,13 @@ function BlockedAuthorsSection() {
 						size="sm"
 						variant="secondary"
 						onPress={() =>
-						void unblockAuthor({ profileId: block.profileId }).catch((error: unknown) => {
-							Alert.alert(
-								'Unblock',
-								humanErrorMessage(error, 'Could not unblock right now. Please try again.'),
-							)
-						})
-					}
+							void unblockAuthor({ profileId: block.profileId }).catch((error: unknown) => {
+								Alert.alert(
+									'Unblock',
+									humanErrorMessage(error, 'Could not unblock right now. Please try again.'),
+								)
+							})
+						}
 					>
 						<Button.Label>Unblock</Button.Label>
 					</Button>
@@ -220,19 +230,22 @@ function BlockedAuthorsSection() {
 	)
 }
 
-function confirmSignOut() {
-	Alert.alert('Sign out?', 'You can sign back in with your email and password anytime.', [
+function confirmSignOut(providerLabel: string | null) {
+	const method = providerLabel ?? 'your sign-in method'
+	Alert.alert('Sign out?', `You can sign back in with ${method} anytime.`, [
 		{ text: 'Cancel', style: 'cancel' },
 		{
 			text: 'Sign out',
 			style: 'destructive',
 			onPress: () =>
-				void authClient.signOut().catch((error: unknown) => {
-					Alert.alert(
-						'Sign out',
-						humanErrorMessage(error, 'Could not sign out right now. Please try again.'),
-					)
-				}),
+				void authClient
+					.signOut({ fetchOptions: { disableSignal: true } })
+					.catch((error: unknown) => {
+						Alert.alert(
+							'Sign out',
+							humanErrorMessage(error, 'Could not sign out right now. Please try again.'),
+						)
+					}),
 		},
 	])
 }
@@ -246,31 +259,87 @@ function confirmSignOut() {
  * sessions. Temporary accounts have no password, so the app purges their data
  * first and then uses the anonymous plugin's dedicated identity endpoint.
  */
-function useDeleteAccountRow(): { busy: boolean; confirmDelete: () => void } {
+function useDeleteAccountRow(linkedProviderIds: string[] | undefined): {
+	busy: boolean
+	confirmDelete: () => void
+} {
 	const { isCredentialed, isPending } = useAccountSession()
 	const deleteAccountData = useAction(api.account.deleteAccountData)
 	const [busy, setBusy] = useState(false)
 	const deletionMode = resolveAccountDeletionMode(isPending, isCredentialed)
+	const credentialedMethod = resolveCredentialedDeletionMethod(linkedProviderIds)
+
+	async function currentSessionId(): Promise<string | null> {
+		const { data } = await authClient.getSession({
+			query: { disableCookieCache: true },
+		})
+		return data?.session.id ?? null
+	}
 
 	async function eraseAccount(password?: string) {
 		setBusy(true)
 		try {
-			const { error } =
-				deletionMode === 'credentialed'
-					? await authClient.deleteUser({ password: password ?? '' })
-					: await (async () => {
-							// A previous attempt may have already deleted the identity while
-							// this app instance kept rendering the account (see the
-							// `$sessionSignal` note below). Better Auth then rejects every
-							// call with 401, so ask it first — a dead session means there is
-							// nothing left to delete and the flow should just finish.
-							const current = await authClient.getSession()
-							if (current.data === null) return { error: null }
-							await deleteAccountData({})
-							const result = await authClient.deleteAnonymousUser()
-							if (result.error?.status === 401) return { error: null }
-							return result
-						})()
+			let error: { message?: string; status?: number } | null = null
+			if (deletionMode === 'temporary') {
+				const result = await (async () => {
+					// A previous attempt may have already deleted the identity while
+					// this app instance kept rendering the account (see the
+					// `$sessionSignal` note below). Better Auth then rejects every
+					// call with 401, so ask it first — a dead session means there is
+					// nothing left to delete and the flow should just finish.
+					const current = await authClient.getSession()
+					if (current.data === null) return { error: null }
+					await deleteAccountData({})
+					const result = await authClient.deleteAnonymousUser()
+					if (result.error?.status === 401) return { error: null }
+					return result
+				})()
+				error = result.error ?? null
+			} else if (credentialedMethod === 'password') {
+				const result = await authClient.deleteUser({
+					password: password ?? '',
+					fetchOptions: { disableSignal: true },
+				})
+				error = result.error
+			} else if (typeof credentialedMethod === 'object') {
+				const provider = credentialedMethod.provider
+				const result = await confirmAndDeleteSocialAccount({
+					provider,
+					getSessionId: currentSessionId,
+					reauthenticate: async (socialProvider: SocialDeletionProvider) => {
+						const socialResult = await authClient.signIn.social({
+							provider: socialProvider,
+							callbackURL: '/',
+							fetchOptions: { disableSignal: true },
+						})
+						return socialResult.error
+							? {
+									message:
+										socialResult.error.message ??
+										`Could not confirm with ${PROVIDER_LABELS[provider]}.`,
+								}
+							: null
+					},
+					resolveSession: ensureSessionResolved,
+					deleteAccount: async () => {
+						const deleteResult = await authClient.deleteUser({
+							fetchOptions: { disableSignal: true },
+						})
+						return deleteResult.error
+							? { message: deleteResult.error.message ?? 'The account could not be deleted.' }
+							: null
+					},
+				})
+				if (!result.ok) {
+					throw new Error(
+						result.reason === 'reauth-incomplete'
+							? `${PROVIDER_LABELS[provider]} confirmation was not completed. Your account was not deleted.`
+							: (result.message ?? 'The account could not be deleted.'),
+					)
+				}
+			} else {
+				throw new Error('The sign-in method could not be verified. Please try again.')
+			}
 			if (error) {
 				throw new Error(error.message ?? 'The account could not be deleted.')
 			}
@@ -278,7 +347,12 @@ function useDeleteAccountRow(): { busy: boolean; confirmDelete: () => void } {
 			// the anonymous plugin never refreshes it on deletion, and without this
 			// the app keeps rendering the deleted account until the cached Convex
 			// JWT expires — a retried delete then hits 401.
-			await ensureSignedOut()
+			const signedOut = await ensureSignedOutAfterDeletion()
+			if (!signedOut) {
+				throw new Error(
+					'Your account was deleted, but this device could not clear the old session. Please restart the app.',
+				)
+			}
 		} catch (error) {
 			Alert.alert(
 				'Delete account',
@@ -321,18 +395,43 @@ function useDeleteAccountRow(): { busy: boolean; confirmDelete: () => void } {
 	}
 
 	function confirmDelete() {
-		if (busy || deletionMode === 'loading') return
+		if (
+			busy ||
+			deletionMode === 'loading' ||
+			(deletionMode === 'credentialed' && credentialedMethod === 'loading')
+		) {
+			return
+		}
+		if (deletionMode === 'credentialed' && credentialedMethod === 'unsupported') {
+			Alert.alert(
+				'Could not verify sign-in method',
+				'Please check your connection and try again before deleting this account.',
+			)
+			return
+		}
+		const socialProvider =
+			deletionMode === 'credentialed' && typeof credentialedMethod === 'object'
+				? credentialedMethod.provider
+				: null
+		const confirmationDetail = socialProvider
+			? ` To confirm it’s you, Immifile will open ${PROVIDER_LABELS[socialProvider]} sign-in first.`
+			: ''
 		Alert.alert(
 			'Delete your account?',
-			'This permanently deletes your login account and all data associated with it, including saved cases and any previously stored Immifile data. It cannot be undone.',
+			`This permanently deletes your login account and all data associated with it, including saved cases and any previously stored Immifile data. It cannot be undone.${confirmationDetail}`,
 			[
 				{ text: 'Cancel', style: 'cancel' },
 				{
-					text: deletionMode === 'credentialed' ? 'Continue' : 'Delete everything',
+					text: socialProvider
+						? `Continue with ${PROVIDER_LABELS[socialProvider]}`
+						: deletionMode === 'credentialed'
+							? 'Continue'
+							: 'Delete everything',
 					style: 'destructive',
 					onPress: () => {
-						if (deletionMode === 'credentialed') promptForPassword()
-						else void eraseAccount()
+						if (deletionMode === 'credentialed' && credentialedMethod === 'password') {
+							promptForPassword()
+						} else void eraseAccount()
 					},
 				},
 			],
@@ -351,23 +450,23 @@ function useDeleteAccountRow(): { busy: boolean; confirmDelete: () => void } {
 export function AccountScreen() {
 	const { isTemp } = useViewer()
 	const { isCredentialed } = useAccountSession()
-	const providerLabel = useProviderLabel(isCredentialed)
-	const { busy, confirmDelete } = useDeleteAccountRow()
+	const linkedAccounts = useLinkedAccounts(isCredentialed)
+	const { busy, confirmDelete } = useDeleteAccountRow(linkedAccounts.providerIds)
 
 	const accountRows: Row[] = [
-		...(providerLabel !== null
+		...(linkedAccounts.label !== null
 			? [
 					{
 						icon: styledIcon({ family: 'lucide', name: 'key-round' }),
 						title: 'Signed in with',
-						value: providerLabel,
+						value: linkedAccounts.label,
 					} satisfies Row,
 				]
 			: []),
 		{
 			icon: styledIcon({ family: 'lucide', name: 'log-out' }),
 			title: 'Sign out',
-			onPress: confirmSignOut,
+			onPress: () => confirmSignOut(linkedAccounts.label),
 		},
 	]
 
@@ -380,12 +479,14 @@ export function AccountScreen() {
 		},
 	]
 
-	// One-screen root: content fits a single screen, so the surface never
-	// actually scrolls. Scrolling/bounce stay natively enabled — disabling
-	// them makes iOS skip the automatic large-title content inset (see the
-	// note in home.screen.tsx).
+	// Keep native large-title inset behavior and enough trailing scroll range for
+	// the destructive row to clear iOS's floating tab bar on compact screens.
 	return (
-		<BodyScrollView contentContainerClassName="gap-section pt-tight">
+		<BodyScrollView
+			contentContainerClassName="gap-section pt-tight"
+			bottomClearance={72}
+			restoreLargeTitleOnTabReveal
+		>
 			<IdentityPreview />
 			{isTemp ? <TempAccountCard /> : null}
 			{RELEASE_FEATURES.filingPreparation ? (

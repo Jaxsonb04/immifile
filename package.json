@@ -17,14 +17,14 @@
 		"eval:navigator": "bun run scripts/eval-navigator.ts",
 		"release:config": "node scripts/validate-release-config.mjs",
 		"release:remote-check": "node scripts/check-production-readiness.mjs",
-		"eas-build-pre-install": "node scripts/validate-release-config.mjs && npx -y hpsetup@4.7.0 native --auto"
+		"eas-build-pre-install": "node scripts/validate-release-config.mjs"
 	},
 	"dependencies": {
 		"@better-auth/expo": "~1.6.22",
 		"@convex-dev/better-auth": "^0.12.5",
 		"@expo-google-fonts/fraunces": "^0.4.1",
 		"@expo-google-fonts/inter": "^0.4.2",
-		"@expo/metro-runtime": "~57.0.8",
+		"@expo/metro-runtime": "~57.0.9",
 		"@gorhom/bottom-sheet": "^5.2.14",
 		"@internationalized/date": "^3.12.0",
 		"@internationalized/number": "^3.6.6",
@@ -35,28 +35,29 @@
 		"better-auth": "~1.6.22",
 		"convex": "^1.42.1",
 		"convex-helpers": "^0.1.120",
-		"expo": "~57.0.10",
-		"expo-asset": "~57.0.8",
+		"expo": "~57.0.12",
+		"expo-asset": "~57.0.10",
 		"expo-blur": "~57.0.2",
 		"expo-clipboard": "~57.0.1",
-		"expo-constants": "57.0.9",
+		"expo-constants": "~57.0.10",
 		"expo-device": "~57.0.1",
 		"expo-document-picker": "~57.0.1",
-		"expo-file-system": "~57.0.1",
+		"expo-file-system": "~57.0.2",
 		"expo-font": "~57.0.1",
 		"expo-haptics": "~57.0.1",
 		"expo-image": "~57.0.2",
 		"expo-linking": "~57.0.5",
 		"expo-localization": "~57.0.1",
 		"expo-network": "~57.0.1",
-		"expo-router": "~57.0.10",
+		"expo-router": "~57.0.12",
 		"expo-secure-store": "~57.0.1",
-		"expo-sharing": "~57.0.8",
-		"expo-splash-screen": "~57.0.5",
+		"expo-sharing": "~57.0.11",
+		"expo-splash-screen": "~57.0.6",
 		"expo-status-bar": "~57.0.1",
 		"expo-web-browser": "~57.0.2",
 		"heroui-native": "^1.0.2",
-		"heroui-native-pro": "^1.0.0-beta.5",
+		"heroui-native-pro": "file:vendor/heroui-native-pro-runtime",
+		"jose": "^6.2.3",
 		"pdf-lib": "^1.17.1",
 		"react": "19.2.3",
 		"react-dom": "19.2.3",
@@ -90,9 +91,6 @@
 		"typescript": "~6.0.3",
 		"vitest": "^4.1.9"
 	},
-	"overrides": {
-		"expo-constants": "57.0.9"
-	},
 	"expo": {
 		"install": {
 			"exclude": [
@@ -110,6 +108,7 @@
 		}
 	},
 	"trustedDependencies": [
+		"@shopify/react-native-skia",
 		"heroui-pro",
 		"@heroui-pro/react",
 		"heroui-native-pro"

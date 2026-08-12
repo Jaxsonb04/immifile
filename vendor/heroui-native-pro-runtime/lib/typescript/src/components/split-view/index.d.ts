@@ -1,0 +1,4 @@
+export { default as SplitView, useSplitView } from './split-view';
+export { splitViewClassNames } from './split-view.styles';
+export type { SplitViewBottomSectionProps, SplitViewBottomSectionRef, SplitViewContextValue, SplitViewDragAreaProps, SplitViewDragAreaRef, SplitViewDragHandleAnimation, SplitViewDragHandleProps, SplitViewDragHandleRef, SplitViewDragHandleScaleAnimation, SplitViewPrimitiveBottomSectionProps, SplitViewPrimitiveBottomSectionRef, SplitViewPrimitiveDragAreaProps, SplitViewPrimitiveDragAreaRef, SplitViewPrimitiveDragHandleProps, SplitViewPrimitiveDragHandleRef, SplitViewPrimitiveRootProps, SplitViewPrimitiveTopSectionProps, SplitViewPrimitiveTopSectionRef, SplitViewRenderProps, SplitViewRootAnimation, SplitViewRootProps, SplitViewRootRef, SplitViewSnapPoint, SplitViewTopSectionProps, SplitViewTopSectionRef, } from './split-view.types';
+//# sourceMappingURL=index.d.ts.map

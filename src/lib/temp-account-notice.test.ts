@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'vitest'
-import { TEMP_ACCOUNT_START_DISCLOSURE, temporaryAccountNotice } from './temp-account-notice'
+import {
+	TEMP_ACCOUNT_START_DISCLOSURE,
+	TEMP_ACCOUNT_WELCOME_NOTE,
+	tempAccountCardDescription,
+	temporaryAccountNotice,
+} from './temp-account-notice'
 
 const HOUR = 60 * 60 * 1000
 
@@ -11,6 +16,12 @@ describe('temporary account disclosure', () => {
 		expect(TEMP_ACCOUNT_START_DISCLOSURE).toMatch(/create an account/i)
 	})
 
+	test('does not promise deletion at the exact 48-hour boundary on Welcome', () => {
+		expect(TEMP_ACCOUNT_WELCOME_NOTE).toContain('eligible for deletion after 48 hours')
+		expect(TEMP_ACCOUNT_WELCOME_NOTE).toContain('cleanup runs hourly')
+		expect(TEMP_ACCOUNT_WELCOME_NOTE).toMatch(/sign up/i)
+	})
+
 	test('keeps a calm deletion notice visible before the final 24 hours', () => {
 		const notice = temporaryAccountNotice(47 * HOUR, 0)
 
@@ -20,6 +31,14 @@ describe('temporary account disclosure', () => {
 		})
 		expect(notice.description).toContain('eligible for permanent deletion in about 2 days')
 		expect(notice.description).toContain('hourly cleanup')
+	})
+
+	test('keeps the temporary-account card stable while its exact deadline loads', () => {
+		const pending = tempAccountCardDescription(undefined, 0)
+
+		expect(pending).toContain('after 48 hours')
+		expect(pending).toContain('hourly cleanup')
+		expect(pending).toMatch(/create an account/i)
 	})
 
 	test('escalates the notice inside the final 24 hours', () => {

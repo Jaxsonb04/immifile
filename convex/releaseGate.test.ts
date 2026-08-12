@@ -122,4 +122,21 @@ describe('the shipping surface stays open', () => {
 			anonymous.query(api.preferences.getPreference, { key: 'casesIntroDismissed' }),
 		).resolves.toBe(true)
 	})
+
+	test('explicit OpenAI consent is stored per owner before assistant use', async () => {
+		const t = newT()
+		const anonymous = t.withIdentity({ subject: 'anon-consent', isAnonymous: true })
+
+		await expect(
+			anonymous.query(api.preferences.getPreference, { key: 'assistantOpenAIConsent' }),
+		).resolves.toBe(false)
+		await anonymous.mutation(api.preferences.setPreference, {
+			key: 'assistantOpenAIConsent',
+			value: true,
+		})
+
+		await expect(
+			anonymous.query(api.preferences.getPreference, { key: 'assistantOpenAIConsent' }),
+		).resolves.toBe(true)
+	})
 })

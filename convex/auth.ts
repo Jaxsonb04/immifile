@@ -6,7 +6,7 @@ import { anonymous } from 'better-auth/plugins'
 import { v } from 'convex/values'
 import { components, internal } from './_generated/api'
 import { DataModel } from './_generated/dataModel'
-import { internalAction, query } from './_generated/server'
+import { env as deploymentEnv, internalAction, query } from './_generated/server'
 import { purgeOwnerDataInBatches } from './account'
 import authConfig from './auth.config'
 import { authEmailWebhookConfig, sendPasswordResetEmail } from './shared/authEmail'
@@ -20,17 +20,25 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 	// Convex exposes deployment env vars on `process.env` at runtime, but the
 	// convex/ tsconfig ships no Node typings — read through globalThis to stay
 	// typed without pulling in @types/node.
-	const env =
+	const runtimeEnv =
 		(globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {}
-	const socialProviders = socialProvidersForRelease(env)
-	const authEmail = authEmailWebhookConfig(env)
+	const socialProviders = socialProvidersForRelease({
+		BETTER_AUTH_URL: deploymentEnv.BETTER_AUTH_URL,
+		GOOGLE_CLIENT_ID: deploymentEnv.GOOGLE_CLIENT_ID,
+		GOOGLE_CLIENT_SECRET: deploymentEnv.GOOGLE_CLIENT_SECRET,
+		APPLE_CLIENT_ID: deploymentEnv.APPLE_CLIENT_ID,
+		APPLE_TEAM_ID: deploymentEnv.APPLE_TEAM_ID,
+		APPLE_KEY_ID: deploymentEnv.APPLE_KEY_ID,
+		APPLE_PRIVATE_KEY: deploymentEnv.APPLE_PRIVATE_KEY,
+	})
+	const authEmail = authEmailWebhookConfig(runtimeEnv)
 
 	return betterAuth({
 		// Expo Go's dynamic exp:// origin is honored only where a deployment
 		// explicitly opted in (dev); see trustedAuthOrigins for why production
 		// must never trust that client-controlled header.
 		trustedOrigins: (request) =>
-			trustedAuthOrigins(request, env.AUTH_TRUST_EXPO_DEV_ORIGINS === 'true'),
+			trustedAuthOrigins(request, deploymentEnv.AUTH_TRUST_EXPO_DEV_ORIGINS === 'true'),
 		database: authComponent.adapter(ctx),
 		// NOTE: rate limiting is NOT active, and cannot be configured here.
 		//
@@ -77,7 +85,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 			deleteUser: {
 				enabled: true,
 				beforeDelete: async (user) => {
-					const siteUrl = env.CONVEX_SITE_URL
+					const siteUrl = runtimeEnv.CONVEX_SITE_URL
 					if (!siteUrl) throw new Error('CONVEX_SITE_URL is not set; cannot delete account data')
 					if (!('runMutation' in ctx)) {
 						throw new Error('Account deletion ran outside an action context; data not deleted')
@@ -100,7 +108,7 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
 				// not assumed to roll back across this boundary; recovery/merge
 				// semantics for an existing credential remain a separate decision.
 				onLinkAccount: async ({ anonymousUser, newUser }) => {
-					const siteUrl = env.CONVEX_SITE_URL
+					const siteUrl = runtimeEnv.CONVEX_SITE_URL
 					if (!siteUrl) throw new Error('CONVEX_SITE_URL is not set; cannot carry data over')
 					const fromId = anonymousUser.user.id
 					const toId = newUser.user.id

@@ -13,11 +13,13 @@ review build to:
 - **Cases:** save a USCIS receipt number, maintain a manual status timeline,
   and open official USCIS Case Status Online.
 - **Resources:** open curated official USCIS and Department of Justice tools.
-- **Account:** email/password authentication, complete in-app account deletion,
-  privacy information, terms, and support.
+- **Assistant:** get an informational recommendation between Form I-765 and
+  Form I-90 after explicitly consenting to OpenAI processing.
+- **Account:** email/password and configured Google/Apple authentication,
+  complete in-app account deletion, privacy information, terms, and support.
 
-Filing preparation, interviews, application/document routes, the AI assistant,
-public community, and social login are disabled. See
+Filing preparation, interviews, application/document routes, public community,
+and password recovery are disabled. See
 [the release checklist](./docs/internal/APP_STORE_RELEASE.md),
 [privacy policy](./docs/PRIVACY_POLICY.md), and
 [support information](./docs/SUPPORT.md).
@@ -73,7 +75,7 @@ current shape of the app.
 - Uniwind and Tailwind CSS v4 for React Native styling
 - Convex as the single backend
 - Better Auth with Convex integration and email/password/temporary accounts
-  (social providers are disabled by the first-release policy)
+  plus deployment-gated Google and Apple sign-in
 - TanStack React Form for the multi-step interview
 - pdf-lib for USCIS PDF filling
 - Vitest and convex-test for unit and backend tests
@@ -131,11 +133,20 @@ Convex deployment secrets are managed with the Convex CLI, not the Expo `.env`
 file. Optional social sign-in providers are enabled only when these are present:
 
 ```bash
-npx convex env set GOOGLE_CLIENT_ID <value>
-npx convex env set GOOGLE_CLIENT_SECRET <value>
-npx convex env set GITHUB_CLIENT_ID <value>
-npx convex env set GITHUB_CLIENT_SECRET <value>
+npx convex env set GOOGLE_CLIENT_ID
+npx convex env set GOOGLE_CLIENT_SECRET
+
+npx convex env set APPLE_CLIENT_ID
+npx convex env set APPLE_TEAM_ID
+npx convex env set APPLE_KEY_ID
+npx convex env set APPLE_PRIVATE_KEY --from-file /absolute/path/to/AuthKey_KEYID.p8
 ```
+
+Omit values as shown so the CLI prompts for them without putting secrets in
+shell history. Apple appears only when all four Apple values are present. Its
+client-secret JWT is generated at runtime from the durable signing inputs, so
+there is no static six-month secret to rotate. Add `--prod` to each command for
+the production deployment.
 
 Email/password and anonymous auth work without social OAuth credentials.
 

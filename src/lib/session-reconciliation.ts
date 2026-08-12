@@ -8,74 +8,83 @@ type SessionReconcileDependencies = {
 	getSnapshot: () => SessionSnapshot
 	getCookie: () => string
 	resolveSession: () => Promise<unknown>
+	clearSession: () => Promise<unknown>
 }
 
-function reconciliationKey(snapshot: SessionSnapshot, cookie: string): string {
-	if (cookie) return `cookie:${cookie}`
-	return snapshot.hasSession ? 'session-without-cookie' : ''
+type SessionMismatch = {
+	key: string
+	action: 'resolve' | 'clear'
+}
+
+function sessionMismatch(snapshot: SessionSnapshot, cookie: string): SessionMismatch | null {
+	if (snapshot.isPending || snapshot.isRefetching) return null
+	if (cookie && !snapshot.hasSession) {
+		return { key: `missing-session:${cookie}`, action: 'resolve' }
+	}
+	if (!cookie && snapshot.hasSession) {
+		return { key: 'session-without-cookie', action: 'clear' }
+	}
+	return null
 }
 
 /**
- * Coalesces root-level session reconciliation notifications. A successful
- * Better Auth refetch can rotate the persisted cookie and synchronously notify
- * subscribers; those rotations belong to the in-progress reconciliation and
- * must not recursively start another auth refresh.
+ * Coalesce root-level recovery for actual cookie/session mismatches. Healthy
+ * cookie+session pairs are owned by Better Auth and never revalidated here;
+ * doing so used to add two redundant refresh passes to every auth transition.
+ *
+ * A notification arriving during recovery is inspected once afterward. Only a
+ * genuinely different mismatch (for example, a new cookie) earns one trailing
+ * recovery; cookie rotation on a now-healthy session does not.
  */
 export function createSessionReconcileScheduler({
 	getSnapshot,
 	getCookie,
 	resolveSession,
+	clearSession,
 }: SessionReconcileDependencies): () => Promise<void> {
-	let reconciledKey: string | null = null
+	let attemptedKey: string | null = null
 	let inFlight: Promise<void> | null = null
+	let notifiedWhileInFlight = false
+
+	const inspect = () => sessionMismatch(getSnapshot(), getCookie())
+	const execute = async (mismatch: SessionMismatch): Promise<void> => {
+		attemptedKey = mismatch.key
+		try {
+			if (mismatch.action === 'resolve') await resolveSession()
+			else await clearSession()
+		} catch {
+			// Inline auth flows surface errors. This root path is recovery-only.
+		}
+	}
 
 	return function reconcile(): Promise<void> {
-		if (inFlight !== null) return inFlight
+		if (inFlight !== null) {
+			notifiedWhileInFlight = true
+			return inFlight
+		}
 
-		const snapshot = getSnapshot()
-		// Better Auth already owns an in-progress refresh. Starting the recovery
-		// loop here would abort/replace it, especially when deletion clears the
-		// cookie and publishes its signed-out state.
-		if (snapshot.isPending || snapshot.isRefetching) return Promise.resolve()
-
-		const key = reconciliationKey(snapshot, getCookie())
-		if (!key) {
-			reconciledKey = null
+		const mismatch = inspect()
+		if (mismatch === null) {
+			attemptedKey = null
 			return Promise.resolve()
 		}
-		if (key === reconciledKey) return Promise.resolve()
+		if (mismatch.key === attemptedKey) return Promise.resolve()
 
-		reconciledKey = key
 		const reconciliation = Promise.resolve()
 			.then(async () => {
-				// A successful refetch may rotate the persisted cookie. One trailing
-				// pass ensures a genuinely new sign-in cookie that arrives in the same
-				// window is not mistaken for that rotation. The two-pass bound prevents
-				// a server that rotates on every response from creating a refresh loop.
-				let passKey = key
-				for (let pass = 0; pass < 2; pass += 1) {
-					try {
-						await resolveSession()
-					} catch {
-						// The root reconciler is a safety net. Inline sign-in flows surface
-						// their own errors; a later session notification can retry this path.
-					}
+				await execute(mismatch)
+				if (!notifiedWhileInFlight) return
 
-					const latestSnapshot = getSnapshot()
-					if (latestSnapshot.isPending) return
-					const latestKey = reconciliationKey(latestSnapshot, getCookie())
-					if (pass === 0 && latestKey && latestKey !== passKey) {
-						passKey = latestKey
-						reconciledKey = latestKey
-						continue
-					}
-					reconciledKey = latestKey || null
+				notifiedWhileInFlight = false
+				const latestMismatch = inspect()
+				if (latestMismatch === null) {
+					attemptedKey = null
 					return
 				}
+				if (latestMismatch.key !== attemptedKey) await execute(latestMismatch)
 			})
 			.finally(() => {
-				if (inFlight !== reconciliation) return
-				inFlight = null
+				if (inFlight === reconciliation) inFlight = null
 			})
 		inFlight = reconciliation
 		return reconciliation

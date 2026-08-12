@@ -101,7 +101,10 @@ function LinkGroup({ label, links }: { label: string; links: readonly ResourceLi
  */
 export function ResourcesScreen() {
 	return (
-		<BodyScrollView contentContainerClassName="gap-section pt-tight pb-card">
+		<BodyScrollView
+			contentContainerClassName="gap-section pt-tight pb-card"
+			restoreLargeTitleOnTabReveal
+		>
 			<LinkGroup label="USCIS tools" links={USCIS_TOOLS} />
 			<LinkGroup label="Legal help" links={LEGAL_HELP} />
 			<Typography.Paragraph color="muted" className="px-card text-center text-xs leading-relaxed">

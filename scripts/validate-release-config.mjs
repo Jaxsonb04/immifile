@@ -2,7 +2,11 @@ import { readFileSync } from 'node:fs'
 
 const app = JSON.parse(readFileSync(new URL('../app.json', import.meta.url), 'utf8')).expo
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
+const heroUiNativePro = JSON.parse(
+	readFileSync(new URL('../vendor/heroui-native-pro-runtime/package.json', import.meta.url), 'utf8'),
+)
 const eas = JSON.parse(readFileSync(new URL('../eas.json', import.meta.url), 'utf8'))
+const bunLock = readFileSync(new URL('../bun.lock', import.meta.url), 'utf8')
 const policy = JSON.parse(readFileSync(new URL('../release-policy.json', import.meta.url), 'utf8'))
 
 function assert(condition, message) {
@@ -119,27 +123,27 @@ assert(
 	eas.build?.production?.environment === 'production',
 	'EAS production profile must use production env',
 )
+assert(
+	pkg.dependencies?.['heroui-native-pro'] === 'file:vendor/heroui-native-pro-runtime',
+	'HeroUI Native Pro must use the pinned licensed offline package in vendor/heroui-native-pro-runtime',
+)
+assert(
+	!heroUiNativePro.devDependencies,
+	'vendored HeroUI Native Pro must not expose development dependencies to Bun file installs',
+)
+for (const duplicateRuntime of [
+	'heroui-native-pro/react-native',
+	'heroui-native-pro/react-native-reanimated',
+	'heroui-native-pro/react-native-worklets',
+	'heroui-native-pro/uniwind',
+]) {
+	assert(
+		!bunLock.includes(`"${duplicateRuntime}"`),
+		`bun.lock must not install the duplicate runtime ${duplicateRuntime}`,
+	)
+}
 
 if (process.env.IMMIFILE_RELEASE_BUILD === 'true') {
-	assert(
-		/^hp_\S+$/.test(process.env.HEROUI_KEY ?? '') && isConfigured(process.env.HEROUI_KEY),
-		'HEROUI_KEY is missing or invalid; add the trusted hp_ key as an EAS production secret',
-	)
-	// Two different consumers, two different variable names — verified against
-	// the installed vendor code, not documentation:
-	//   * `hpsetup` (this pre-install hook)            reads HEROUI_KEY
-	//   * heroui-native-pro's own postinstall, run by  reads HEROUI_AUTH_TOKEN
-	//     `bun install` AFTER this hook
-	// The published heroui-native-pro package is a ~9KB stub; its real library is
-	// downloaded by that postinstall. Without HEROUI_AUTH_TOKEN the postinstall
-	// prints "Sign in to finish installing" and exits 0, so the install SUCCEEDS
-	// with a stub and the build fails much later at Metro bundling with an
-	// unrelated-looking module-resolution error. Fail here instead, with a name.
-	assert(
-		/^hp_\S+$/.test(process.env.HEROUI_AUTH_TOKEN ?? '') &&
-			isConfigured(process.env.HEROUI_AUTH_TOKEN),
-		'HEROUI_AUTH_TOKEN is missing or invalid; add the same trusted hp_ key as a second EAS production secret so heroui-native-pro can fetch its library during install',
-	)
 	const requiredPublicEnvironment = [
 		['EXPO_PUBLIC_CONVEX_URL', process.env.EXPO_PUBLIC_CONVEX_URL],
 		['EXPO_PUBLIC_CONVEX_SITE_URL', process.env.EXPO_PUBLIC_CONVEX_SITE_URL],

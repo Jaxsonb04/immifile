@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 
 import {
 	ensureSessionResolved,
+	ensureSignedOut,
 	getPersistedSessionCookie,
 	getSessionSnapshot,
 	subscribeToSession,
@@ -15,15 +16,10 @@ import { createSessionReconcileScheduler } from '@/lib/session-reconciliation'
  * guarantees recovery no matter which path created the session — including any
  * future sign-in that forgets to await `ensureSessionResolved`.
  *
- * Revalidate every distinct persisted cookie once, even when the reactive atom
- * already contains a session. The Expo plugin can hydrate that atom from a
- * separate local session cache after the cookie itself has become invalid; in
- * that split-brain state, accepting `hasSession` without a server refetch keeps
- * Convex unauthenticated forever.
- *
- * A session with no cookie is also revalidated once so the stale local cache is
- * cleared. Keys are deduplicated so an expired/invalid cookie cannot spin the
- * loop forever, while a fresh sign-in cookie always earns a new attempt.
+ * Only reconcile a stable mismatch: a cookie without a reactive session, or a
+ * cached reactive session whose cookie is gone. A healthy pair is left to
+ * Better Auth; revalidating it here used to multiply every normal transition.
+ * Mismatch keys are deduplicated so a dead cookie cannot spin forever.
  */
 export function useSessionReconciler(): void {
 	const mountedRef = useRef(false)
@@ -34,6 +30,7 @@ export function useSessionReconciler(): void {
 			getSnapshot: getSessionSnapshot,
 			getCookie: getPersistedSessionCookie,
 			resolveSession: ensureSessionResolved,
+			clearSession: ensureSignedOut,
 		})
 		const notify = () => {
 			if (mountedRef.current) void reconcile()

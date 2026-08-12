@@ -5,15 +5,16 @@ import { useSyncExternalStore } from 'react'
 import { View } from 'react-native'
 
 import { StyledLucideIcon } from '@/components/styled-icon'
-import { temporaryAccountNotice } from '@/lib/temp-account-notice'
+import { tempAccountCardDescription, temporaryAccountNotice } from '@/lib/temp-account-notice'
 
 import { useRequireAccount } from './account.require-account'
 import { useAccountSession } from './account.session'
 
-function useTempAccountDeadline(): number | null {
+function useTempAccountDeadline(): number | null | undefined {
 	const { isAnonymous } = useAccountSession()
 	const status = useQuery(api.tempAccounts.tempAccountStatus, isAnonymous ? {} : 'skip')
-	return status?.deleteAt ?? null
+	if (!isAnonymous) return null
+	return status?.deleteAt
 }
 
 // Wall clock as an external store, quantized to the minute so the snapshot is
@@ -38,7 +39,7 @@ export function TempAccountDeletionBanner() {
 	const requireAccount = useRequireAccount()
 	const deleteAt = useTempAccountDeadline()
 	const now = useNow()
-	if (deleteAt === null) return null
+	if (deleteAt == null) return null
 	const notice = temporaryAccountNotice(deleteAt, now)
 
 	return (
@@ -85,7 +86,10 @@ export function TempAccountCard() {
 	const deleteAt = useTempAccountDeadline()
 	const now = useNow()
 	if (deleteAt === null) return null
-	const notice = temporaryAccountNotice(deleteAt, now)
+	// AccountScreen remains mounted beneath its intro, so this query normally
+	// resolves before Got it. Keep the complete card mounted even on a slow first
+	// response so the exposed Account layout never inserts a banner after the fade.
+	const description = tempAccountCardDescription(deleteAt, now)
 
 	return (
 		<Surface variant="secondary" className="gap-control rounded-2xl p-card">
@@ -94,7 +98,7 @@ export function TempAccountCard() {
 					You’re using a temporary account
 				</Typography.Paragraph>
 				<Typography.Paragraph color="muted" className="text-sm leading-snug">
-					{notice.description}
+					{description}
 				</Typography.Paragraph>
 			</View>
 			<Button

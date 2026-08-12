@@ -67,7 +67,7 @@ export function CommunityScreen() {
 	}
 
 	return (
-		<BodyScrollView contentContainerClassName="gap-control py-card">
+		<BodyScrollView contentContainerClassName="gap-control py-card" restoreLargeTitleOnTabReveal>
 			{/* M7-T6: official news leads the tab, capped at three items so the
 			    peer feed stays within reach. */}
 			<UscisNews />

@@ -1,9 +1,19 @@
-import { defineApp } from "convex/server";
-import { v } from "convex/values";
-import betterAuth from "@convex-dev/better-auth/convex.config";
+import { defineApp } from 'convex/server'
+import { v } from 'convex/values'
+import betterAuth from '@convex-dev/better-auth/convex.config'
 
 const app = defineApp({
 	env: {
+		// Better Auth social OAuth configuration. Apple uses durable signing
+		// inputs and creates its expiring client-secret JWT at runtime.
+		BETTER_AUTH_URL: v.optional(v.string()),
+		AUTH_TRUST_EXPO_DEV_ORIGINS: v.optional(v.string()),
+		GOOGLE_CLIENT_ID: v.optional(v.string()),
+		GOOGLE_CLIENT_SECRET: v.optional(v.string()),
+		APPLE_CLIENT_ID: v.optional(v.string()),
+		APPLE_TEAM_ID: v.optional(v.string()),
+		APPLE_KEY_ID: v.optional(v.string()),
+		APPLE_PRIVATE_KEY: v.optional(v.string()),
 		// Gates the walkthrough-phase demo seed (convex/dev/seed.ts).
 		DEV_SEED_ENABLED: v.optional(v.string()),
 		// Anthropic Messages API for the Claude assistant (convex/assistant.ts).
@@ -17,7 +27,7 @@ const app = defineApp({
 		// `npx convex env set MODERATOR_EMAILS "mod@immifile.test"`.
 		MODERATOR_EMAILS: v.optional(v.string()),
 	},
-});
-app.use(betterAuth);
+})
+app.use(betterAuth)
 
-export default app;
+export default app

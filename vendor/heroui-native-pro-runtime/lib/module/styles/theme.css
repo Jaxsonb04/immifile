@@ -1,0 +1,7 @@
+@theme inline static {
+  --color-chart-1: color-mix(in oklab, var(--accent) 60%, black);
+  --color-chart-2: color-mix(in oklab, var(--accent) 80%, black);
+  --color-chart-3: var(--accent);
+  --color-chart-4: color-mix(in oklab, var(--accent) 80%, white);
+  --color-chart-5: color-mix(in oklab, var(--accent) 60%, white);
+}

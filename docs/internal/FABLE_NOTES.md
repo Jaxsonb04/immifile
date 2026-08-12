@@ -56,6 +56,63 @@ works: `echo -n "text" | xcrun simctl pbcopy booted`, then Maestro
 `longPressOn` the input + `tapOn: "Paste"` + `tapOn: "Send message"`
 (accessibility label). Used to drive freeform assistant turns.
 
+## Default simulator QA: live stream in the Codex side panel (2026-08-10)
+
+**Summary:** use `serve-sim` in Codex's right-side browser panel for the
+default development QA pass. A continuous stream is materially better than
+isolated screenshots for auth handoffs, intro flashes, delayed insertions,
+animation overlap, and repeated navigator mounts. It also keeps the app and
+the QA conversation visible together. This improves transient visual evidence;
+it does **not** replace accessibility snapshots, logs, assertions, the compact
+simulator, or the production-profile physical-device release gate.
+
+Working recipe:
+
+```sh
+# Start the current JS bundle for the installed development client.
+bunx expo start --dev-client --clear --port 8081
+
+# Launch the installed app on the chosen booted simulator.
+xcrun simctl launch <SIMULATOR_UDID> dev.uing.immigrationrenewalhelp
+
+# Start/discover the stream. Never assume port 3100.
+npx serve-sim --detach -q
+npx serve-sim --list -q
+```
+
+Open the returned `url` in Codex's right-side browser panel. Keep that panel
+open through the entire interaction and pair what it shows with the helper's
+read-only evidence endpoints (`/ax`, `/foreground`, `/config`) and Metro/native
+logs. Prefer accessibility-label taps derived from `/ax`; coordinates are a
+fallback only after normalizing against `/config`.
+
+For transition bugs, record or sample the stream from the frame before the tap
+through the final settled frame. Assert both absence and presence: for example,
+no live case content/tab bar/header action before `Got it`, then exactly one
+reveal afterward. Repeat first-login and deletion transitions at least three
+times, and run layout-sensitive surfaces on the iPhone SE-class simulator at
+standard and accessibility text sizes. Use a fresh temporary account when the
+test depends on one-time preferences; do not erase a simulator unless that
+destructive reset was explicitly authorized.
+
+Cleanup when the pass is complete:
+
+```sh
+npx serve-sim --kill
+```
+
+### NativeTabs / large-title regression gate
+
+iOS 26 can reset a root `ScrollView` to `contentOffset.y = 0` when a first-use
+intro reveals NativeTabs, putting the first section under the large-title
+header. The app's correction is deliberately scoped to iOS 26 geometry; iOS 18
+uses UIKit's automatic inset path. For every iOS-major upgrade, create a fresh
+temporary account and dismiss the Resources and Account intros while sampling
+through at least one second after the fade. The large title and first section
+must remain in their expanded positions on the final frame. Run the same check
+on the oldest supported simulator before changing the OS guard or the measured
+navigation-bar constant.
+
 ## Immifile design system — measured contrast (2026-07-07)
 
 Palette: warm paper ground, one terracotta accent, Fraunces (OFL) display +
@@ -64,29 +121,30 @@ redistribution). All tokens in src/global.css; zero hardcoded colors in
 components (grep-gated). WCAG ratios computed via oklch→linear-sRGB→relative
 luminance (script kept in session scratchpad; re-run on any token change).
 
-| Pairing (text on ground)              | Light   | Dark    | Min |
-|---------------------------------------|---------|---------|-----|
-| foreground / background               | 14.91:1 | 15.10:1 | 4.5 |
-| surface-fg / surface                  | 14.94:1 | 13.00:1 | 4.5 |
-| surface-secondary-fg / surface-sec.   | 12.29:1 | 12.05:1 | 4.5 |
-| surface-tertiary-fg / surface-tert.   | 11.38:1 | 11.19:1 | 4.5 |
-| muted / background                    |  6.47:1 |  6.63:1 | 4.5 |
-| muted / surface-secondary             |  6.01:1 |  5.63:1 | 4.5 |
-| default-fg / default                  | 10.82:1 | 10.83:1 | 4.5 |
-| accent-fg / accent (button label)     |  5.80:1 |  6.81:1 | 4.5 |
-| accent as text / background           |  5.63:1 |  6.90:1 | 4.5 |
-| success-fg / success                  |  4.94:1 |  7.51:1 | 4.5 |
-| warning-fg / warning                  |  4.78:1 |  8.07:1 | 4.5 |
-| danger-fg / danger                    |  5.43:1 |  5.74:1 | 4.5 |
-| foreground / field                    | 15.81:1 | 13.51:1 | 4.5 |
-| accent vs background (focus, non-text)|  5.63:1 |  6.90:1 | 3.0 |
-| danger as text / background           |  5.27:1 |  5.79:1 | 4.5 |
-| success as text / background          |  4.80:1 |  7.45:1 | 4.5 |
+| Pairing (text on ground)               | Light   | Dark    | Min |
+| -------------------------------------- | ------- | ------- | --- |
+| foreground / background                | 14.91:1 | 15.10:1 | 4.5 |
+| surface-fg / surface                   | 14.94:1 | 13.00:1 | 4.5 |
+| surface-secondary-fg / surface-sec.    | 12.29:1 | 12.05:1 | 4.5 |
+| surface-tertiary-fg / surface-tert.    | 11.38:1 | 11.19:1 | 4.5 |
+| muted / background                     | 6.47:1  | 6.63:1  | 4.5 |
+| muted / surface-secondary              | 6.01:1  | 5.63:1  | 4.5 |
+| default-fg / default                   | 10.82:1 | 10.83:1 | 4.5 |
+| accent-fg / accent (button label)      | 5.80:1  | 6.81:1  | 4.5 |
+| accent as text / background            | 5.63:1  | 6.90:1  | 4.5 |
+| success-fg / success                   | 4.94:1  | 7.51:1  | 4.5 |
+| warning-fg / warning                   | 4.78:1  | 8.07:1  | 4.5 |
+| danger-fg / danger                     | 5.43:1  | 5.74:1  | 4.5 |
+| foreground / field                     | 15.81:1 | 13.51:1 | 4.5 |
+| accent vs background (focus, non-text) | 5.63:1  | 6.90:1  | 3.0 |
+| danger as text / background            | 5.27:1  | 5.79:1  | 4.5 |
+| success as text / background           | 4.80:1  | 7.45:1  | 4.5 |
 
 All 32 pairings PASS. Key hexes: light bg #f7f3eb, light accent #8e503a,
 dark bg #130f0a, dark accent #d78863.
 
 Gotchas learned:
+
 - The old global.css font tokens (`montserrat-Bold`) never matched the
   registered font names (`Montserrat_700Bold`), so HeroUI text silently fell
   back to the system font. CSS font vars MUST equal the exact useFonts keys.
@@ -111,7 +169,8 @@ against `https://www.uscis.gov/` twice (parse + write).
 
 The upgrade-sheet auth form is portal-rendered and invisible to Maestro's
 element tree. Working recipe: create accounts via Better Auth's public HTTP
-`sign-up/email` on `impressive-fish-50.convex.site`, mint JWTs from
+`sign-up/email` on the current development site URL from `.env.local` (do not
+reuse a deployment name copied from these historical notes), mint JWTs from
 `/api/auth/convex/token` for seeding via `convex.cloud/api/mutation`, then
 sign into the APP through the regular sign-in screen (keychain reset →
 Welcome → pbcopy+Paste per field → Sign in), which Maestro CAN drive. This
@@ -143,11 +202,11 @@ carryover, cleanup) is plain HTTP against the dev deployment + a
 ConvexHttpClient authed via `/api/auth/convex/token`. Gotchas that cost time:
 
 - Every state-changing Better Auth endpoint needs `Origin:
-  immigrationrenewalhelp://` (the app scheme in trustedOrigins) or it 403s
+immigrationrenewalhelp://` (the app scheme in trustedOrigins) or it 403s
   with MISSING_OR_NULL_ORIGIN. `sign-in/anonymous` happens to pass without it;
   `sign-up/email` does not.
 - The betterAuth component's raw adapter functions (`npx convex run
-  --component betterAuth adapter:updateOne`) wrap args in `{ "input": ... }`,
+--component betterAuth adapter:updateOne`) wrap args in `{ "input": ... }`,
   and raw docs key by `_id` — a where-clause on `id` matches nothing (and
   warns about a missing index). `createdAt` is stored as a number (ms).
 - Test scripts must live inside the project dir (not /tmp) so node resolves
@@ -176,7 +235,7 @@ sign-in itself works and transitions in-place — no app bug.
 
 - Recipe that works: never call `hideKeyboard` inside a sheet. Target fields
   by placeholder text (`longPressOn: "you@example.com"`, `longPressOn:
-  "••••••••"` — the password placeholder is literally eight U+2022 bullets)
+"••••••••"` — the password placeholder is literally eight U+2022 bullets)
   then `tapOn: "Paste"`, then tap the submit button by its exact label.
 - Percent-point taps inside sheets are unreliable while the keyboard is up
   (layout shifts); prefer text selectors.
@@ -226,7 +285,7 @@ Welcome CTA now signs out best-effort and retries once, self-healing.
 Pro DatePicker: `presentation` must be set to the SAME value on BOTH
 `DatePicker.Select` and `DatePicker.Content` or it throws at render.
 
-## Anonymous sign-in after account deletion dead-ends on Welcome (M7 fix)
+## Anonymous sign-in after account deletion dead-ends on Welcome (M7 fix, superseded)
 
 Symptom: delete the account → back on Welcome → tap "Start filing" → the
 server creates the anonymous user and session (visible in Convex logs /
@@ -236,16 +295,25 @@ self-heal signOut, then a new user is created).
 
 Root cause: the anonymous client plugin notifies `$sessionSignal` as part of
 the `/sign-in/anonymous` call, which makes better-auth refetch `/get-session`
-— but under the Expo client the secure-store cookie write can land *after*
+— but under the Expo client the secure-store cookie write can land _after_
 that refetch, so the session store refetches with no cookie, stays null, and
 `useConvexAuth().isAuthenticated` never flips. A manual
 `authClient.getSession()` moments later returns the session fine, and a cold
 relaunch enters the app — only the live store is stale.
 
-Fix (src/app/welcome.tsx): after a successful `signIn.anonymous()`, call
-`authClient.$store.notify()` once the call has settled — the
-refetch then runs with the stored cookie and the root guard flips. Verified
-twice with Maestro: delete account → one tap → Forms surface.
+The old fix manually called `authClient.$store.notify()` after sign-in. Do not
+restore it. Better Auth's Expo plugin already persists `Set-Cookie` and emits
+the correctly ordered session signal; the generic client action can emit a
+second delayed signal as well. App-owned auth calls now suppress that delayed
+signal, wait briefly for the Expo-owned refresh, and use at most one coalesced
+cache-bypassed fallback. Root reconciliation handles only a stable
+cookie/session mismatch, and later Convex token loading retains the mounted
+navigator instead of replacing it with the boot screen.
+
+**Current rule:** one owner-driven signal, one bounded fallback only when
+stranded, and no refresh-revision bus or raw `$sessionSignal` notification.
+Any retry loop here is a regression because overlapping `/get-session` calls
+abort each other and replay the root navigation transition.
 
 Note: orphan anonymous users from this bug are swept by the existing
 `cleanupTempAccounts` cron, so no manual cleanup was needed.
@@ -301,7 +369,7 @@ facts, all CONFIRMED by an independent verifier re-fetching the live pages:
 that subshell `npx` resolves to nothing → **EXIT 127**, and `bun run test:once` reported
 **20/24 test files "failed"** (really failed to collect, only 46/385 tests ran) — a
 misleading cascade that looks like a real regression but is pure environment. Re-running
-with `export PATH=/usr/local/bin:$PATH` as the FIRST line *inside* the `bash -c` body
+with `export PATH=/usr/local/bin:$PATH` as the FIRST line _inside_ the `bash -c` body
 made both green (eslint 0 errors, 385/385 vitest). **Lesson: put the PATH export inside
 the `bash -c` body, not just on the outer ssh command; and treat a mass "files failed to
 collect" (not assertion failures) as a PATH/toolchain artifact, not a code break.**

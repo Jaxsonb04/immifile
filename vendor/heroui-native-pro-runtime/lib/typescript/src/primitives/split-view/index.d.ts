@@ -1,0 +1,5 @@
+export { BottomSection, DragArea, DragHandle, Root, TopSection, useSplitView, useSplitViewInternal, } from './split-view';
+export type { SplitViewContextValue, SplitViewInternalContextValue, SplitViewPrimitiveBottomSectionProps, SplitViewPrimitiveBottomSectionRef, SplitViewPrimitiveDragAreaProps, SplitViewPrimitiveDragAreaRef, SplitViewPrimitiveDragHandleProps, SplitViewPrimitiveDragHandleRef, SplitViewPrimitiveRenderProps, SplitViewPrimitiveRootProps, SplitViewPrimitiveRootRef, SplitViewPrimitiveTopSectionProps, SplitViewPrimitiveTopSectionRef, SplitViewSnapPoint, } from './split-view.types';
+export { DEFAULT_HANDLE_SCALE_SPRING_CONFIG, DEFAULT_HANDLE_SCALE_VALUE, DEFAULT_MIN_BOTTOM_SECTION_HEIGHT, DEFAULT_MIN_HEIGHT, DEFAULT_SNAP_POINTS, DEFAULT_SNAP_SPRING_CONFIG, DRAG_AREA_HIT_SLOP, ESTIMATED_DRAG_AREA_HEIGHT, FLICK_RATIO_THRESHOLD, PRIMITIVE_DISPLAY_NAME, VELOCITY_THRESHOLD, } from './split-view.constants';
+export { findNearestSnapIndex, pickFlickSnapIndex, resolveMaxHeight, resolveSnapPoint, resolveSnapPoints, } from './split-view.utils';
+//# sourceMappingURL=index.d.ts.map

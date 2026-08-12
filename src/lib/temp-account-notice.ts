@@ -10,9 +10,11 @@ const RETENTION_HOURS = TEMP_ACCOUNT_RETENTION_MS / HOUR_MS
  */
 export const TEMP_ACCOUNT_START_DISCLOSURE = `To browse without signing up, Immifile creates a temporary account that remembers your intro choices. This account and its data become eligible for permanent deletion after ${RETENTION_HOURS} hours, then hourly cleanup removes them. Create an account before saving a case.`
 
-/** One-line version of the disclosure for the Welcome screen, where the full
- * paragraph overwhelmed the entry moment. The exact hour boundary stays. */
-export const TEMP_ACCOUNT_WELCOME_NOTE = `Continue starts a temporary account — deleted after ${RETENTION_HOURS} hours unless you sign up.`
+/** Compact disclosure for the Welcome screen, where the full paragraph
+ * overwhelmed the entry moment. Keep the eligibility and cleanup timing exact. */
+export const TEMP_ACCOUNT_WELCOME_NOTE = `Continue starts a temporary account — eligible for deletion after ${RETENTION_HOURS} hours; cleanup runs hourly unless you sign up.`
+
+const TEMP_ACCOUNT_PENDING_DESCRIPTION = `This account and everything in it becomes eligible for permanent deletion after ${RETENTION_HOURS} hours; hourly cleanup removes it after that. Create an account to keep using Immifile.`
 
 /** Calm phrasing of time left before the 48-hour deletion (M6-T4). */
 export function deletionTimeLeftCopy(deleteAt: number, now: number): string {
@@ -56,4 +58,11 @@ export function temporaryAccountNotice(deleteAt: number, now: number): Temporary
 			: 'Your account is temporary',
 		description: `This account and everything in it becomes eligible for permanent deletion ${timeLeft}; hourly cleanup removes it after that. Create an account to keep using Immifile.`,
 	}
+}
+
+/** Stable Account-card copy while the exact server deadline is still loading. */
+export function tempAccountCardDescription(deleteAt: number | undefined, now: number): string {
+	return deleteAt === undefined
+		? TEMP_ACCOUNT_PENDING_DESCRIPTION
+		: temporaryAccountNotice(deleteAt, now).description
 }

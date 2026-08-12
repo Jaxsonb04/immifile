@@ -1,4 +1,4 @@
-import { query } from './_generated/server'
+import { env, query } from './_generated/server'
 import { configuredSocialProviderIds } from './shared/socialProviders'
 
 /**
@@ -15,11 +15,14 @@ import { configuredSocialProviderIds } from './shared/socialProviders'
 export const availableProviders = query({
 	args: {},
 	handler: async (): Promise<string[]> => {
-		// Convex exposes deployment env vars on `process.env` at runtime, but the
-		// convex/ tsconfig ships no Node typings — read through globalThis to stay
-		// typed without pulling in @types/node (same approach as convex/auth.ts).
-		const env =
-			(globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {}
-		return configuredSocialProviderIds(env)
+		return configuredSocialProviderIds({
+			BETTER_AUTH_URL: env.BETTER_AUTH_URL,
+			GOOGLE_CLIENT_ID: env.GOOGLE_CLIENT_ID,
+			GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET,
+			APPLE_CLIENT_ID: env.APPLE_CLIENT_ID,
+			APPLE_TEAM_ID: env.APPLE_TEAM_ID,
+			APPLE_KEY_ID: env.APPLE_KEY_ID,
+			APPLE_PRIVATE_KEY: env.APPLE_PRIVATE_KEY,
+		})
 	},
 })

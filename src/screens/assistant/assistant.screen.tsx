@@ -1,7 +1,9 @@
+import { api } from '@convex/_generated/api'
+import { useMutation, useQuery } from 'convex/react'
 import { useRouter } from 'expo-router'
-import { cn, Typography } from 'heroui-native'
-import { useRef } from 'react'
-import { ScrollView, useWindowDimensions, View } from 'react-native'
+import { cn, Spinner, Typography } from 'heroui-native'
+import { useRef, useState } from 'react'
+import { Alert, ScrollView, useWindowDimensions, View } from 'react-native'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
@@ -9,6 +11,8 @@ import { useViewer } from '@/components/account'
 import { styledIcon } from '@/components/styled-icon'
 
 import { Composer } from './assistant.composer'
+import { AssistantConsent } from './assistant-consent'
+import { resolveAssistantConsentState } from './assistant-consent-state'
 import { useAssistantChat } from './assistant.data'
 import { Message } from './assistant.message'
 import { OPENING_REPLIES } from './assistant.recommendation'
@@ -85,6 +89,47 @@ type RecommendationContent = Extract<AssistantContent, { kind: 'recommendation' 
  * flow (M1-T4) with the recommended form + kind preselected.
  */
 export function AssistantScreen() {
+	const persistedConsent = useQuery(api.preferences.getPreference, {
+		key: 'assistantOpenAIConsent',
+	})
+	const setPreference = useMutation(api.preferences.setPreference)
+	const [acceptedThisSession, setAcceptedThisSession] = useState(false)
+	const [isSaving, setIsSaving] = useState(false)
+	const state = resolveAssistantConsentState(persistedConsent, acceptedThisSession)
+
+	if (state === 'loading') {
+		return (
+			<View className="flex-1 items-center justify-center bg-background">
+				<Spinner />
+			</View>
+		)
+	}
+
+	if (state === 'consent') {
+		return (
+			<AssistantConsent
+				isSaving={isSaving}
+				onAccept={() => {
+					if (isSaving) return
+					setIsSaving(true)
+					void setPreference({ key: 'assistantOpenAIConsent', value: true })
+						.then(() => setAcceptedThisSession(true))
+						.catch(() => {
+							Alert.alert(
+								"Couldn't save your choice",
+								'Please check your connection and try again.',
+							)
+						})
+						.finally(() => setIsSaving(false))
+				}}
+			/>
+		)
+	}
+
+	return <AssistantChatScreen />
+}
+
+function AssistantChatScreen() {
 	const insets = useSafeAreaInsets()
 	const { fontScale } = useWindowDimensions()
 	const isFooterStacked = fontScale >= STACK_FOOTER_FONT_SCALE
@@ -159,18 +204,11 @@ export function AssistantScreen() {
 						outOfMessages={outOfMessages}
 					/>
 					<View
-						className={cn(
-							'gap-tight',
-							!isFooterStacked && 'flex-row items-center gap-control',
-						)}
+						className={cn('gap-tight', !isFooterStacked && 'flex-row items-center gap-control')}
 					>
 						<DisclaimerBar isStacked={isFooterStacked} />
 						{usage ? (
-							<QuotaNote
-								used={usage.used}
-								limit={usage.limit}
-								isStacked={isFooterStacked}
-							/>
+							<QuotaNote used={usage.used} limit={usage.limit} isStacked={isFooterStacked} />
 						) : null}
 					</View>
 				</View>

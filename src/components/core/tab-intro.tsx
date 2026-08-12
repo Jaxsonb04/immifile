@@ -1,15 +1,22 @@
-import { resolveTabIntroVisibility } from '@/components/core/tab-intro-state'
+import {
+	resolveTabIntroVisibility,
+	retainObservedTabIntroDismissal,
+} from '@/components/core/tab-intro-state'
+import { TabIntroTransitionContext } from '@/components/core/tab-intro-transition'
 import { StyledLucideIcon } from '@/components/styled-icon'
+import { TabBarContext } from '@/hooks/use-tab-bar'
 import { api } from '@convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
-import { Button, Typography } from 'heroui-native'
-import { useEffect, useState, type ComponentProps, type ReactNode } from 'react'
+import { useFocusEffect } from 'expo-router'
+import { Button, Spinner, Typography } from 'heroui-native'
+import { use, useCallback, useEffect, useState, type ComponentProps, type ReactNode } from 'react'
 import { ScrollView, Text, useWindowDimensions, View } from 'react-native'
 import Animated, {
 	Easing,
 	FadeInDown,
 	ReduceMotion,
 	useAnimatedStyle,
+	useReducedMotion,
 	withTiming,
 } from 'react-native-reanimated'
 import { initialWindowMetrics, useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -28,6 +35,7 @@ const rise = (order: number) =>
 // to reveal the live tab beneath — an unhurried, animated exit, not a blink.
 const DISMISS_DURATION_MS = 340
 const DISMISS_EASING = Easing.out(Easing.cubic)
+const LARGE_TITLE_HEADER_HEIGHT = 96
 
 type PrefKey =
 	| 'formsIntroDismissed'
@@ -37,14 +45,8 @@ type PrefKey =
 	| 'resourcesIntroDismissed'
 	| 'assistantIntroDismissed'
 
-/** Height of the transparent large-title header the intro sits below. */
-const LARGE_TITLE_HEADER_HEIGHT = 96
-/** Clearance for the floating iOS tab bar so the "Got it" button clears it — the
- * bar stays visible during the intro (hiding/covering it lagged the native tab
- * switch by a frame and glimpsed the tab first). Measured against the iOS 26
- * floating bar, which rises ~82pt above the screen bottom (~48pt of that past
- * the home-indicator inset added below), leaving ~24pt of air under the button. */
-const TAB_BAR_CLEARANCE = 72
+/** Air beneath the acknowledgement after the hidden tab bar's safe-area inset. */
+const INTRO_BOTTOM_CLEARANCE = 12
 
 export type TabIntroFeature = {
 	icon: ComponentProps<typeof StyledLucideIcon>['name']
@@ -61,14 +63,17 @@ type TabIntroProps = {
 	/** Set when the native stack header is opaque and already places this
 	 * surface below its large-title chrome. */
 	contentStartsBelowHeader?: boolean
-	/** The tab's real content. It remains available while the preference loads,
-	 * then unmounts only when a confirmed first-run intro covers the surface. */
+	/** Native header actions for this tab. The callback stays mounted while its
+	 * buttons receive the same hidden state as the native tab bar. */
+	renderToolbar?: (hidden: boolean) => ReactNode
+	/** The tab's real content. It stays mounted behind the opaque cover so its
+	 * data is ready before the intro leaves, but cannot receive touch or
+	 * accessibility focus until the cover is gone. */
 	children: ReactNode
 }
 
-// Title-only rows: with the tab bar visible during the intro, the page has less
-// height, so the one-liner detail under each feature is dropped everywhere —
-// the icon + title reads cleaner and keeps standard text sizes scroll-free.
+// Title-only rows keep the teaching surface calm and let the hidden tab bar's
+// reclaimed height become breathing room instead of adding more copy.
 function FeatureRow({ icon, title }: TabIntroFeature) {
 	return (
 		<View className="flex-row items-center gap-card">
@@ -88,12 +93,12 @@ function FeatureRow({ icon, title }: TabIntroFeature) {
  * (convex/preferences.ts) — it survives reinstalls, carries over when an
  * anonymous session converts, and is erased by the deletion cascade.
  *
- * Presentation: the live tab stays mounted while its preference resolves so a
- * slow or offline request cannot produce an empty screen. Once a first-run
- * preference resolves false, the intro becomes the tab's content as a plain flex
- * child and the live content unmounts. During dismissal the intro becomes an
- * absolute cover so its fade reveals the content mounting beneath it. The tab
- * bar stays visible throughout to avoid replaying its native selection animation.
+ * Presentation: the live tab stays mounted from the first frame so its queries
+ * can warm while a fully opaque cover owns the visible surface. The cover is a
+ * neutral background while the preference resolves, becomes the first-run intro
+ * for a confirmed `false`, and remains touch/accessibility-modal through its
+ * dismissal fade. Native tab and header actions stay hidden until "Got it";
+ * after that tap, they settle behind the still-opaque cover before it fades.
  */
 export function TabIntro({
 	prefKey,
@@ -102,6 +107,7 @@ export function TabIntro({
 	body,
 	features,
 	contentStartsBelowHeader = false,
+	renderToolbar,
 	children,
 }: TabIntroProps) {
 	const liveInsets = useSafeAreaInsets()
@@ -119,18 +125,35 @@ export function TabIntro({
 	const scrollForAccessibility = fontScale > 1.2
 	const dismissed = useQuery(api.preferences.getPreference, { key: prefKey })
 	const setPreference = useMutation(api.preferences.setPreference)
+	const [hasObservedDismissal, setHasObservedDismissal] = useState(dismissed === true)
 	const [acknowledged, setAcknowledged] = useState(false)
+	const [preparing, setPreparing] = useState(false)
 	const [dismissing, setDismissing] = useState(false)
+	const { isTabBarHidden, setIsTabBarHidden } = use(TabBarContext)
+	const reduceMotion = useReducedMotion()
+	const observedDismissal = retainObservedTabIntroDismissal(hasObservedDismissal, dismissed)
+	if (observedDismissal !== hasObservedDismissal) {
+		setHasObservedDismissal(observedDismissal)
+	}
+	const effectiveDismissed = observedDismissal ? true : dismissed
 
-	// Keep the live tab mounted while Convex resolves the preference so a slow or
-	// offline request can never leave the whole screen blank. If the preference
-	// resolves false, the first-use intro still replaces it; during dismissal both
-	// remain mounted so the fade reveals the live content beneath.
-	const { showIntro, showContent } = resolveTabIntroVisibility({
-		dismissed,
-		dismissing,
-		acknowledged,
-	})
+	const { showCover, showIntro, contentMounted, contentAccessible, chromeHidden } =
+		resolveTabIntroVisibility({
+			dismissed: effectiveDismissed,
+			preparing,
+			dismissing,
+			acknowledged,
+		})
+
+	// Native tabs eagerly mount their screens, so only the focused intro may own
+	// global tab-bar visibility. Starting the layout hidden also protects the very
+	// first authenticated frame before this focus callback commits.
+	useFocusEffect(
+		useCallback(() => {
+			setIsTabBarHidden(chromeHidden)
+			return () => setIsTabBarHidden(false)
+		}, [chromeHidden, setIsTabBarHidden]),
+	)
 
 	// Only the dismiss transition animates; while shown the intro is fully opaque
 	// and static. Declarative tween, not an imperative shared-value write (the
@@ -145,101 +168,150 @@ export function TabIntro({
 		return { opacity: withTiming(0, out), transform: [{ scale: withTiming(1.03, out) }] }
 	})
 
+	// Reveal the native chrome while the cover is still fully opaque. Preserve
+	// the already-mounted live subtree so UIKit keeps its automatic large-title
+	// inset. Once the parent NativeTabs commit reports visible, two frames let
+	// native layout settle (and any root ScrollView correction run); the cover
+	// starts fading on the following frame.
+	useEffect(() => {
+		if (!preparing || isTabBarHidden) return
+		let settleFrame: number | undefined
+		let fadeFrame: number | undefined
+		const layoutFrame = requestAnimationFrame(() => {
+			settleFrame = requestAnimationFrame(() => {
+				fadeFrame = requestAnimationFrame(() => {
+					setPreparing(false)
+					setDismissing(true)
+				})
+			})
+		})
+		return () => {
+			cancelAnimationFrame(layoutFrame)
+			if (settleFrame !== undefined) cancelAnimationFrame(settleFrame)
+			if (fadeFrame !== undefined) cancelAnimationFrame(fadeFrame)
+		}
+	}, [isTabBarHidden, preparing])
+
 	// Unmount the intro only once the fade has fully played.
 	useEffect(() => {
 		if (!dismissing) return
-		const timer = setTimeout(() => setAcknowledged(true), DISMISS_DURATION_MS)
+		const timer = setTimeout(() => setAcknowledged(true), reduceMotion ? 0 : DISMISS_DURATION_MS)
 		return () => clearTimeout(timer)
-	}, [dismissing])
+	}, [dismissing, reduceMotion])
 
 	function dismiss() {
-		if (dismissing) return
-		// Best-effort marker. During account deletion the server's write gate
-		// rejects this mutation while the intro can briefly re-mount over the
-		// purged tab — a failed write must not surface as an uncaught error.
+		if (preparing || dismissing) return
+		// Best-effort marker. During account deletion the server's write gate can
+		// reject a late mutation; a failed write must not surface as an uncaught
+		// error. The observed-dismissal latch above prevents a teardown flash.
 		setPreference({ key: prefKey, value: true }).catch((error) => {
 			if (__DEV__) console.warn('tab-intro: could not persist the seen marker', error)
 		})
-		setDismissing(true)
+		setPreparing(true)
 	}
 
-	return (
-		<View collapsable={false} className="flex-1 bg-background">
-			{showContent ? children : null}
-			{showIntro ? (
-				<Animated.View
-					// Taps fall through to the content beneath once the fade starts.
-					pointerEvents={dismissing ? 'none' : 'auto'}
-					// A flex child while shown (present from frame 1, can't drop during
-					// the switch); an absolute cover during the dismiss fade so it reveals
-					// the content mounting beneath.
-					className={
-						dismissing
-							? 'absolute inset-0 bg-background px-section'
-							: 'flex-1 bg-background px-section'
-					}
-					style={[
-						overlayStyle,
-						{
-							paddingTop: contentStartsBelowHeader ? 0 : insets.top + LARGE_TITLE_HEADER_HEIGHT,
-							paddingBottom: insets.bottom + TAB_BAR_CLEARANCE,
-						},
-					]}
+	const teachingContent = (
+		<>
+			<Animated.View entering={rise(0)} className="items-center">
+				{compact ? (
+					// Keep the static compact-device scale off the layout-animated
+					// component. Reanimated otherwise warns that its entrance transform
+					// will overwrite this transform and LogBox covers the acknowledgement.
+					<View style={{ transform: [{ scale: 0.72 }], marginVertical: -20 }}>{hero}</View>
+				) : (
+					hero
+				)}
+			</Animated.View>
+
+			<Animated.View entering={rise(1)} className="items-center gap-tight pt-tight">
+				<Text
+					className={`text-center font-display text-foreground ${compact ? 'text-2xl leading-8' : 'text-[28px] leading-9'}`}
 				>
-					<ScrollView
-						className="flex-1"
-						contentContainerStyle={{ flexGrow: 1 }}
-						bounces={scrollForAccessibility}
-						showsVerticalScrollIndicator={scrollForAccessibility}
+					{title}
+				</Text>
+				<Typography.Paragraph
+					color="muted"
+					className="max-w-[320px] text-center text-[15px] leading-snug"
+				>
+					{body}
+				</Typography.Paragraph>
+			</Animated.View>
+
+			<Animated.View
+				entering={rise(2)}
+				className={compact ? 'gap-tight pt-tight' : 'gap-section pt-9'}
+			>
+				{features.map((feature) => (
+					<FeatureRow key={feature.title} {...feature} />
+				))}
+			</Animated.View>
+
+			{/* min-h keeps real air between the last feature row and the button
+			    even when the content runs tall. */}
+			<View className={compact ? 'min-h-2 grow' : 'min-h-6 grow'} />
+		</>
+	)
+	return (
+		<TabIntroTransitionContext value={acknowledged}>
+			{renderToolbar?.(chromeHidden)}
+			<View collapsable={false} className="flex-1 bg-background">
+				<View
+					className="flex-1"
+					pointerEvents={contentAccessible ? 'auto' : 'none'}
+					accessibilityElementsHidden={!contentAccessible}
+					importantForAccessibility={contentAccessible ? 'auto' : 'no-hide-descendants'}
+				>
+					{contentMounted ? children : null}
+				</View>
+				{showCover ? (
+					<Animated.View
+						// The cover continues intercepting touches through the fade; mounted
+						// content underneath is data-ready but never accidentally actionable.
+						pointerEvents="auto"
+						accessibilityViewIsModal
+						className="absolute inset-0 bg-background px-section"
+						style={[
+							overlayStyle,
+							{
+								paddingTop: contentStartsBelowHeader ? 0 : insets.top + LARGE_TITLE_HEADER_HEIGHT,
+								paddingBottom: insets.bottom + INTRO_BOTTOM_CLEARANCE,
+							},
+						]}
 					>
-						<Animated.View
-							entering={rise(0)}
-							className="items-center"
-							style={compact ? { transform: [{ scale: 0.72 }], marginVertical: -20 } : undefined}
-						>
-							{hero}
-						</Animated.View>
+						{showIntro ? (
+							<>
+								{scrollForAccessibility ? (
+									<ScrollView
+										className="flex-1"
+										contentContainerStyle={{ flexGrow: 1 }}
+										bounces
+										showsVerticalScrollIndicator
+									>
+										{teachingContent}
+									</ScrollView>
+								) : (
+									<View className="flex-1">{teachingContent}</View>
+								)}
 
-						<Animated.View entering={rise(1)} className="items-center gap-tight pt-tight">
-							<Text
-								className={`text-center font-display text-foreground ${compact ? 'text-2xl leading-8' : 'text-[28px] leading-9'}`}
-							>
-								{title}
-							</Text>
-							<Typography.Paragraph
-								color="muted"
-								className="max-w-[320px] text-center text-[15px] leading-snug"
-							>
-								{body}
-							</Typography.Paragraph>
-						</Animated.View>
-
-						<Animated.View
-							entering={rise(2)}
-							className={compact ? 'gap-tight pt-tight' : 'gap-section pt-9'}
-						>
-							{features.map((feature) => (
-								<FeatureRow key={feature.title} {...feature} />
-							))}
-						</Animated.View>
-
-						{/* min-h keeps real air between the last feature row and the button
-						    even when the content runs tall. */}
-						<View className={compact ? 'min-h-2 grow' : 'min-h-6 grow'} />
-					</ScrollView>
-
-					{/* The acknowledgement lives OUTSIDE the ScrollView. Inside it, a
+								{/* The acknowledgement lives OUTSIDE the ScrollView. Inside it, a
 					    frame too short for the content sheared the button's bottom edge
 					    off instead of scrolling; as a sibling it is laid out before the
 					    scroll area gets the remaining height, so it is always whole and
 					    always tappable. */}
-					<Animated.View entering={rise(3)} className="pt-card">
-						<Button onPress={dismiss}>
-							<Button.Label maxFontSizeMultiplier={1.5}>Got it</Button.Label>
-						</Button>
+								<Animated.View entering={rise(3)} className="pt-card">
+									<Button onPress={dismiss}>
+										<Button.Label maxFontSizeMultiplier={1.5}>Got it</Button.Label>
+									</Button>
+								</Animated.View>
+							</>
+						) : (
+							<View className="flex-1 items-center justify-center">
+								<Spinner accessibilityLabel="Loading page introduction" />
+							</View>
+						)}
 					</Animated.View>
-				</Animated.View>
-			) : null}
-		</View>
+				) : null}
+			</View>
+		</TabIntroTransitionContext>
 	)
 }

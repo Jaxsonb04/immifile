@@ -7,7 +7,7 @@ import { authClient } from '@/lib/auth-client'
  */
 type SessionAtomValue = {
 	data?: {
-		session?: unknown
+		session?: { id?: string }
 		user?: { id?: string }
 	} | null
 	isPending?: boolean
@@ -54,9 +54,64 @@ export function subscribeToSession(listener: () => void): () => void {
 	return getSessionAtom().subscribe(() => listener())
 }
 
-const SESSION_RESOLVE_ATTEMPTS = 12
-const SESSION_RESOLVE_INTERVAL_MS = 200
+const SESSION_SIGNAL_WAIT_MS = 400
+const SESSION_IN_FLIGHT_SETTLE_WAIT_MS = 4_600
 let inFlightSessionRefetch: Promise<boolean> | null = null
+
+function isSettled(value: SessionAtomValue): boolean {
+	return !value.isPending && !value.isRefetching
+}
+
+function waitForSessionState(
+	atom: SessionAtom,
+	matches: (value: SessionAtomValue) => boolean,
+	timeoutMs = SESSION_SIGNAL_WAIT_MS,
+): Promise<boolean> {
+	if (matches(atom.get())) return Promise.resolve(true)
+
+	return new Promise((resolve) => {
+		let finished = false
+		let timeout: ReturnType<typeof setTimeout> | undefined
+		let unsubscribe = () => {}
+		const finish = (matched: boolean) => {
+			if (finished) return
+			finished = true
+			if (timeout !== undefined) clearTimeout(timeout)
+			unsubscribe()
+			resolve(matched)
+		}
+
+		unsubscribe = atom.subscribe(() => {
+			if (matches(atom.get())) finish(true)
+		})
+		timeout = setTimeout(() => finish(false), timeoutMs)
+
+		// Close the gap between the first read and installing the subscription.
+		if (matches(atom.get())) finish(true)
+	})
+}
+
+type OwnerSignalOutcome = 'matched' | 'settled-mismatch' | 'still-in-flight'
+
+/** Give Better Auth's already-running request ownership of the transition. A
+ * forced app fallback while that request is pending would abort and replace it,
+ * which is the refresh loop this module exists to prevent. */
+async function waitForOwnerSignal(
+	atom: SessionAtom,
+	matches: (value: SessionAtomValue) => boolean,
+): Promise<OwnerSignalOutcome> {
+	if (await waitForSessionState(atom, matches)) return 'matched'
+	if (matches(atom.get())) return 'matched'
+	if (isSettled(atom.get())) return 'settled-mismatch'
+
+	await waitForSessionState(
+		atom,
+		(value) => matches(value) || isSettled(value),
+		SESSION_IN_FLIGHT_SETTLE_WAIT_MS,
+	)
+	if (matches(atom.get())) return 'matched'
+	return isSettled(atom.get()) ? 'settled-mismatch' : 'still-in-flight'
+}
 
 async function refetchSessionAtom(atom: SessionAtom): Promise<boolean> {
 	if (inFlightSessionRefetch !== null) return inFlightSessionRefetch
@@ -75,68 +130,84 @@ async function refetchSessionAtom(atom: SessionAtom): Promise<boolean> {
 }
 
 /**
- * Force better-auth's reactive session atom to reflect a session that has
- * already been written to secure storage.
+ * Wait for better-auth's reactive session atom to reflect a session that has
+ * already been written to secure storage, with one forced fallback refetch.
  *
- * Every sign-in path (`signIn.email`, `signIn.social`, `signIn.anonymous`,
- * `signUp.email`) persists the session cookie and then fires a single
- * `$sessionSignal` refetch. That refetch can lose a race with the cookie write,
- * or be aborted by an overlapping one, and settle the atom signed-out with
- * nothing to retrigger it — the app then sits on the sign-in screen even though
- * the server authenticated the request (a cold start reads the cookie fine).
+ * Every sign-in path persists the session cookie and the Expo plugin then fires
+ * `$sessionSignal`. Let that owner-driven refresh settle first. Starting an app
+ * refetch immediately would abort it, toggle the Convex provider back to
+ * loading, and repeatedly remount the root navigator.
  *
- * Re-drive the atom's own `refetch` (cookie cache bypassed) until it reflects
- * the persisted session. When a sign-in just created a user, `expectedUserId`
+ * If the signal never reaches the desired state, re-drive the atom once with
+ * the cookie cache bypassed. When a sign-in just created a user, `expectedUserId`
  * prevents a still-valid local cache entry for an older session from being
  * mistaken for the new identity. The awaited refetch publishes the session
  * atom itself, which changes the Convex provider's token fetcher when the
  * session id changes.
  *
- * Bounded so a genuinely-signed-out caller still gets control back. Returns
- * whether the expected session is present when it finishes.
+ * Calls without an expected user require a real atom transition before they
+ * accept the normal signal path, so an old stable session cannot masquerade as
+ * a newly authenticated one. Returns whether the expected session is present.
  */
 export async function ensureSessionResolved(expectedUserId?: string): Promise<boolean> {
 	const atom = getSessionAtom()
 
-	const matchesExpectedSession = (): boolean => {
-		const data = atom.get().data
+	const matchesExpectedSession = (value: SessionAtomValue): boolean => {
+		if (!isSettled(value)) return false
+		const data = value.data
 		if (!data?.session) return false
 		return expectedUserId === undefined || data.user?.id === expectedUserId
 	}
-
-	for (let attempt = 0; attempt < SESSION_RESOLVE_ATTEMPTS; attempt += 1) {
-		const refreshed = await refetchSessionAtom(atom)
-		if (refreshed && matchesExpectedSession()) return true
-		if (attempt < SESSION_RESOLVE_ATTEMPTS - 1) {
-			await new Promise((resolve) => setTimeout(resolve, SESSION_RESOLVE_INTERVAL_MS))
-		}
+	const current = atom.get()
+	if (expectedUserId !== undefined && matchesExpectedSession(current)) {
+		return true
 	}
-	return false
+
+	const initialSessionId = current.data?.session?.id
+	const normalSignalOutcome = await waitForOwnerSignal(atom, (value) => {
+		if (!matchesExpectedSession(value)) return false
+		if (expectedUserId !== undefined || !initialSessionId) return true
+		if (current.isPending || current.isRefetching) return true
+		return value.data?.session?.id !== initialSessionId
+	})
+	if (normalSignalOutcome === 'matched') return true
+	if (normalSignalOutcome === 'still-in-flight') return false
+
+	await refetchSessionAtom(atom)
+	return matchesExpectedSession(atom.get())
 }
 
 /**
- * Deletion counterpart of `ensureSessionResolved`: drive the atom (cookie
- * cache bypassed) until it reflects a signed-out state.
+ * Deletion counterpart of `ensureSessionResolved`: wait for Better Auth's
+ * cookie-clearing signal, then perform at most one cache-bypassed fallback.
  *
- * Better Auth's anonymous plugin refreshes the session atom on
- * `/sign-in/anonymous` but not on `/delete-anonymous-user`, so after an
- * identity deletion the app keeps rendering the deleted account until the
- * cached Convex JWT expires — and a retried delete then fails with 401. A
- * single post-delete refetch is not enough either: it can race the expo
- * plugin's cookie clearing and settle signed-in off the still-cached
- * `session_data` cookie, which is why the cache is bypassed here.
- *
- * Bounded like `ensureSessionResolved`; returns whether the atom reads
- * signed-out when it finishes.
+ * Returns whether the atom reads signed-out when it finishes.
  */
 export async function ensureSignedOut(): Promise<boolean> {
 	const atom = getSessionAtom()
-	for (let attempt = 0; attempt < SESSION_RESOLVE_ATTEMPTS; attempt += 1) {
-		await refetchSessionAtom(atom)
-		if (!atom.get().data?.session) return true
-		if (attempt < SESSION_RESOLVE_ATTEMPTS - 1) {
-			await new Promise((resolve) => setTimeout(resolve, SESSION_RESOLVE_INTERVAL_MS))
-		}
+	const readsSignedOut = (value: SessionAtomValue) => isSettled(value) && !value.data?.session
+	if (readsSignedOut(atom.get())) return true
+	const normalSignalOutcome = await waitForOwnerSignal(atom, readsSignedOut)
+	if (normalSignalOutcome === 'matched') return true
+	if (normalSignalOutcome === 'still-in-flight') return false
+
+	await refetchSessionAtom(atom)
+	return readsSignedOut(atom.get())
+}
+
+/**
+ * Finish deletion even when the identity disappeared before the Expo cookie
+ * cache did. Better Auth's sign-out endpoint is idempotent: it clears the
+ * session cookie and Expo's local session cache even for an already-deleted
+ * server session.
+ */
+export async function ensureSignedOutAfterDeletion(): Promise<boolean> {
+	if (await ensureSignedOut()) return true
+	try {
+		await authClient.signOut({ fetchOptions: { disableSignal: true } })
+	} catch {
+		// The Expo fetch hook can still have cleared local state before a later
+		// client hook throws, so always inspect the atom once more.
 	}
-	return false
+	return ensureSignedOut()
 }

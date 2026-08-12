@@ -1,4 +1,12 @@
-const APP_AUTH_ORIGINS = ['immigrationrenewalhelp://', 'https://auth.immifile.app'] as const
+const APP_AUTH_ORIGINS = [
+	'immigrationrenewalhelp://',
+	'https://auth-dev.immifile.app',
+	'https://auth.immifile.app',
+	// Apple returns its browser OAuth response with a cross-origin form POST.
+	// Better Auth requires the sender to be trusted for that callback to pass
+	// its origin/CSRF checks.
+	'https://appleid.apple.com',
+] as const
 
 function expoGoOrigin(request?: Request): string | null {
 	const value = request?.headers.get('expo-origin')

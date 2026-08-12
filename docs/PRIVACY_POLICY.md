@@ -14,9 +14,9 @@ This policy describes the first App Store release of Immifile. That release prov
 
 ## Data we collect
 
-Immifile automatically creates a temporary account when a person continues past the welcome screen. A person may create a permanent account by providing a name, email address, and password. Authentication infrastructure may also process security metadata such as session identifiers, IP address, and user agent.
+Immifile automatically creates a temporary account when a person continues past the welcome screen. A person may create a permanent account by providing a name, email address, and password or by using a configured Google or Apple sign-in option. Social sign-in may provide Immifile with the person’s name, email address, and provider account identifier. Authentication infrastructure may also process security metadata such as session identifiers, IP address, and user agent.
 
-When a person saves a case, Immifile stores the USCIS receipt number and any status or note the person enters. If a person uses the AI assistant, Immifile stores only a daily message counter; the conversation itself stays on the device. The app also stores small preferences, such as whether an introductory screen was dismissed, and operational records needed to provide and secure the service.
+When a person saves a case, Immifile stores the USCIS receipt number and any status or note the person enters. If a person uses the AI assistant, Immifile stores only a daily message counter and the person’s OpenAI consent choice; the conversation itself stays on the device. The app also stores small preferences, such as whether an introductory screen was dismissed, and operational records needed to provide and secure the service.
 
 ## How we use data
 
@@ -24,7 +24,7 @@ We use data to authenticate users, display their saved cases, maintain the timel
 
 ## Service providers
 
-Convex provides the hosted application backend, database, and authentication components. Vercel hosts `auth.immifile.app`, the endpoint every sign-in, sign-out, and session request passes through, and therefore processes connection metadata such as IP address and user agent. When a person messages the AI assistant, the text they type (and the recent turns of that conversation) is sent to OpenAI to generate the reply; do not include receipt numbers or other sensitive details in assistant messages. Porkbun forwards messages sent to the Immifile support address, and Google provides the monitored destination mailbox. Official USCIS and Department of Justice links open in the device browser.
+Convex provides the hosted application backend, database, and authentication components. Vercel hosts `auth.immifile.app`, the endpoint every sign-in, sign-out, and session request passes through, and therefore processes connection metadata such as IP address and user agent. Google and Apple process their respective social sign-in flows when a person chooses one of those options. The assistant sends nothing to OpenAI until the person explicitly agrees. After agreement, the text they type and the recent turns of that conversation are sent to OpenAI to generate the reply; do not include receipt numbers, A-Numbers, addresses, passwords, or other sensitive details. Porkbun forwards messages sent to the Immifile support address, and Google provides the monitored destination mailbox. Official USCIS and Department of Justice links open in the device browser.
 
 Immifile requires every service provider that accesses user data to provide the same or equal protection described in this policy and required by the App Store Review Guidelines.
 
@@ -38,7 +38,7 @@ After either deletion path, Immifile may retain a short-lived opaque deletion-pr
 
 ## Security and choices
 
-Immifile transmits authentication and application data over encrypted connections and stores the app session using secure device storage. A person can browse official resources without creating a permanent account. Saving a receipt number requires a permanent account.
+Immifile transmits authentication and application data over encrypted connections and stores the app session using secure device storage. A person can browse official resources and decline AI sharing without creating a permanent account. Saving a receipt number requires a permanent account. A person can withdraw AI consent at any time from **Account → Privacy policy**; the assistant asks again before any later message is shared with OpenAI.
 
 This release does not include self-service password reset or email verification. Keep the password safe: without it there is no automated way back into an account, and because Immifile cannot confirm ownership of an unverified email address, support cannot reset a password or delete an account on request. Delete an account from inside the app, while signed in, at **Account → Delete account**.
 

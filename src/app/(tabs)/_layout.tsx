@@ -9,10 +9,15 @@ import { useMemo, useState } from 'react'
 // release policy and protected separately against deep links in the root layout.
 export default function TabsLayout() {
 	const { tabBarStyle } = useTabLayoutStyle()
-	// Full-surface moments (the one-time tab intros) hide the bar entirely so
-	// nothing competes with them; TabIntro drives this via TabBarContext.
-	const [isTabBarHidden, setIsTabBarHidden] = useState(false)
-	const tabBarContext = useMemo(() => ({ setIsTabBarHidden }), [])
+	// Start hidden so the first authenticated native frame cannot flash the bar
+	// before the focused TabIntro resolves its persisted phase. Returning owners
+	// reveal it as soon as that preference resolves; first-use intros keep it out
+	// until the user acknowledges the teaching surface.
+	const [isTabBarHidden, setIsTabBarHidden] = useState(true)
+	const tabBarContext = useMemo(
+		() => ({ isTabBarHidden, setIsTabBarHidden }),
+		[isTabBarHidden],
+	)
 	return (
 		<TabBarContext value={tabBarContext}>
 			<NativeTabs {...tabBarStyle} hidden={isTabBarHidden} sidebarAdaptable>

@@ -79,7 +79,7 @@ export function CasesScreen() {
 	const previous = cases.filter((item) => item.status === 'cardDelivered')
 
 	return (
-		<BodyScrollView contentContainerClassName="gap-control py-card">
+		<BodyScrollView contentContainerClassName="gap-control py-card" restoreLargeTitleOnTabReveal>
 			{active.length > 0 && previous.length > 0 && (
 				<SectionHeading title="Active" count={active.length} />
 			)}

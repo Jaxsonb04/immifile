@@ -74,15 +74,17 @@ export function UpgradeActions({
 
 		setPending(true)
 		try {
-			const { error } = isCreating
+			const { data, error } = isCreating
 				? await authClient.signUp.email({
 						name: name.trim(),
 						email: email.trim(),
 						password,
+						fetchOptions: { disableSignal: true },
 					})
 				: await authClient.signIn.email({
 						email: email.trim(),
 						password,
+						fetchOptions: { disableSignal: true },
 					})
 			if (error) {
 				Alert.alert(
@@ -94,7 +96,7 @@ export function UpgradeActions({
 			// Publish the linked Better Auth session. The server-backed readiness
 			// probe above separately waits for Convex to install that user's JWT
 			// before it fires `onUpgraded` and resumes the parked action.
-			const resolved = await ensureSessionResolved()
+			const resolved = await ensureSessionResolved(data?.user.id)
 			if (!resolved) {
 				Alert.alert('Almost there', "We couldn't finish loading your account. Please try again.")
 			}
@@ -108,7 +110,11 @@ export function UpgradeActions({
 	async function handleSocialUpgrade(provider: SocialProvider): Promise<void> {
 		setPending(true)
 		try {
-			const { error } = await authClient.signIn.social({ provider, callbackURL: '/' })
+			const { error } = await authClient.signIn.social({
+				provider,
+				callbackURL: '/',
+				fetchOptions: { disableSignal: true },
+			})
 			if (error) {
 				Alert.alert('Could not continue', error.message ?? 'Please try again.')
 				return

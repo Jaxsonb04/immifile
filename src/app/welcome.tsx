@@ -81,7 +81,8 @@ export default function WelcomeScreen() {
 			const session = await establishAnonymousSession({
 				hasPersistedCookie: () => !!getPersistedSessionCookie(),
 				resolveSession: ensureSessionResolved,
-				signInAnonymously: () => authClient.signIn.anonymous(),
+				signInAnonymously: () =>
+					authClient.signIn.anonymous({ fetchOptions: { disableSignal: true } }),
 			})
 			if (!session.ok) {
 				Alert.alert("Couldn't start", session.message)

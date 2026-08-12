@@ -36,9 +36,18 @@ export default function SignInScreen() {
 
 		setPending(true)
 		try {
-			const { error } = isSignUp
-				? await authClient.signUp.email({ name: name.trim(), email: email.trim(), password })
-				: await authClient.signIn.email({ email: email.trim(), password })
+			const { data, error } = isSignUp
+				? await authClient.signUp.email({
+						name: name.trim(),
+						email: email.trim(),
+						password,
+						fetchOptions: { disableSignal: true },
+					})
+				: await authClient.signIn.email({
+						email: email.trim(),
+						password,
+						fetchOptions: { disableSignal: true },
+					})
 
 			if (error) {
 				Alert.alert(
@@ -51,7 +60,7 @@ export default function SignInScreen() {
 			// the protected route in the root layout redirects into the app once
 			// the reactive session atom reflects it. Drive that atom past the
 			// refetch race so the redirect is not stranded (see ensureSessionResolved).
-			const resolved = await ensureSessionResolved()
+			const resolved = await ensureSessionResolved(data?.user.id)
 			if (!resolved) {
 				Alert.alert('Almost there', "We couldn't finish loading your session. Please try again.")
 			}
@@ -65,7 +74,11 @@ export default function SignInScreen() {
 	async function handleSocialAuth(provider: SocialProvider): Promise<void> {
 		setPending(true)
 		try {
-			const { error } = await authClient.signIn.social({ provider, callbackURL: '/' })
+			const { error } = await authClient.signIn.social({
+				provider,
+				callbackURL: '/',
+				fetchOptions: { disableSignal: true },
+			})
 			if (error) {
 				Alert.alert('Could not continue', error.message ?? 'Please try again.')
 				return

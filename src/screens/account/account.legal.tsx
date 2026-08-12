@@ -1,6 +1,9 @@
 import { BodyScrollView } from '@/components/core'
 import { StyledLucideIcon } from '@/components/styled-icon'
+import { api } from '@convex/_generated/api'
+import { useMutation, useQuery } from 'convex/react'
 import { Button, Surface, Typography } from 'heroui-native'
+import { useState, type ReactNode } from 'react'
 import { Alert, Linking, View } from 'react-native'
 
 type PolicySection = {
@@ -10,13 +13,20 @@ type PolicySection = {
 
 const EFFECTIVE_DATE = 'August 9, 2026'
 const SUPPORT_INFO_URL =
-	process.env.EXPO_PUBLIC_SUPPORT_URL ??
-	'https://jaxsonb04.github.io/immifile/support/'
+	process.env.EXPO_PUBLIC_SUPPORT_URL ?? 'https://jaxsonb04.github.io/immifile/support/'
 const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL
 const PUBLIC_ISSUE_URL = 'https://github.com/Jaxsonb04/immifile/issues/new'
 const USCIS_CONTACT_URL = 'https://www.uscis.gov/contactcenter'
 
-function PolicyScreen({ intro, sections }: { intro: string; sections: readonly PolicySection[] }) {
+function PolicyScreen({
+	intro,
+	sections,
+	extra,
+}: {
+	intro: string
+	sections: readonly PolicySection[]
+	extra?: ReactNode
+}) {
 	return (
 		<BodyScrollView contentContainerClassName="gap-section py-gutter">
 			<View className="gap-tight">
@@ -33,6 +43,7 @@ function PolicyScreen({ intro, sections }: { intro: string; sections: readonly P
 					</Typography.Paragraph>
 				</View>
 			))}
+			{extra}
 		</BodyScrollView>
 	)
 }
@@ -40,7 +51,7 @@ function PolicyScreen({ intro, sections }: { intro: string; sections: readonly P
 const PRIVACY_SECTIONS: readonly PolicySection[] = [
 	{
 		title: 'Data used by this release',
-		body: 'Immifile creates a temporary account when you continue. If you create a permanent account, we store the name and email you provide plus authentication records. When you save a case, we store its USCIS receipt number and the status notes you enter. If you use the AI assistant, we store only a daily message counter; the conversation itself stays on your device. We also store small account preferences, such as whether you dismissed an introductory screen, and security records needed to operate the service.',
+		body: 'Immifile creates a temporary account when you continue. If you create a permanent account, we store the name and email you provide plus authentication records; Google or Apple sign-in may also provide a provider account identifier. When you save a case, we store its USCIS receipt number and the status notes you enter. If you use the AI assistant, we store only a daily message counter and your OpenAI consent choice; the conversation itself stays on your device. We also store small account preferences, such as whether you dismissed an introductory screen, and security records needed to operate the service.',
 	},
 	{
 		title: 'How data is used',
@@ -48,7 +59,7 @@ const PRIVACY_SECTIONS: readonly PolicySection[] = [
 	},
 	{
 		title: 'Service providers',
-		body: 'Convex hosts the application backend, database, and authentication components. Vercel hosts the sign-in endpoint every authentication request passes through, and so processes connection metadata such as IP address and user agent. When you message the AI assistant, the text you type (and the recent turns of that conversation) is sent to OpenAI to generate the reply; do not include receipt numbers or other sensitive details in assistant messages. Porkbun forwards the support address and Google provides the destination mailbox. We require each provider that accesses user data to provide the same or equal protection described in this policy and required by the App Store Review Guidelines. Your device opens official USCIS and Department of Justice links in the system browser. The filing workflow, document uploads, and public community are not available in this release.',
+		body: 'Convex hosts the application backend, database, and authentication components. Vercel hosts the sign-in endpoint every authentication request passes through, and so processes connection metadata such as IP address and user agent. Google and Apple process their respective social sign-in flows when you choose one of those options. The assistant sends nothing to OpenAI until you explicitly agree. After you agree, the text you type and recent turns of that conversation are sent to OpenAI to generate the reply; do not include receipt numbers or other sensitive details. You can withdraw that consent below at any time. Porkbun forwards the support address and Google provides the destination mailbox. We require each provider that accesses user data to provide the same or equal protection described in this policy and required by the App Store Review Guidelines. Your device opens official USCIS and Department of Justice links in the system browser. The filing workflow, document uploads, and public community are not available in this release.',
 	},
 	{
 		title: 'Retention and deletion',
@@ -67,6 +78,49 @@ const PRIVACY_SECTIONS: readonly PolicySection[] = [
 		body: 'Use the Support page for current contact options. The GitHub issue tracker is public and is only for non-sensitive app bugs or general feedback. Never use it for a privacy request or include receipt numbers, A-Numbers, addresses, passwords, or other sensitive immigration information.',
 	},
 ]
+
+function AssistantPrivacyChoice() {
+	const consent = useQuery(api.preferences.getPreference, { key: 'assistantOpenAIConsent' })
+	const setPreference = useMutation(api.preferences.setPreference)
+	const [isSaving, setIsSaving] = useState(false)
+
+	if (consent === undefined) return null
+
+	function withdrawConsent() {
+		if (isSaving) return
+		setIsSaving(true)
+		void setPreference({ key: 'assistantOpenAIConsent', value: false })
+			.catch(() => {
+				Alert.alert("Couldn't update your choice", 'Please check your connection and try again.')
+			})
+			.finally(() => setIsSaving(false))
+	}
+
+	return (
+		<Surface variant="secondary" className="gap-control rounded-2xl border border-border p-card">
+			<View className="flex-row items-start gap-control">
+				<View className="size-10 items-center justify-center rounded-2xl bg-surface-tertiary">
+					<StyledLucideIcon name="sparkles" size={18} className="text-accent" />
+				</View>
+				<View className="flex-1 gap-hairline">
+					<Typography.Heading className="text-lg font-semibold">
+						AI sharing choice
+					</Typography.Heading>
+					<Typography.Paragraph color="muted" className="text-sm leading-relaxed">
+						{consent
+							? 'You currently allow assistant messages and recent conversation turns to be sent to OpenAI.'
+							: 'Sharing is off. The assistant will ask before sending anything to OpenAI.'}
+					</Typography.Paragraph>
+				</View>
+			</View>
+			{consent ? (
+				<Button variant="secondary" isDisabled={isSaving} onPress={withdrawConsent}>
+					<Button.Label>{isSaving ? 'Updating…' : 'Withdraw AI consent'}</Button.Label>
+				</Button>
+			) : null}
+		</Surface>
+	)
+}
 
 const TERMS_SECTIONS: readonly PolicySection[] = [
 	{
@@ -104,6 +158,7 @@ export function PrivacyPolicyScreen() {
 		<PolicyScreen
 			intro="Immifile is an independent app, not affiliated with USCIS, DHS, DOJ, or the U.S. government, and it does not provide legal advice. This policy explains the data practices of the first App Store release."
 			sections={PRIVACY_SECTIONS}
+			extra={<AssistantPrivacyChoice />}
 		/>
 	)
 }

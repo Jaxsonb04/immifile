@@ -3,8 +3,10 @@ import { useFocusEffect } from 'expo-router'
 import { createContext, use } from 'react'
 
 export const TabBarContext = createContext<{
+	isTabBarHidden: boolean
 	setIsTabBarHidden: (hidden: boolean) => void
 }>({
+	isTabBarHidden: false,
 	setIsTabBarHidden: () => {},
 })
 
