@@ -52,7 +52,11 @@ const FILING_PATHS = [
 
 const COMMUNITY_PATHS = ['/community', '/new-post', '/community-rules', '/moderation'] as const
 
+// `/` is a redirect-only trampoline (src/app/home.tsx), not the disabled
+// filing surface. Let that one owner choose Welcome versus Cases so the root
+// guard never mounts a second competing Redirect during sign-out.
 const ALWAYS_ALLOWED_EXACT_PATHS = [
+	'/',
 	'/cases',
 	'/new-case',
 	'/resources',
@@ -91,7 +95,7 @@ export function isReleasePathBlocked(rawPathname: string): boolean {
 
 	if (
 		RELEASE_FEATURES.filingPreparation &&
-		(pathname === '/' || FILING_PATHS.some((route) => matchesPath(pathname, route)))
+		FILING_PATHS.some((route) => matchesPath(pathname, route))
 	) {
 		return false
 	}

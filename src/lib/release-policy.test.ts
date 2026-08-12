@@ -56,7 +56,6 @@ describe('first App Store release policy', () => {
 	})
 
 	test.each([
-		'/',
 		'/renewals',
 		'/drafts/',
 		'/attention',
@@ -89,6 +88,7 @@ describe('first App Store release policy', () => {
 	})
 
 	test.each([
+		'/',
 		'/cases',
 		'/cases/case_1',
 		'/new-case',
