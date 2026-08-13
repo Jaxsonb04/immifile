@@ -10,7 +10,12 @@ describe('account-deletion inventory', () => {
 		const schemaTables = [...schemaSource.matchAll(/^\s*(\w+): defineTable\(/gm)].map(
 			(match) => match[1]!,
 		)
-		const globalTables = new Set(['newsItems', 'newsMeta', 'accountDeletionTombstones'])
+		const globalTables = new Set([
+			'newsItems',
+			'newsMeta',
+			'accountDeletionTombstones',
+			'authRateLimits',
+		])
 		const accountTables = schemaTables.filter((table) => !globalTables.has(table)).sort()
 
 		expect(schemaTables).toContain('accountDeletionTombstones')

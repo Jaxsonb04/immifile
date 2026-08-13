@@ -49,15 +49,21 @@ shared with Codex or committed to the repository.
      at Metro bundling. `scripts/validate-release-config.mjs` now fails fast
      if either is missing.
 2. Deploy a production Convex backend. Set a production `BETTER_AUTH_SECRET`, confirm `DEV_SEED_ENABLED` is absent or false, and ensure the public auth proxy routes to that production deployment rather than a development deployment. Leave the three `AUTH_EMAIL_*` values unset for this release.
-3. Put a verified edge rate limit in front of the Better Auth write endpoints
-   on `auth.immifile.app`. The installed `better-auth/minimal` path does not
-   initialize Better Auth's built-in limiter (`convex/auth.ts` documents the
-   production burst proof), so sign-in, sign-up, and anonymous identity
-   creation are otherwise unthrottled. On Vercel, stage a host + path + POST
-   custom rule in log mode, review real traffic, test enforcement in preview,
-   then publish the tuned production rule. Prove excess requests receive 429
-   before App Store submission; automatic DDoS protection alone is not an
-   authentication brute-force or assistant-cost control.
+3. Keep both layers of auth abuse protection enabled:
+   - Vercel injects a sensitive `x-immifile-origin-proof` header into branded
+     `/api/auth/*` proxy requests. Matching `AUTH_ORIGIN_PROOF` values live in
+     Vercel and each Convex deployment, never in Git. Convex rejects protected
+     direct-origin requests; only exact GET discovery/JWKS endpoints remain
+     public. Rotate both sides together, and remove the Convex value first if a
+     proxy rollback is ever required.
+   - `convex/auth.ts` uses transactional Convex counters for credential,
+     recovery, account-creation, anonymous-creation, and social-initiation
+     limits. Keep the Vercel WAF rule narrowed to the four identity/sign-in POST
+     paths; never include session, token, sign-out, or OAuth callback paths.
+     Before App Store submission, prove branded auth works, spoofed proof headers
+     are overwritten, protected direct-origin requests receive 403, and a sixth
+     mixed JSON/form email sign-in receives 429 with retry headers. Automatic
+     DDoS protection alone is not an authentication or assistant-cost control.
 4. Publish `docs/PRIVACY_POLICY.md` at a stable public URL. Verify it while signed out, then enter that URL in App Store Connect.
 5. Publish `docs/SUPPORT.md` at a stable public support-information URL with accurate contact information and a monitored private support channel. Verify it while signed out and enter it as the App Store support URL. The public GitHub issue tracker is supplemental and does not satisfy the private-support gate.
 6. Update `SUPPORT_INFO_URL` in `src/screens/account/account.legal.tsx` if the published support URL differs from the repository document. Do not submit while that URL is unavailable or still says the private channel has not been published.

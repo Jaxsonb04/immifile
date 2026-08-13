@@ -13,6 +13,7 @@ import type * as applicants from "../applicants.js";
 import type * as applications from "../applications.js";
 import type * as assistantQuota from "../assistantQuota.js";
 import type * as auth from "../auth.js";
+import type * as authRateLimit from "../authRateLimit.js";
 import type * as cases from "../cases.js";
 import type * as community from "../community.js";
 import type * as crons from "../crons.js";
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   applications: typeof applications;
   assistantQuota: typeof assistantQuota;
   auth: typeof auth;
+  authRateLimit: typeof authRateLimit;
   cases: typeof cases;
   community: typeof community;
   crons: typeof crons;

@@ -7,6 +7,9 @@ const app = defineApp({
 		// Better Auth social OAuth configuration. Apple uses durable signing
 		// inputs and creates its expiring client-secret JWT at runtime.
 		BETTER_AUTH_URL: v.optional(v.string()),
+		// Shared only by Vercel's outbound route transform and this Convex origin.
+		// Leave unset during rollout; once set, direct protected auth requests fail.
+		AUTH_ORIGIN_PROOF: v.optional(v.string()),
 		AUTH_TRUST_EXPO_DEV_ORIGINS: v.optional(v.string()),
 		GOOGLE_CLIENT_ID: v.optional(v.string()),
 		GOOGLE_CLIENT_SECRET: v.optional(v.string()),

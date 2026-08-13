@@ -29,6 +29,7 @@ type Env = {
   readonly APPLE_KEY_ID: string | undefined;
   readonly APPLE_PRIVATE_KEY: string | undefined;
   readonly APPLE_TEAM_ID: string | undefined;
+  readonly AUTH_ORIGIN_PROOF: string | undefined;
   readonly AUTH_TRUST_EXPO_DEV_ORIGINS: string | undefined;
   readonly BETTER_AUTH_URL: string | undefined;
   readonly DEV_SEED_ENABLED: string | undefined;

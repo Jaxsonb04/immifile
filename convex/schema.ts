@@ -235,6 +235,18 @@ export default defineSchema({
 		expiresAt: v.number(),
 	}).index('by_ownerId', ['ownerId']),
 
+	// Origin-enforced throttling for unauthenticated account-creation and
+	// credential-recovery endpoints. The key contains only a keyed one-way
+	// digest of proxy-verified client metadata or a normalized account email plus its
+	// endpoint family; raw network addresses and emails are never stored.
+	authRateLimits: defineTable({
+		key: v.string(),
+		count: v.number(),
+		windowExpiresAt: v.number(),
+	})
+		.index('by_key', ['key'])
+		.index('by_windowExpiresAt', ['windowExpiresAt']),
+
 	// M6-T6 manual renewal entries: a document expiry or a prior filing date
 	// the person logs by hand (no upload required), so Upcoming renewals can
 	// remind against the real USCIS filing windows alongside vault documents

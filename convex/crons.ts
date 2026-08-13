@@ -19,4 +19,11 @@ crons.interval(
 	{},
 )
 
+crons.interval(
+	'clean up expired auth rate limits',
+	{ hours: 1 },
+	internal.authRateLimit.cleanupExpired,
+	{},
+)
+
 export default crons
