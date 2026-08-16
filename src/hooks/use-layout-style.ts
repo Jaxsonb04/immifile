@@ -49,7 +49,7 @@ export const useLayoutStyle = () => {
 		},
 		headerShadowVisible: false,
 		headerLargeTitleStyle: {
-			fontFamily: 'Fraunces_600SemiBold',
+			fontFamily: 'LibreFranklin_600SemiBold',
 			fontSize: 24,
 			color: themeColorMuted,
 		},
@@ -61,7 +61,7 @@ export const useLayoutStyle = () => {
  * material — a real glass pill with a firm edge, so content scrolling
  * beneath it is masked by the material instead of showing through
  * (`disableTransparentOnScrollEdge`), and it minimizes out of the way on
- * scroll (iOS 26). Selection carries the single terracotta accent; resting
+ * scroll (iOS 26). Selection carries the single cobalt accent; resting
  * items stay muted so the bar reads quiet.
  */
 export const useTabLayoutStyle = () => {

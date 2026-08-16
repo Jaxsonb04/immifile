@@ -6,21 +6,21 @@
     - The stem is the dotless-i (U+0131) outline from Fraunces SemiBold, the
       app's bundled display face (OFL), placed to match the original mark.
     - The dot is a plain circle in the app's ink tone: warm near-black
-      oklch(24% 0.02 60) = #261D16 — the light theme's --foreground token
+      oklch(23% 0.03 258) = #141D2B — the light theme's --foreground token
       (it was light green #30C0A0 before M6-T2). The dark splash variant uses
       the dark theme's foreground #E9E4DC instead; the stem uses the theme
-      accent (#8E503A light / #D78863 dark).
+      accent (#1E4CA6 light / #D78863 dark).
     - Every shipped PNG (icon, adaptive-icon, favicon, splash-icon,
       splash-icon-dark) is generated from this file by
       scripts/generate-logo-assets.mjs — recolor here, rerun there.
       The generator scales the mark (ids "stem" + "dot") about (514, 511).
   -->
-  <rect id="ground" width="1024" height="1024" fill="#F7F3EB" />
+  <rect id="ground" width="1024" height="1024" fill="#F3F7F9" />
   <path
     id="stem"
-    fill="#8E503A"
+    fill="#1E4CA6"
     transform="translate(398.664 783) scale(0.356846 -0.356846)"
     d="M468 916V160Q468 130 477.5 115.5Q487 101 504 94L541 84Q558 78 567.5 67.5Q577 57 577 41Q577 22 563.0 11.0Q549 0 524 0H133Q109 0 95.0 11.0Q81 22 81 41Q81 56 90.0 66.5Q99 77 116 84L155 94Q172 102 181.0 115.5Q190 129 190 160V737Q190 763 182.0 773.5Q174 784 158 788L105 791Q88 796 79.5 804.5Q71 813 71 827Q71 843 82.0 853.5Q93 864 117 873L328 944Q361 955 380.5 959.5Q400 964 420 964Q442 964 455.0 951.0Q468 938 468 916Z"
   />
-  <circle id="dot" fill="#261D16" cx="511.5" cy="316.5" r="77.5" />
+  <circle id="dot" fill="#141D2B" cx="511.5" cy="316.5" r="77.5" />
 </svg>

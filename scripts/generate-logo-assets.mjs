@@ -27,11 +27,11 @@ const [, stemPath] = stemMatch
 const [, transform] = stemTransform
 const [, cx, cy, r] = dotMatch
 
-const PAPER = '#F7F3EB'
-const STEM_LIGHT = '#8E503A' // light accent token
-const STEM_DARK = '#D78863' // dark accent token
-const INK_LIGHT = '#261D16' // oklch(24% 0.02 60) — light --foreground
-const INK_DARK = '#E9E4DC' // oklch(92% 0.012 80) — dark --foreground
+const PAPER = '#F3F7F9'
+const STEM_LIGHT = '#1E4CA6' // light accent token
+const STEM_DARK = '#80A7F0' // dark accent token
+const INK_LIGHT = '#141D2B' // oklch(23% 0.03 258) — light --foreground
+const INK_DARK = '#E2E7EB' // oklch(92.5% 0.008 250) — dark --foreground
 
 function markSvg({ background, scale, stem, dot }) {
 	const ground = background ? `<rect width="1024" height="1024" fill="${background}"/>` : ''

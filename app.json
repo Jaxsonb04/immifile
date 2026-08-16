@@ -101,7 +101,7 @@
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/adaptive-icon.png",
-				"backgroundColor": "#f7f3eb"
+				"backgroundColor": "#f3f7f9"
 			},
 			"predictiveBackGestureEnabled": false,
 			"package": "dev.uing.immigrationrenewalhelp",
@@ -115,10 +115,10 @@
 				{
 					"image": "./assets/images/splash-icon.png",
 					"resizeMode": "contain",
-					"backgroundColor": "#f7f3eb",
+					"backgroundColor": "#f3f7f9",
 					"dark": {
 						"image": "./assets/images/splash-icon-dark.png",
-						"backgroundColor": "#130f0a"
+						"backgroundColor": "#090f16"
 					}
 				}
 			],

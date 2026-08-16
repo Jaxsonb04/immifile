@@ -35,7 +35,7 @@ function useIdleLoop(duration: number, enabled: boolean) {
  * Editorial hero: a small stack of filing "cards" that fans and floats, standing
  * in for the immigration paperwork the app assembles. No character, no image
  * asset — every surface is drawn from theme tokens (warm paper, hairline
- * borders, the single terracotta accent), so it reads correctly in both light
+ * borders, the single cobalt accent), so it reads correctly in both light
  * and dark themes.
  *
  * Motion is calm and continuous: the whole stack drifts up and down while each
@@ -126,7 +126,7 @@ export function FilingStackHero({ width = 148 }: FilingStackHeroProps) {
 						className="overflow-hidden rounded-2xl border border-border bg-surface"
 					>
 						<View className="flex-1 gap-control p-card">
-							{/* The one terracotta moment: a single "filled" field. */}
+							{/* The one cobalt moment: a single "filled" field. */}
 							<View className="h-2.5 w-10 rounded-full bg-accent" />
 							<View className="mt-hairline h-1.5 w-4/5 rounded-full bg-surface-tertiary" />
 							<View className="h-1.5 w-3/5 rounded-full bg-surface-tertiary" />

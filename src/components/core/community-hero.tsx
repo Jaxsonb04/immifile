@@ -79,7 +79,7 @@ export function CommunityHero({ width = 190 }: CommunityHeroProps) {
 				</View>
 			</Animated.View>
 
-			{/* An answer arriving — the one terracotta moment. */}
+			{/* An answer arriving — the one cobalt moment. */}
 			<Animated.View
 				style={[{ width: bubbleW * 0.86, alignSelf: 'flex-end', marginTop: 18 }, rightBubble]}
 			>

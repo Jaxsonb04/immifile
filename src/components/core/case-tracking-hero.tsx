@@ -87,7 +87,7 @@ export function CaseTrackingHero({ width = 148 }: CaseTrackingHeroProps) {
 				>
 					<View className="flex-1 gap-control p-card">
 						<View className="flex-row items-center justify-between">
-							{/* The one terracotta moment: the receipt number. */}
+							{/* The one cobalt moment: the receipt number. */}
 							<View className="h-2.5 w-16 rounded-full bg-accent" />
 							<View className="h-4 w-12 rounded-full bg-surface-tertiary" />
 						</View>

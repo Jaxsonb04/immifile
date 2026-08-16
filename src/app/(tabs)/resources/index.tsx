@@ -11,7 +11,7 @@ export default function ResourcesTab() {
 			<Stack.Title
 				large
 				largeStyle={{
-					fontFamily: 'Fraunces_600SemiBold',
+					fontFamily: 'LibreFranklin_600SemiBold',
 					color: foreground,
 				}}
 			>

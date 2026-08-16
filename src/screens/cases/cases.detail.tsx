@@ -178,7 +178,7 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 	return (
 		<BodyScrollView contentContainerClassName="gap-gutter py-card">
 			<View className="gap-tight">
-				<Typography.Heading selectable className="text-2xl font-bold tabular-nums">
+				<Typography.Heading selectable className="text-2xl font-mono-semibold tabular-nums">
 					{receiptNumber}
 				</Typography.Heading>
 				<View className="flex-row">

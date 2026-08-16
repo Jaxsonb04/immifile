@@ -10,16 +10,19 @@
 @source '../node_modules/heroui-native-pro/lib';
 
 /*
- * Immifile design system — editorial minimalism on warm paper.
+ * Immifile design system — "Security Ink": a modern digital dossier.
  *
- * One warm hue family carries every neutral (backgrounds, surfaces, borders
- * all sit near hue 70–90 at very low chroma); a single terracotta accent is
- * reserved for primary actions and focus. Fraunces (serif) is display-only —
- * large headlines and screen titles; Inter carries body and UI text.
+ * The visual world is the USCIS receipt notice and the passport page: cool
+ * porcelain paper, navy document ink, and a single cobalt "security ink"
+ * accent reserved for primary actions and focus. Libre Franklin (civic
+ * gothic) is display-only — large headlines and screen titles; Inter carries
+ * body and UI text; IBM Plex Mono is the data face for receipt numbers and
+ * other document artifacts.
  *
- * Every color pairing below is contrast-verified (scripts in
- * docs/FABLE_NOTES.md): body text ≥ 4.5:1, non-text UI ≥ 3:1, both themes.
- * Do NOT hardcode colors in components — everything flows from these tokens.
+ * Verify contrast when touching these tokens: body text >= 4.5:1, non-text
+ * UI >= 3:1, both themes. Do NOT hardcode colors in components — everything
+ * flows from these tokens. Logo/splash hexes mirror these values in
+ * scripts/generate-logo-assets.mjs — recolor here, rerun there.
  */
 
 @theme {
@@ -40,9 +43,14 @@
   --font-semibold: Inter_600SemiBold;
   --font-bold: Inter_700Bold;
 
-  /* Display face: Fraunces — headlines and large titles ONLY. Body and
+  /* Display face: Libre Franklin — headlines and large titles ONLY. Body and
      anything at or below h2 stays on Inter. */
-  --font-display: Fraunces_600SemiBold;
+  --font-display: LibreFranklin_700Bold;
+
+  /* Data face: IBM Plex Mono — receipt numbers, dates-of-record, counters.
+     Document artifacts only; never body copy. */
+  --font-mono: IBMPlexMono_500Medium;
+  --font-mono-semibold: IBMPlexMono_600SemiBold;
 
   /* Modular display sizes (~1.25 ratio above body 17). */
   --text-display: 2.625rem; /* 42 — onboarding hero */
@@ -53,98 +61,98 @@
 
 @layer theme {
   @variant light {
-    /* Warm paper ground + warm ink. */
-    --background: oklch(96.5% 0.012 85);
-    --foreground: oklch(24% 0.02 60);
+    /* Porcelain paper ground + navy document ink. */
+    --background: oklch(97.3% 0.005 240);
+    --foreground: oklch(23% 0.03 258);
 
     /* Cards float on slightly brighter paper; hairline borders, not shadows,
        do the separating. */
-    --surface: oklch(98.5% 0.008 90);
-    --surface-foreground: oklch(26% 0.02 60);
-    --surface-secondary: oklch(94% 0.014 85);
-    --surface-secondary-foreground: oklch(28% 0.02 60);
-    --surface-tertiary: oklch(91.5% 0.016 83);
-    --surface-tertiary-foreground: oklch(28% 0.02 60);
+    --surface: oklch(99% 0.003 240);
+    --surface-foreground: oklch(25% 0.03 258);
+    --surface-secondary: oklch(94.5% 0.008 242);
+    --surface-secondary-foreground: oklch(27% 0.03 258);
+    --surface-tertiary: oklch(92% 0.01 244);
+    --surface-tertiary-foreground: oklch(27% 0.03 258);
 
-    --overlay: oklch(98.5% 0.008 90);
-    --overlay-foreground: oklch(26% 0.02 60);
-    --backdrop: oklch(20% 0.02 60 / 35%);
+    --overlay: oklch(99% 0.003 240);
+    --overlay-foreground: oklch(25% 0.03 258);
+    --backdrop: oklch(20% 0.03 258 / 35%);
 
-    --muted: oklch(46% 0.025 65);
+    --muted: oklch(45% 0.028 252);
 
-    --default: oklch(92% 0.014 85);
-    --default-foreground: oklch(30% 0.025 60);
+    --default: oklch(92.5% 0.009 242);
+    --default-foreground: oklch(29% 0.03 258);
 
-    /* The one accent: terracotta. Primary actions + focus only. */
-    --accent: oklch(50% 0.09 40);
-    --accent-foreground: oklch(97.5% 0.01 85);
+    /* The one accent: security-ink cobalt. Primary actions + focus only. */
+    --accent: oklch(44% 0.155 262);
+    --accent-foreground: oklch(98% 0.004 240);
 
-    /* Status colors as low-chroma, warm-compatible variants. */
-    --success: oklch(52% 0.08 145);
-    --success-foreground: oklch(97.5% 0.01 85);
-    --warning: oklch(63% 0.1 75);
-    --warning-foreground: oklch(23% 0.045 75);
-    --danger: oklch(52% 0.12 30);
-    --danger-foreground: oklch(97.5% 0.01 85);
+    /* Status colors tuned to sit on the cool ground. */
+    --success: oklch(51% 0.09 158);
+    --success-foreground: oklch(98% 0.004 240);
+    --warning: oklch(62% 0.11 75);
+    --warning-foreground: oklch(22% 0.05 75);
+    --danger: oklch(51% 0.15 25);
+    --danger-foreground: oklch(98% 0.004 240);
 
-    --field-background: oklch(98.5% 0.008 90);
-    --field-foreground: oklch(24% 0.02 60);
+    --field-background: oklch(99% 0.003 240);
+    --field-foreground: oklch(23% 0.03 258);
     --field-placeholder: var(--muted);
-    --field-border: oklch(86% 0.02 80);
+    --field-border: oklch(86.5% 0.014 246);
 
-    --segment: oklch(98.5% 0.008 90);
-    --segment-foreground: oklch(24% 0.02 60);
+    --segment: oklch(99% 0.003 240);
+    --segment-foreground: oklch(23% 0.03 258);
 
-    --border: oklch(88% 0.018 80);
-    --separator: oklch(90% 0.016 82);
+    --border: oklch(88% 0.012 246);
+    --separator: oklch(90.5% 0.01 244);
     --focus: var(--accent);
     --link: var(--accent);
   }
 
   @variant dark {
-    /* Warm near-black — its own composition, not an inverted light theme.
-       Elevation comes from lighter warm surfaces, not shadows. */
-    --background: oklch(17% 0.012 70);
-    --foreground: oklch(92% 0.012 80);
+    /* Night ledger: deep blue-black ink — its own composition, not an
+       inverted light theme. Elevation comes from lighter ink surfaces. */
+    --background: oklch(16.5% 0.018 258);
+    --foreground: oklch(92.5% 0.008 250);
 
-    --surface: oklch(21.5% 0.014 72);
-    --surface-foreground: oklch(90% 0.012 78);
-    --surface-secondary: oklch(24.5% 0.015 74);
-    --surface-secondary-foreground: oklch(90% 0.012 78);
-    --surface-tertiary: oklch(27% 0.016 75);
-    --surface-tertiary-foreground: oklch(90% 0.012 78);
+    --surface: oklch(20.5% 0.02 258);
+    --surface-foreground: oklch(90.5% 0.009 250);
+    --surface-secondary: oklch(23.5% 0.022 258);
+    --surface-secondary-foreground: oklch(90.5% 0.009 250);
+    --surface-tertiary: oklch(26% 0.024 258);
+    --surface-tertiary-foreground: oklch(90.5% 0.009 250);
 
-    --overlay: oklch(23% 0.015 73);
-    --overlay-foreground: oklch(90% 0.012 78);
+    --overlay: oklch(22% 0.021 258);
+    --overlay-foreground: oklch(90.5% 0.009 250);
     --backdrop: oklch(0% 0 0 / 45%);
 
-    --muted: oklch(68% 0.02 75);
+    --muted: oklch(69% 0.022 252);
 
-    --default: oklch(26% 0.015 74);
-    --default-foreground: oklch(88% 0.014 78);
+    --default: oklch(25% 0.022 258);
+    --default-foreground: oklch(89% 0.01 250);
 
-    /* Accent re-tuned for the dark ground: lifted lightness + chroma. */
-    --accent: oklch(70% 0.11 45);
-    --accent-foreground: oklch(18% 0.03 45);
+    /* Accent re-tuned for the dark ground: lifted lightness, held hue. */
+    --accent: oklch(73% 0.115 262);
+    --accent-foreground: oklch(17% 0.04 262);
 
-    --success: oklch(70% 0.1 145);
-    --success-foreground: oklch(16% 0.04 145);
-    --warning: oklch(75% 0.11 80);
+    --success: oklch(71% 0.1 158);
+    --success-foreground: oklch(16% 0.04 158);
+    --warning: oklch(76% 0.11 80);
     --warning-foreground: oklch(20% 0.05 80);
-    --danger: oklch(66% 0.14 30);
-    --danger-foreground: oklch(18% 0.05 30);
+    --danger: oklch(67% 0.14 25);
+    --danger-foreground: oklch(17% 0.05 25);
 
-    --field-background: oklch(22.5% 0.014 72);
+    --field-background: oklch(21.5% 0.02 258);
     --field-foreground: var(--foreground);
     --field-placeholder: var(--muted);
-    --field-border: oklch(32% 0.016 74);
+    --field-border: oklch(31.5% 0.024 258);
 
-    --segment: oklch(30% 0.015 74);
-    --segment-foreground: oklch(92% 0.012 80);
+    --segment: oklch(29.5% 0.023 258);
+    --segment-foreground: oklch(92.5% 0.008 250);
 
-    --border: oklch(30% 0.016 74);
-    --separator: oklch(27% 0.015 73);
+    --border: oklch(29.5% 0.023 258);
+    --separator: oklch(26.5% 0.022 258);
     --focus: var(--accent);
-    --link: oklch(74% 0.1 50);
+    --link: oklch(76% 0.1 258);
   }
 }

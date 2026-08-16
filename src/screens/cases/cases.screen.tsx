@@ -31,7 +31,7 @@ function CaseRow({ item }: { item: CaseSummary }) {
 		<Pressable accessibilityRole="button" onPress={() => router.push(`/cases/${item._id}`)}>
 			<Surface variant="secondary" className="gap-tight rounded-2xl p-card">
 				<View className="flex-row items-center justify-between gap-control">
-					<Typography.Paragraph className="font-semibold tabular-nums">
+					<Typography.Paragraph className="font-mono tabular-nums">
 						{item.receiptNumber}
 					</Typography.Paragraph>
 					<StatusChip status={item.status} />

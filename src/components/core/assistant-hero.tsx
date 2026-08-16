@@ -35,7 +35,7 @@ type AssistantHeroProps = {
  * Assistant-tab intro graphic: an open question drifting above the one form it
  * resolves to. The question chip has no ground shadow and no accent — it
  * wanders and its line breathes, still unanswered. The card below sits on the
- * house ground shadow, carries the single terracotta line (the form's name),
+ * house ground shadow, carries the single cobalt line (the form's name),
  * and only rises and settles. That contrast is the whole idea: a question in
  * your own words becomes one clear direction. Nothing lands, completes, or is
  * marked — the assistant names a form, never an outcome.
@@ -45,9 +45,9 @@ type AssistantHeroProps = {
  * opacity only, and a static resting pose under Reduce Motion.
  *
  * Accent budget is deliberately one step tighter than `AccountHero` and
- * `ResourcesHero` (which each spend three terracottas): exactly one accent BAR
+ * `ResourcesHero` (which each spend three cobalts): exactly one accent BAR
  * and one accent BADGE GLYPH. The `file-text` well stays `text-muted` so the
- * intro's accent-filled "Got it" button remains the loudest terracotta on the
+ * intro's accent-filled "Got it" button remains the loudest cobalt on the
  * screen.
  */
 export function AssistantHero({ width = 140 }: AssistantHeroProps) {
@@ -144,7 +144,7 @@ export function AssistantHero({ width = 140 }: AssistantHeroProps) {
 							>
 								<StyledLucideIcon name="file-text" size={well * 0.54} className="text-muted" />
 							</View>
-							{/* The one terracotta moment: the form you actually need, named. */}
+							{/* The one cobalt moment: the form you actually need, named. */}
 							<View
 								className="h-2.5 flex-1 rounded-full bg-accent"
 								style={{ maxWidth: cardW * 0.42 }}

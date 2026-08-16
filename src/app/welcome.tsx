@@ -38,7 +38,7 @@ import {
  *   · Welcome stays mounted underneath the sign-in formSheet, and `entering`
  *     animations do not replay when that sheet is dismissed. Nothing here
  *     depends on an entrance having played.
- *   · The 42px Fraunces headline is never caught mid-opacity on a cold start.
+ *   · The 42px Libre Franklin headline is never caught mid-opacity on a cold start.
  *
  * If this ever tests as too static on a large phone, the sanctioned fallback is
  * a SINGLE shared opacity ramp on the copy block and a SINGLE shared opacity

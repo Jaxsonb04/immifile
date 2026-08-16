@@ -1,4 +1,5 @@
-import { Fraunces_600SemiBold } from '@expo-google-fonts/fraunces'
+import { IBMPlexMono_500Medium, IBMPlexMono_600SemiBold } from '@expo-google-fonts/ibm-plex-mono'
+import { LibreFranklin_600SemiBold, LibreFranklin_700Bold } from '@expo-google-fonts/libre-franklin'
 import {
 	Inter_400Regular,
 	Inter_500Medium,
@@ -66,7 +67,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 		Inter_500Medium,
 		Inter_600SemiBold,
 		Inter_700Bold,
-		Fraunces_600SemiBold,
+		LibreFranklin_600SemiBold,
+		LibreFranklin_700Bold,
+		IBMPlexMono_500Medium,
+		IBMPlexMono_600SemiBold,
 	})
 
 	if (!fontsLoaded) {

@@ -87,7 +87,7 @@ export function AccountHero({ size = 120 }: AccountHeroProps) {
 							<StyledLucideIcon name="user-round" size={cardH * 0.22} className="text-accent" />
 						</View>
 						<View className="flex-1 gap-control">
-							{/* The one terracotta moment: the name line. */}
+							{/* The one cobalt moment: the name line. */}
 							<View className="h-2.5 w-3/5 rounded-full bg-accent" />
 							<View className="h-1.5 w-4/5 rounded-full bg-surface-tertiary" />
 							<View className="h-1.5 w-1/2 rounded-full bg-surface-tertiary" />

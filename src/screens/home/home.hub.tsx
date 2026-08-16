@@ -59,7 +59,7 @@ function deadlineFigure(state: RenewalState): { value: string; unit: string; ton
 }
 
 /**
- * Featured deadline card: label row, a Fraunces display figure with an
+ * Featured deadline card: label row, a Libre Franklin display figure with an
  * optically-aligned unit, and the plain-language state line underneath.
  */
 function NextDeadlineCard(props: { pair?: { item: RenewalItem; state: RenewalState } }) {

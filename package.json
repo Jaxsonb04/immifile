@@ -22,8 +22,9 @@
 	"dependencies": {
 		"@better-auth/expo": "~1.6.22",
 		"@convex-dev/better-auth": "^0.12.5",
-		"@expo-google-fonts/fraunces": "^0.4.1",
+		"@expo-google-fonts/ibm-plex-mono": "^0.4.1",
 		"@expo-google-fonts/inter": "^0.4.2",
+		"@expo-google-fonts/libre-franklin": "^0.4.2",
 		"@expo/metro-runtime": "~57.0.9",
 		"@gorhom/bottom-sheet": "^5.2.14",
 		"@internationalized/date": "^3.12.0",

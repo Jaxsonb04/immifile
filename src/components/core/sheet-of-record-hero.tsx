@@ -32,7 +32,7 @@ import Animated, {
  * five — the case sequence, the only part of that string that belongs to this
  * person rather than to everyone who filed at the same center in the same week —
  * are NOT set. Those five character cells are EMPTY, and the paper's pale ruling
- * beneath them thickens into five terracotta underscores, one per missing glyph.
+ * beneath them thickens into five cobalt underscores, one per missing glyph.
  * That is the entire accent budget for this illustration and it is a proposition,
  * not a decoration: this is the part that is yours, and we are holding the space.
  * Continue's fill is the screen's second accent and the Privacy policy link is
@@ -65,7 +65,7 @@ import Animated, {
  *     the number are the subject: one line of the record is written, the rest is
  *     not, and this app is not going to pretend otherwise.
  *
- *  3. THE ACCENT IS NEVER FADED. The five terracotta underscores are revealed by
+ *  3. THE ACCENT IS NEVER FADED. The five cobalt underscores are revealed by
  *     occlusion — each rules itself in from behind its own `overflow-hidden`
  *     mask — never by opacity, so the app's one reserved hue is either absent or
  *     completely itself. There is no `opacity: v` anywhere in this file where `v`
@@ -143,7 +143,7 @@ function seg(now: number, from: number, to: number): number {
  * The clock every entrance beat reads from. `Easing.linear` is MANDATORY and
  * must stay explicit: `withTiming`'s default is `Easing.inOut(Easing.quad)`, and
  * omitting it would silently warp every millisecond in this file — the 60ms
- * hitch before the five terracotta underscores would disappear and the rhythm
+ * hitch before the five cobalt underscores would disappear and the rhythm
  * would collapse into a generic ease. All shaping lives in `seg`.
  *
  * Rest convention here is INVERTED relative to `useIdleLoop`: the clock rests at
@@ -221,7 +221,7 @@ function baselineDrop(fontSize: number, lineHeight: number): number {
  * the glyph is centred in its cell, because `tabular-nums` normalises FIGURES
  * only: Inter's I / O / E have advances of roughly 0.28 / 0.73 / 0.57em and
  * would never align on their own. Fixed cells also make every downstream width
- * (the inked field, the terracotta run) exactly computable with no measurement.
+ * (the inked field, the cobalt run) exactly computable with no measurement.
  */
 type GlyphCellProps = {
 	clock: Clock
@@ -245,7 +245,7 @@ function GlyphCell({ clock, char, at, cellW, maskH, fontSize, lineHeight, drop }
 		<View className="overflow-hidden" style={{ width: cellW, height: maskH }}>
 			<Animated.Text
 				maxFontSizeMultiplier={1}
-				className="text-center font-semibold tabular-nums text-foreground"
+				className="text-center font-mono tabular-nums text-foreground"
 				style={[
 					{
 						position: 'absolute',
@@ -329,7 +329,7 @@ function Caret({
 }
 
 /**
- * One of the five terracotta underscores under the empty case-sequence cells.
+ * One of the five cobalt underscores under the empty case-sequence cells.
  *
  * Revealed by occlusion (invariant 3), never by opacity. Square ends and 3pt
  * tall on purpose: `rounded-full` at `h-2.5` is the tab empty states' accent
@@ -582,7 +582,7 @@ export function SheetOfRecordHero({ height = 288 }: SheetOfRecordHeroProps) {
 			{/* ── The margin rule, lower segment ───────────────────────────────
 			    Runs from under the fold panel down to the perforation and stops.
 			    Everything on this sheet hangs off it, left-ranged, while the
-			    Fraunces headline below is centred. That is the asymmetry. */}
+			    Libre Franklin headline below is centred. That is the asymmetry. */}
 			<View
 				className="bg-border"
 				style={{ position: 'absolute', left: marginX, width: 1, top: 0, bottom: seamFB }}

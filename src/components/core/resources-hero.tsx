@@ -99,7 +99,7 @@ export function ResourcesHero({ width = 150 }: ResourcesHeroProps) {
 							>
 								<StyledLucideIcon name="landmark" size={cardH * 0.17} className="text-accent" />
 							</View>
-							{/* The one terracotta moment: the page title. */}
+							{/* The one cobalt moment: the page title. */}
 							<View className="h-2.5 flex-1 rounded-full bg-accent" style={{ maxWidth: cardW * 0.4 }} />
 						</View>
 						<View className="h-1.5 w-4/5 rounded-full bg-surface-tertiary" />

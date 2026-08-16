@@ -7,8 +7,9 @@
       "dependencies": {
         "@better-auth/expo": "~1.6.22",
         "@convex-dev/better-auth": "^0.12.5",
-        "@expo-google-fonts/fraunces": "^0.4.1",
+        "@expo-google-fonts/ibm-plex-mono": "^0.4.1",
         "@expo-google-fonts/inter": "^0.4.2",
+        "@expo-google-fonts/libre-franklin": "^0.4.2",
         "@expo/metro-runtime": "~57.0.9",
         "@gorhom/bottom-sheet": "^5.2.14",
         "@internationalized/date": "^3.12.0",
@@ -359,9 +360,11 @@
 
     "@eslint/plugin-kit": ["@eslint/plugin-kit@0.4.1", "", { "dependencies": { "@eslint/core": "^0.17.0", "levn": "^0.4.1" } }, "sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA=="],
 
-    "@expo-google-fonts/fraunces": ["@expo-google-fonts/fraunces@0.4.1", "", {}, "sha512-gYc9P92ObyWvz1rWPOeWSvVKyBFIuA8hgOdhvo4DSiPBaWLbFA6v8uLIEIBwW+0oWTlXbBzjeBReHQI2H7UNjQ=="],
+    "@expo-google-fonts/ibm-plex-mono": ["@expo-google-fonts/ibm-plex-mono@0.4.1", "", {}, "sha512-/yYz1mPZq8Nd4tSiH0SBDPEdJUqiOGBwVgSrQvLuw7SPh6C7ezBzmi6eFyHY4QaQwjHDmOLSBKsxzq8ZDFXVAg=="],
 
     "@expo-google-fonts/inter": ["@expo-google-fonts/inter@0.4.2", "", {}, "sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ=="],
+
+    "@expo-google-fonts/libre-franklin": ["@expo-google-fonts/libre-franklin@0.4.2", "", {}, "sha512-aUf6qenmy23hL2BteGl8bk1Y1rmxplz3e1HhmjDkFt171aT7gEc4uSbuS1URbD5mUPzt0rv+VuOlKezPlDegew=="],
 
     "@expo-google-fonts/material-symbols": ["@expo-google-fonts/material-symbols@0.4.38", "", {}, "sha512-IJkBtN1o8u9BW5fvSii1MyHPQ7Q0HxbWcVBvOrOzgMLpVtZw7R2w94wBTVR7kZwv3w1JNTESMmLA5Sqn1+Z36A=="],
 
