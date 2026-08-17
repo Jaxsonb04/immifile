@@ -66,6 +66,15 @@ type TabIntroProps = {
 	/** Native header actions for this tab. The callback stays mounted while its
 	 * buttons receive the same hidden state as the native tab bar. */
 	renderToolbar?: (hidden: boolean) => ReactNode
+	/** The tab's native large title, for tabs the cover cannot reach it on.
+	 * A tab whose root is a large-title ScrollView draws its title inside the
+	 * content area, so the cover already hides it; a tab that owns its own
+	 * layout (the assistant chat) keeps its title up in the navigation bar,
+	 * above the cover. Routing the title through this callback lets such a tab
+	 * withhold it for the same window the tab bar is hidden, so the intro is
+	 * one uninterrupted teaching surface everywhere. The title returns while
+	 * the cover is still fully opaque and is revealed by the same fade. */
+	renderTitle?: (hidden: boolean) => ReactNode
 	/** The tab's real content. It stays mounted behind the opaque cover so its
 	 * data is ready before the intro leaves, but cannot receive touch or
 	 * accessibility focus until the cover is gone. */
@@ -108,6 +117,7 @@ export function TabIntro({
 	features,
 	contentStartsBelowHeader = false,
 	renderToolbar,
+	renderTitle,
 	children,
 }: TabIntroProps) {
 	const liveInsets = useSafeAreaInsets()
@@ -253,6 +263,7 @@ export function TabIntro({
 	)
 	return (
 		<TabIntroTransitionContext value={contentAccessible}>
+			{renderTitle?.(chromeHidden)}
 			{renderToolbar?.(chromeHidden)}
 			<View collapsable={false} className="flex-1 bg-background">
 				<View
