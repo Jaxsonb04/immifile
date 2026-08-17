@@ -540,6 +540,7 @@ export function SheetOfRecordHero({ height = 288 }: SheetOfRecordHeroProps) {
 	return (
 		<View
 			accessible={false}
+			accessibilityElementsHidden
 			importantForAccessibility="no-hide-descendants"
 			style={{ height, alignSelf: 'stretch' }}
 		>

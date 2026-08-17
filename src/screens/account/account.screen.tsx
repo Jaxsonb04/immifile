@@ -2,9 +2,12 @@ import { TempAccountCard, useAccountSession, useViewer } from '@/components/acco
 import { BodyScrollView } from '@/components/core'
 import { styledIcon, type StyledIconComponent } from '@/components/styled-icon'
 import {
+	APPLE_MANUAL_REVOCATION_INSTRUCTIONS,
 	confirmAndDeleteSocialAccount,
+	reconcileAmbiguousAccountDeletion,
 	resolveAccountDeletionMode,
 	resolveCredentialedDeletionMethod,
+	socialDeletionOAuthAdditionalData,
 	type SocialDeletionProvider,
 } from '@/lib/account-deletion'
 import { authClient } from '@/lib/auth-client'
@@ -13,7 +16,8 @@ import { RELEASE_FEATURES } from '@/lib/release-policy'
 import { ensureSessionResolved, ensureSignedOutAfterDeletion } from '@/lib/session-sync'
 import { useMyBlocks, useUnblockAuthor } from '@/screens/community/community.data'
 import { api } from '@convex/_generated/api'
-import { useAction } from 'convex/react'
+import { useAction, useConvex } from 'convex/react'
+import * as Crypto from 'expo-crypto'
 import { router, type Href } from 'expo-router'
 import { Avatar, Button, ListGroup, Separator, Typography } from 'heroui-native'
 import { useEffect, useState } from 'react'
@@ -254,62 +258,59 @@ function confirmSignOut(providerLabel: string | null) {
  * Permanent in-app account deletion, presented Apple-style: a red row, a
  * confirm alert, and (for credentialed accounts) a secure password prompt.
  *
- * Credentialed accounts confirm with their current password, then Better
- * Auth's delete-user hook purges app data before deleting the identity and
- * sessions. Temporary accounts have no password, so the app purges their data
- * first and then uses the anonymous plugin's dedicated identity endpoint.
+ * Every mode calls one Convex action that revalidates the Better Auth session,
+ * verifies password/social proof when applicable, revokes Apple authorization,
+ * purges app data behind a tombstone, and finally removes the auth identity.
  */
 function useDeleteAccountRow(linkedProviderIds: string[] | undefined): {
 	busy: boolean
 	confirmDelete: () => void
 } {
 	const { isCredentialed, isPending } = useAccountSession()
-	const deleteAccountData = useAction(api.account.deleteAccountData)
+	const convex = useConvex()
+	const beginSocialAccountDeletion = useAction(api.auth.beginSocialAccountDeletion)
+	const deleteAccount = useAction(api.auth.deleteAccount)
 	const [busy, setBusy] = useState(false)
 	const deletionMode = resolveAccountDeletionMode(isPending, isCredentialed)
 	const credentialedMethod = resolveCredentialedDeletionMethod(linkedProviderIds)
 
-	async function currentSessionId(): Promise<string | null> {
-		const { data } = await authClient.getSession({
-			query: { disableCookieCache: true },
-		})
-		return data?.session.id ?? null
-	}
-
 	async function eraseAccount(password?: string) {
 		setBusy(true)
+		// A CSPRNG-backed capability lets the client reconcile a response lost
+		// after the server durably accepted deletion without trusting session loss.
+		const attemptId = Crypto.randomUUID()
+		let serverDeletionRequested = false
+		let appleManualRevokeRequired = false
+		const appleWasLinked = linkedProviderIds?.includes('apple') === true
 		try {
-			let error: { message?: string; status?: number } | null = null
 			if (deletionMode === 'temporary') {
-				const result = await (async () => {
-					// A previous attempt may have already deleted the identity while
-					// this app instance kept rendering the account (see the
-					// `$sessionSignal` note below). Better Auth then rejects every
-					// call with 401, so ask it first — a dead session means there is
-					// nothing left to delete and the flow should just finish.
-					const current = await authClient.getSession()
-					if (current.data === null) return { error: null }
-					await deleteAccountData({})
-					const result = await authClient.deleteAnonymousUser()
-					if (result.error?.status === 401) return { error: null }
-					return result
-				})()
-				error = result.error ?? null
-			} else if (credentialedMethod === 'password') {
-				const result = await authClient.deleteUser({
-					password: password ?? '',
-					fetchOptions: { disableSignal: true },
+				// Never infer deletion success from a missing client session: an
+				// expired/offline anonymous session could still have server-owned data.
+				// The server action is the sole source of truth for the whole cascade.
+				serverDeletionRequested = true
+				const deletion = await deleteAccount({
+					attemptId,
+					proof: { kind: 'anonymous' },
 				})
-				error = result.error
+				appleManualRevokeRequired = deletion.appleManualRevokeRequired
+			} else if (credentialedMethod === 'password') {
+				serverDeletionRequested = true
+				const deletion = await deleteAccount({
+					attemptId,
+					proof: { kind: 'password', password: password ?? '' },
+				})
+				appleManualRevokeRequired = deletion.appleManualRevokeRequired
 			} else if (typeof credentialedMethod === 'object') {
 				const provider = credentialedMethod.provider
 				const result = await confirmAndDeleteSocialAccount({
 					provider,
-					getSessionId: currentSessionId,
-					reauthenticate: async (socialProvider: SocialDeletionProvider) => {
-						const socialResult = await authClient.signIn.social({
+					beginChallenge: (socialProvider: SocialDeletionProvider) =>
+						beginSocialAccountDeletion({ provider: socialProvider }),
+					reauthenticate: async (socialProvider: SocialDeletionProvider, challenge) => {
+						const socialResult = await authClient.linkSocial({
 							provider: socialProvider,
 							callbackURL: '/',
+							additionalData: socialDeletionOAuthAdditionalData(challenge),
 							fetchOptions: { disableSignal: true },
 						})
 						return socialResult.error
@@ -321,13 +322,21 @@ function useDeleteAccountRow(linkedProviderIds: string[] | undefined): {
 							: null
 					},
 					resolveSession: ensureSessionResolved,
-					deleteAccount: async () => {
-						const deleteResult = await authClient.deleteUser({
-							fetchOptions: { disableSignal: true },
-						})
-						return deleteResult.error
-							? { message: deleteResult.error.message ?? 'The account could not be deleted.' }
-							: null
+					deleteAccount: async (challenge) => {
+						try {
+							serverDeletionRequested = true
+							const deletion = await deleteAccount({
+								attemptId,
+								proof: { kind: 'social', challenge },
+							})
+							return { error: null, ...deletion }
+						} catch (error) {
+							return {
+								error: {
+									message: humanErrorMessage(error, 'The account could not be deleted.'),
+								},
+							}
+						}
 					},
 				})
 				if (!result.ok) {
@@ -337,23 +346,66 @@ function useDeleteAccountRow(linkedProviderIds: string[] | undefined): {
 							: (result.message ?? 'The account could not be deleted.'),
 					)
 				}
+				appleManualRevokeRequired = result.appleManualRevokeRequired
 			} else {
 				throw new Error('The sign-in method could not be verified. Please try again.')
 			}
-			if (error) {
-				throw new Error(error.message ?? 'The account could not be deleted.')
-			}
 			// Drive the session atom to signed-out (rationale in ensureSignedOut):
-			// the anonymous plugin never refreshes it on deletion, and without this
+			// the Convex action cannot clear Expo's local cookie, and without this
 			// the app keeps rendering the deleted account until the cached Convex
 			// JWT expires — a retried delete then hits 401.
 			const signedOut = await ensureSignedOutAfterDeletion()
 			if (!signedOut) {
 				throw new Error(
-					'Your account was deleted, but this device could not clear the old session. Please restart the app.',
+					`Your account was deleted, but this device could not clear the old session. Please restart the app.${appleManualRevokeRequired ? ` ${APPLE_MANUAL_REVOCATION_INSTRUCTIONS}` : ''}`,
+				)
+			}
+			if (appleManualRevokeRequired) {
+				Alert.alert(
+					'Remove Immifile from Apple',
+					`Your Immifile account and data were deleted, but Apple did not provide a token that Immifile could revoke. ${APPLE_MANUAL_REVOCATION_INSTRUCTIONS}`,
 				)
 			}
 		} catch (error) {
+			const reconciliation = await reconcileAmbiguousAccountDeletion({
+				deletionWasRequested: serverDeletionRequested,
+				getDeletionStatus: () => convex.query(api.auth.getAccountDeletionStatus, { attemptId }),
+				getAuthoritativeSession: async () => {
+					const session = await authClient.getSession({
+						query: { disableCookieCache: true },
+						fetchOptions: { disableSignal: true },
+					})
+					return { data: session.data, error: session.error }
+				},
+				ensureSignedOut: ensureSignedOutAfterDeletion,
+			})
+			if (reconciliation.status !== 'not-confirmed') {
+				const manualAppleCleanup =
+					appleManualRevokeRequired || reconciliation.appleManualRevokeRequired || appleWasLinked
+				if (reconciliation.status === 'pending') {
+					Alert.alert(
+						'Deletion accepted',
+						`Your deletion request was securely accepted and is being completed. Your account is blocked from further use.${
+							reconciliation.localSessionCleared
+								? ''
+								: ' This device could not clear the old session, so please restart the app.'
+						}${manualAppleCleanup ? ` ${APPLE_MANUAL_REVOCATION_INSTRUCTIONS}` : ''}`,
+					)
+				} else if (!reconciliation.localSessionCleared) {
+					Alert.alert(
+						'Account deleted',
+						`Your account and data were deleted, but this device could not clear the old session. Please restart the app.${manualAppleCleanup ? ` ${APPLE_MANUAL_REVOCATION_INSTRUCTIONS}` : ''}`,
+					)
+				} else if (manualAppleCleanup) {
+					Alert.alert(
+						'Remove Immifile from Apple',
+						`Your Immifile account and data were deleted. Because the server response was interrupted, confirm the Apple authorization is removed too. ${APPLE_MANUAL_REVOCATION_INSTRUCTIONS}`,
+					)
+				} else {
+					Alert.alert('Account deleted', 'Your account and data were deleted.')
+				}
+				return
+			}
 			Alert.alert(
 				'Delete account',
 				humanErrorMessage(error, 'Something went wrong. Please try again.'),

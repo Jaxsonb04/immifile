@@ -1,8 +1,9 @@
 import type { ApplicationKind, FormType } from '@convex/shared/applicationShapes'
 
-// M1-T3 chat UI. Transcript state is device-session-only (MASTER_PLAN
-// "Interfaces"): nothing here is persisted to Convex — only the per-owner daily
-// usage counter is. These types describe the on-screen conversation.
+// M1-T3 chat UI. Immifile keeps transcript state only for this device session
+// (MASTER_PLAN "Interfaces") and persists only the per-owner daily usage
+// counter. Selected user messages are still sent to OpenAI under the provider
+// retention disclosed before consent. These types describe the conversation.
 
 /** A tappable suggested reply: a short label the user sees, and the full
  * message it sends on tap (so a single tap can carry a complete situation). */

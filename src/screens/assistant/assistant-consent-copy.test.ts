@@ -9,9 +9,12 @@ describe('assistant consent copy', () => {
 
 		expect(wordCount).toBeLessThanOrEqual(65)
 		expect(visibleCopy).toContain('OpenAI')
-		expect(visibleCopy).toContain('recent conversation turns')
+		expect(visibleCopy).toContain('current and recent messages')
 		expect(visibleCopy).toContain('daily message count')
 		expect(visibleCopy).toContain('consent choice')
+		expect(visibleCopy).toContain('does not store the transcript')
+		expect(visibleCopy).toContain('up to 30 days')
+		expect(visibleCopy).toContain('abuse monitoring')
 		expect(visibleCopy).toContain('receipt numbers')
 		expect(visibleCopy).toContain('A-Numbers')
 		expect(visibleCopy).toContain('addresses')

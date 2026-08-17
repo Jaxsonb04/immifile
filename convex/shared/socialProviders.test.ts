@@ -1,6 +1,10 @@
 import { decodeJwt, decodeProtectedHeader } from 'jose'
-import { describe, expect, test } from 'vitest'
-import { configuredSocialProviderIds, socialProvidersForRelease } from './socialProviders'
+import { describe, expect, test, vi } from 'vitest'
+import {
+	configuredSocialProviderIds,
+	revokeAppleAuthorization,
+	socialProvidersForRelease,
+} from './socialProviders'
 
 const GOOGLE = { GOOGLE_CLIENT_ID: 'google-id', GOOGLE_CLIENT_SECRET: 'google-secret' }
 const APPLE = {
@@ -109,6 +113,73 @@ describe('release authentication providers', () => {
 		expect(providers.google).toMatchObject({
 			redirectURI: 'https://auth.immifile.app/api/auth/callback/google',
 		})
+	})
+})
+
+describe('Sign in with Apple deletion revocation', () => {
+	test('revokes the durable refresh token with an Apple client-secret JWT', async () => {
+		const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+			expect(init?.method).toBe('POST')
+			expect(init?.headers).toEqual({
+				'content-type': 'application/x-www-form-urlencoded',
+			})
+			const body = new URLSearchParams(init?.body as string)
+			expect(body.get('client_id')).toBe(APPLE.APPLE_CLIENT_ID)
+			expect(body.get('token')).toBe('stored-refresh-token')
+			expect(body.get('token_type_hint')).toBe('refresh_token')
+			const clientSecret = body.get('client_secret')
+			expect(clientSecret).toBeTruthy()
+			expect(decodeJwt(clientSecret!)).toMatchObject({
+				iss: APPLE.APPLE_TEAM_ID,
+				sub: APPLE.APPLE_CLIENT_ID,
+				aud: 'https://appleid.apple.com',
+			})
+			return new Response(null, { status: 200 })
+		})
+
+		await expect(
+			revokeAppleAuthorization(
+				APPLE,
+				{ refreshToken: ' stored-refresh-token ', accessToken: 'access-fallback' },
+				fetcher as typeof fetch,
+			),
+		).resolves.toBe('revoked')
+		expect(fetcher).toHaveBeenCalledWith('https://appleid.apple.com/auth/revoke', expect.anything())
+	})
+
+	test('falls back to the access token when no refresh token was stored', async () => {
+		const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+			const body = new URLSearchParams(init?.body as string)
+			expect(body.get('token')).toBe('stored-access-token')
+			expect(body.get('token_type_hint')).toBe('access_token')
+			return new Response(null, { status: 200 })
+		})
+		await expect(
+			revokeAppleAuthorization(
+				APPLE,
+				{ accessToken: 'stored-access-token' },
+				fetcher as typeof fetch,
+			),
+		).resolves.toBe('revoked')
+	})
+
+	test('allows legacy tokenless accounts to delete with a manual-revoke result', async () => {
+		const fetcher = vi.fn()
+		await expect(
+			revokeAppleAuthorization({}, { refreshToken: ' ', accessToken: null }, fetcher),
+		).resolves.toBe('manual-required')
+		expect(fetcher).not.toHaveBeenCalled()
+	})
+
+	test('fails closed before local deletion when Apple rejects revocation', async () => {
+		const fetcher = vi.fn(async () => new Response(null, { status: 400 }))
+		await expect(
+			revokeAppleAuthorization(
+				APPLE,
+				{ refreshToken: 'stored-refresh-token' },
+				fetcher as typeof fetch,
+			),
+		).rejects.toThrow('Apple authorization could not be revoked')
 	})
 })
 

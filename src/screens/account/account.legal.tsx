@@ -11,7 +11,7 @@ type PolicySection = {
 	body: string
 }
 
-const EFFECTIVE_DATE = 'August 9, 2026'
+const EFFECTIVE_DATE = 'August 16, 2026'
 const SUPPORT_INFO_URL =
 	process.env.EXPO_PUBLIC_SUPPORT_URL ?? 'https://jaxsonb04.github.io/immifile/support/'
 const SUPPORT_EMAIL = process.env.EXPO_PUBLIC_SUPPORT_EMAIL
@@ -51,7 +51,7 @@ function PolicyScreen({
 const PRIVACY_SECTIONS: readonly PolicySection[] = [
 	{
 		title: 'Data used by this release',
-		body: 'Immifile creates a temporary account when you continue. If you create a permanent account, we store the name and email you provide plus authentication records; Google or Apple sign-in may also provide a provider account identifier. When you save a case, we store its USCIS receipt number and the status notes you enter. If you use the AI assistant, we store only a daily message counter and your OpenAI consent choice; the conversation itself stays on your device. We also store small account preferences, such as whether you dismissed an introductory screen, and security records needed to operate the service.',
+		body: 'Immifile creates a temporary account when you continue. If you create a permanent account, we store the name and email you provide plus authentication records; Google or Apple sign-in may also provide a provider account identifier. When you save a case, we store its USCIS receipt number and the status notes you enter. If you use the AI assistant, Immifile stores only a daily message counter and your OpenAI consent choice, not a server-side chat transcript. The live chat remains in this app session; messages sent to OpenAI are subject to the provider retention described below. We also store small account preferences, such as whether you dismissed an introductory screen, and security records needed to operate the service.',
 	},
 	{
 		title: 'How data is used',
@@ -59,11 +59,11 @@ const PRIVACY_SECTIONS: readonly PolicySection[] = [
 	},
 	{
 		title: 'Service providers',
-		body: 'Convex hosts the application backend, database, and authentication components. Vercel hosts the sign-in endpoint every authentication request passes through, and so processes connection metadata such as IP address and user agent. Google and Apple process their respective social sign-in flows when you choose one of those options. The assistant sends nothing to OpenAI until you explicitly agree. After you agree, the text you type and recent turns of that conversation are sent to OpenAI to generate the reply; do not include receipt numbers or other sensitive details. You can withdraw that consent below at any time. Porkbun forwards the support address and Google provides the destination mailbox. We require each provider that accesses user data to provide the same or equal protection described in this policy and required by the App Store Review Guidelines. Your device opens official USCIS and Department of Justice links in the system browser. The filing workflow, document uploads, and public community are not available in this release.',
+		body: 'Convex hosts the application backend, database, and authentication components. Vercel hosts the sign-in endpoint every authentication request passes through, and so processes connection metadata such as IP address and user agent. Google and Apple process their respective social sign-in flows when you choose one of those options. The assistant sends nothing to OpenAI until you explicitly agree. After you agree, your current and recent messages are sent to OpenAI to generate a reply; do not include receipt numbers or other sensitive details. OpenAI may retain prompts and replies in abuse-monitoring logs for up to 30 days and may retain them longer when legally required or reasonably necessary to protect its services or others. OpenAI states that API data is not used to train its models unless the API customer opts in. Withdrawing consent stops future sharing but does not erase content already processed by OpenAI. Porkbun forwards the support address and Google provides the destination mailbox. We require each provider that accesses user data to provide the same or equal protection described in this policy and required by the App Store Review Guidelines. Your device opens official USCIS and Department of Justice links in the system browser. The filing workflow, document uploads, and public community are not available in this release.',
 	},
 	{
 		title: 'Retention and deletion',
-		body: 'A temporary account becomes eligible for permanent deletion after 48 hours. Cleanup runs hourly, so deletion occurs during an hourly cleanup after eligibility rather than at the exact 48-hour instant; a delayed or failed cleanup is retried later. A permanent account is kept until you delete it. Choose Account, then Delete account, to delete the login identity, sessions, saved cases, and other associated Immifile data. An opaque deletion-protection record may remain for up to one hour only to block requests from a stale session; it contains no saved case content, cannot restore the account, and is then removed.',
+		body: 'A temporary account becomes eligible for permanent deletion after 48 hours. Cleanup runs hourly, so deletion occurs during an hourly cleanup after eligibility rather than at the exact 48-hour instant; a delayed or failed cleanup is retried later. A permanent account is kept until you delete it. Choose Account, then Delete account, to delete the login identity, sessions, saved cases, and other associated Immifile data. An opaque deletion-protection record normally remains for approximately one hour while old sessions expire. It contains no saved case content, cannot restore the account, and is then removed. If deletion or provider/session cleanup is interrupted, the record may remain longer only until that security cleanup safely completes.',
 	},
 	{
 		title: 'Security and choices',
@@ -108,7 +108,7 @@ function AssistantPrivacyChoice() {
 					</Typography.Heading>
 					<Typography.Paragraph color="muted" className="text-sm leading-relaxed">
 						{consent
-							? 'You currently allow assistant messages and recent conversation turns to be sent to OpenAI.'
+							? 'You currently allow your current and recent assistant messages to be sent to OpenAI. Provider retention is described above.'
 							: 'Sharing is off. The assistant will ask before sending anything to OpenAI.'}
 					</Typography.Paragraph>
 				</View>

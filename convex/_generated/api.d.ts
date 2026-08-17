@@ -33,6 +33,7 @@ import type * as navigator from "../navigator.js";
 import type * as news from "../news.js";
 import type * as preferences from "../preferences.js";
 import type * as renewals from "../renewals.js";
+import type * as shared_accountDeletion from "../shared/accountDeletion.js";
 import type * as shared_applicationShapes from "../shared/applicationShapes.js";
 import type * as shared_assistantLimits from "../shared/assistantLimits.js";
 import type * as shared_assistantModel from "../shared/assistantModel.js";
@@ -89,6 +90,7 @@ declare const fullApi: ApiFromModules<{
   news: typeof news;
   preferences: typeof preferences;
   renewals: typeof renewals;
+  "shared/accountDeletion": typeof shared_accountDeletion;
   "shared/applicationShapes": typeof shared_applicationShapes;
   "shared/assistantLimits": typeof shared_assistantLimits;
   "shared/assistantModel": typeof shared_assistantModel;

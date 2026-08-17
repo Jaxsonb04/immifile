@@ -14,11 +14,15 @@ describe('account-deletion inventory', () => {
 			'newsItems',
 			'newsMeta',
 			'accountDeletionTombstones',
+			// Capability receipts share the tombstone lifecycle and are removed by
+			// clearOwnerDeletionTombstone, not by the user-data purge phases.
+			'accountDeletionAttempts',
 			'authRateLimits',
 		])
 		const accountTables = schemaTables.filter((table) => !globalTables.has(table)).sort()
 
 		expect(schemaTables).toContain('accountDeletionTombstones')
+		expect(schemaTables).toContain('accountDeletionAttempts')
 		expect([...OWNER_DATA_TABLES].sort()).toEqual(accountTables)
 	})
 

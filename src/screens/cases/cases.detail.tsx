@@ -2,6 +2,8 @@ import { BodyScrollView, ScreenError, ScreenLoading } from '@/components/core'
 import { StyledLucideIcon } from '@/components/styled-icon'
 import { caseStatusLabels } from '@/lib/application-labels'
 import { humanErrorMessage } from '@/lib/error-message'
+import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
+import { useSlowLoad } from '@/hooks/use-slow-load'
 import type { Id } from '@convex/_generated/dataModel'
 import { caseStatuses, type CaseStatus } from '@convex/shared/applicationShapes'
 import { CASE_NOTE_MAX } from '@convex/shared/cases'
@@ -129,8 +131,11 @@ function AddUpdate({ caseId }: { caseId: Id<'cases'> }) {
 export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 	const detail = useCase(caseId)
 	const deleteCase = useDeleteCase()
+	const loadState = resolveSlowLoadState(detail === undefined, useSlowLoad(detail === undefined))
 
-	if (detail === undefined) return <ScreenLoading />
+	if (detail === undefined) {
+		return <ScreenLoading label={loadState === 'stalled' ? SLOW_LOAD_RETRY_MESSAGE : undefined} />
+	}
 	if (detail === null) return <ScreenError title="Case not found" />
 
 	const isRfe = detail.status === 'requestForEvidence'

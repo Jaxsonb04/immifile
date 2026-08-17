@@ -2,8 +2,13 @@ import {
 	resolveTabIntroVisibility,
 	retainObservedTabIntroDismissal,
 } from '@/components/core/tab-intro-state'
-import { TabIntroTransitionContext } from '@/components/core/tab-intro-transition'
+import {
+	TabIntroHeaderReadyContext,
+	TabIntroTransitionContext,
+} from '@/components/core/tab-intro-transition'
 import { StyledLucideIcon } from '@/components/styled-icon'
+import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
+import { useSlowLoad } from '@/hooks/use-slow-load'
 import { TabBarContext } from '@/hooks/use-tab-bar'
 import { api } from '@convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
@@ -134,6 +139,10 @@ export function TabIntro({
 	// makes overflow the norm, so the common one-screen case still feels static.
 	const scrollForAccessibility = fontScale > 1.2
 	const dismissed = useQuery(api.preferences.getPreference, { key: prefKey })
+	const preferenceLoadState = resolveSlowLoadState(
+		dismissed === undefined,
+		useSlowLoad(dismissed === undefined),
+	)
 	const setPreference = useMutation(api.preferences.setPreference)
 	const [hasObservedDismissal, setHasObservedDismissal] = useState(dismissed === true)
 	const [acknowledged, setAcknowledged] = useState(false)
@@ -147,13 +156,19 @@ export function TabIntro({
 	}
 	const effectiveDismissed = observedDismissal ? true : dismissed
 
-	const { showCover, showIntro, contentMounted, contentAccessible, chromeHidden } =
-		resolveTabIntroVisibility({
-			dismissed: effectiveDismissed,
-			preparing,
-			dismissing,
-			acknowledged,
-		})
+	const {
+		showCover,
+		showIntro,
+		contentMounted,
+		contentAccessible,
+		contentHeaderReady,
+		chromeHidden,
+	} = resolveTabIntroVisibility({
+		dismissed: effectiveDismissed,
+		preparing,
+		dismissing,
+		acknowledged,
+	})
 
 	// Native tabs eagerly mount their screens, so only the focused intro may own
 	// global tab-bar visibility. Starting the layout hidden also protects the very
@@ -263,62 +278,69 @@ export function TabIntro({
 	)
 	return (
 		<TabIntroTransitionContext value={contentAccessible}>
-			{renderTitle?.(chromeHidden)}
-			{renderToolbar?.(chromeHidden)}
-			<View collapsable={false} className="flex-1 bg-background">
-				<View
-					className="flex-1"
-					pointerEvents={contentAccessible ? 'auto' : 'none'}
-					accessibilityElementsHidden={!contentAccessible}
-					importantForAccessibility={contentAccessible ? 'auto' : 'no-hide-descendants'}
-				>
-					{contentMounted ? children : null}
-				</View>
-				{showCover ? (
-					<Animated.View
-						// The cover continues intercepting touches through the fade; mounted
-						// content underneath is data-ready but never accidentally actionable.
-						pointerEvents="auto"
-						accessibilityViewIsModal
-						className="absolute inset-0 bg-background px-section"
-						style={[
-							overlayStyle,
-							{
-								paddingTop: contentStartsBelowHeader ? 0 : insets.top + LARGE_TITLE_HEADER_HEIGHT,
-								paddingBottom: insets.bottom + INTRO_BOTTOM_CLEARANCE,
-							},
-						]}
+			<TabIntroHeaderReadyContext value={contentHeaderReady}>
+				{renderTitle?.(chromeHidden)}
+				{renderToolbar?.(chromeHidden)}
+				<View collapsable={false} className="flex-1 bg-background">
+					<View
+						className="flex-1"
+						pointerEvents={contentAccessible ? 'auto' : 'none'}
+						accessibilityElementsHidden={!contentAccessible}
+						importantForAccessibility={contentAccessible ? 'auto' : 'no-hide-descendants'}
 					>
-						{showIntro ? (
-							<>
-								<ScrollView
-									className="flex-1"
-									contentContainerStyle={{ flexGrow: 1 }}
-									bounces={scrollForAccessibility}
-									showsVerticalScrollIndicator={scrollForAccessibility}
-								>
-									{teachingContent}
-								</ScrollView>
+						{contentMounted ? children : null}
+					</View>
+					{showCover ? (
+						<Animated.View
+							// The cover continues intercepting touches through the fade; mounted
+							// content underneath is data-ready but never accidentally actionable.
+							pointerEvents="auto"
+							accessibilityViewIsModal
+							className="absolute inset-0 bg-background px-section"
+							style={[
+								overlayStyle,
+								{
+									paddingTop: contentStartsBelowHeader ? 0 : insets.top + LARGE_TITLE_HEADER_HEIGHT,
+									paddingBottom: insets.bottom + INTRO_BOTTOM_CLEARANCE,
+								},
+							]}
+						>
+							{showIntro ? (
+								<>
+									<ScrollView
+										className="flex-1"
+										contentContainerStyle={{ flexGrow: 1 }}
+										bounces={scrollForAccessibility}
+										showsVerticalScrollIndicator={scrollForAccessibility}
+									>
+										{teachingContent}
+									</ScrollView>
 
-								{/* The acknowledgement lives OUTSIDE the ScrollView. Inside it, a
+									{/* The acknowledgement lives OUTSIDE the ScrollView. Inside it, a
 					    frame too short for the content sheared the button's bottom edge
 					    off instead of scrolling; as a sibling it is laid out before the
 					    scroll area gets the remaining height, so it is always whole and
 					    always tappable. */}
-								<Animated.View entering={rise(3)} className="pt-card">
-									<Button onPress={dismiss}>
-										<Button.Label maxFontSizeMultiplier={1.5}>Got it</Button.Label>
-									</Button>
-								</Animated.View>
-							</>
-						) : (
-							<View className="flex-1 items-center justify-center">
-								<Spinner accessibilityLabel="Loading page introduction" />
-							</View>
-						)}
-					</Animated.View>
-				) : null}
-			</View>
+									<Animated.View entering={rise(3)} className="pt-card">
+										<Button onPress={dismiss}>
+											<Button.Label maxFontSizeMultiplier={1.5}>Got it</Button.Label>
+										</Button>
+									</Animated.View>
+								</>
+							) : (
+								<View className="flex-1 items-center justify-center">
+									<Spinner accessibilityLabel="Loading page introduction" />
+									{preferenceLoadState === 'stalled' ? (
+										<Typography.Paragraph color="muted" className="mt-control text-center text-sm">
+											{SLOW_LOAD_RETRY_MESSAGE}
+										</Typography.Paragraph>
+									) : null}
+								</View>
+							)}
+						</Animated.View>
+					) : null}
+				</View>
+			</TabIntroHeaderReadyContext>
 		</TabIntroTransitionContext>
 	)
 }

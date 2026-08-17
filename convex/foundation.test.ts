@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import { api, internal } from './_generated/api'
 import schema from './schema'
 import { filingWindowDays } from './shared/applicationShapes'
+import { DELETION_TOMBSTONE_TTL_MS } from './shared/authSecurity'
 
 const modules = import.meta.glob('./**/*.ts')
 
@@ -177,16 +178,131 @@ describe('owner scoping', () => {
 })
 
 describe('account deletion contract', () => {
+	test('legacy and purge-only tombstones retain finite cleanup semantics', async () => {
+		const t = newT()
+		const legacyOwnerId = 'legacy-owner'
+		await t.run(async (ctx) => {
+			await ctx.db.insert('accountDeletionTombstones', {
+				ownerId: legacyOwnerId,
+				createdAt: Date.now() - DELETION_TOMBSTONE_TTL_MS - 1,
+				expiresAt: Date.now() - 1,
+			})
+		})
+		await t.mutation(internal.account.clearOwnerDeletionTombstone, {
+			ownerId: legacyOwnerId,
+		})
+		expect(
+			await t.run((ctx) =>
+				ctx.db
+					.query('accountDeletionTombstones')
+					.withIndex('by_ownerId', (q) => q.eq('ownerId', legacyOwnerId))
+					.unique(),
+			),
+		).toBeNull()
+
+		const purgeOnlyOwnerId = 'purge-only-owner'
+		await t.mutation(internal.account.beginOwnerDeletion, { ownerId: purgeOnlyOwnerId })
+		const purgeOnly = await t.run((ctx) =>
+			ctx.db
+				.query('accountDeletionTombstones')
+				.withIndex('by_ownerId', (q) => q.eq('ownerId', purgeOnlyOwnerId))
+				.unique(),
+		)
+		expect(purgeOnly?.completedAt).toEqual(expect.any(Number))
+		expect(purgeOnly!.expiresAt - purgeOnly!.completedAt!).toBe(DELETION_TOMBSTONE_TTL_MS)
+		expect(purgeOnly?.authUserId).toBeUndefined()
+	})
+
+	test('an auth-backed pending tombstone never clears merely because time elapsed', async () => {
+		const t = newT()
+		const ownerId = 'pending-auth-owner'
+		await t.run(async (ctx) => {
+			await ctx.db.insert('accountDeletionTombstones', {
+				ownerId,
+				authUserId: 'pending-auth-user',
+				createdAt: Date.now() - DELETION_TOMBSTONE_TTL_MS - 1,
+				expiresAt: Date.now() - 1,
+			})
+		})
+		await t.mutation(internal.account.clearOwnerDeletionTombstone, { ownerId })
+		expect(
+			await t.run((ctx) =>
+				ctx.db
+					.query('accountDeletionTombstones')
+					.withIndex('by_ownerId', (q) => q.eq('ownerId', ownerId))
+					.unique(),
+			),
+		).toMatchObject({ ownerId, authUserId: 'pending-auth-user' })
+	})
+
+	test('preserves concurrent device receipts and rejects a duplicate capability across owners', async () => {
+		const t = newT()
+		const ownerId = 'multi-device-deletion-owner'
+		const authUserId = 'multi-device-auth-user'
+		const firstAttemptId = '10000000-0000-4000-8000-000000000001'
+		const secondAttemptId = '20000000-0000-4000-8000-000000000002'
+
+		for (const attemptId of [firstAttemptId, secondAttemptId]) {
+			await t.mutation(internal.account.beginOwnerDeletion, {
+				ownerId,
+				authUserId,
+				attemptId,
+			})
+			await expect(t.query(api.auth.getAccountDeletionStatus, { attemptId })).resolves.toEqual({
+				status: 'pending',
+				appleManualRevokeRequired: false,
+			})
+		}
+
+		await expect(
+			t.mutation(internal.account.beginOwnerDeletion, {
+				ownerId: 'different-owner',
+				authUserId: 'different-auth-user',
+				attemptId: firstAttemptId,
+			}),
+		).rejects.toThrow('The deletion request could not be verified')
+
+		await t.mutation(internal.account.completeOwnerDeletion, {
+			ownerId,
+			authUserId,
+			appleManualRevokeRequired: true,
+		})
+		for (const attemptId of [firstAttemptId, secondAttemptId]) {
+			await expect(t.query(api.auth.getAccountDeletionStatus, { attemptId })).resolves.toEqual({
+				status: 'completed',
+				appleManualRevokeRequired: true,
+			})
+		}
+
+		await t.run(async (ctx) => {
+			const tombstone = await ctx.db
+				.query('accountDeletionTombstones')
+				.withIndex('by_ownerId', (q) => q.eq('ownerId', ownerId))
+				.unique()
+			await ctx.db.patch('accountDeletionTombstones', tombstone!._id, {
+				expiresAt: Date.now() - 1,
+				authCleanupGeneration: 1,
+				authCleanupCompletedGeneration: 1,
+				lastAuthSweepAt: Date.now(),
+			})
+		})
+		await t.mutation(internal.account.clearOwnerDeletionTombstone, { ownerId })
+		for (const attemptId of [firstAttemptId, secondAttemptId]) {
+			await expect(t.query(api.auth.getAccountDeletionStatus, { attemptId })).resolves.toEqual({
+				status: 'missing',
+			})
+		}
+	})
+
 	test('deleteAccountData removes every row and stored file for the owner', async () => {
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
 
 		await alice.action(internal.dev.seed.seedDemo, {})
-		// deleteAccountData is the anonymous-session path; a permanent account
-		// deletes through Better Auth's password-confirmed delete-user endpoint.
+		// Internal cascade exercise; the interactive path is auth.deleteAccount.
 		await t
 			.withIdentity({ subject: 'alice', isAnonymous: true })
-			.action(api.account.deleteAccountData, {})
+			.action(internal.account.deleteAccountData, {})
 
 		// A JWT issued before deletion can remain cryptographically valid for a
 		// few minutes, but the tombstone must prevent it from recreating data
@@ -212,7 +328,7 @@ describe('account deletion contract', () => {
 			key: 'casesIntroDismissed',
 			value: true,
 		})
-		await staleSession.action(api.account.deleteAccountData, {})
+		await staleSession.action(internal.account.deleteAccountData, {})
 
 		// Reactive reads can rerun between the app-data purge and Better Auth
 		// deleting the identity. They must resolve to the now-empty account state
@@ -234,11 +350,13 @@ describe('account deletion contract', () => {
 	test('deleteAccountData refuses a credentialed session (password path only)', async () => {
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })
-		await expect(alice.action(api.account.deleteAccountData, {})).rejects.toThrow(/password/i)
+		await expect(alice.action(internal.account.deleteAccountData, {})).rejects.toThrow(/password/i)
 	})
 
 	test('deleteAccountData requires authentication', async () => {
 		const t = newT()
-		await expect(t.action(api.account.deleteAccountData, {})).rejects.toThrow('Not authenticated')
+		await expect(t.action(internal.account.deleteAccountData, {})).rejects.toThrow(
+			'Not authenticated',
+		)
 	})
 })

@@ -15,6 +15,13 @@ type AppleCredentials = {
 	privateKey: string
 }
 
+export type AppleAuthorizationTokens = {
+	refreshToken?: string | null
+	accessToken?: string | null
+}
+
+export type AppleAuthorizationRevocationResult = 'revoked' | 'manual-required'
+
 /**
  * Apple uses a signed JWT as its OAuth client secret. Build it when Better
  * Auth resolves the provider so each auth instance gets a fresh 180-day token
@@ -32,6 +39,56 @@ async function generateAppleClientSecret(credentials: AppleCredentials): Promise
 		.setIssuedAt(now)
 		.setExpirationTime(now + APPLE_CLIENT_SECRET_TTL_SECONDS)
 		.sign(signingKey)
+}
+
+function appleCredentials(env: AuthEnvironment): AppleCredentials | null {
+	if (!env.APPLE_CLIENT_ID || !env.APPLE_TEAM_ID || !env.APPLE_KEY_ID || !env.APPLE_PRIVATE_KEY) {
+		return null
+	}
+	return {
+		clientId: env.APPLE_CLIENT_ID,
+		teamId: env.APPLE_TEAM_ID,
+		keyId: env.APPLE_KEY_ID,
+		privateKey: env.APPLE_PRIVATE_KEY,
+	}
+}
+
+/**
+ * Revoke Sign in with Apple before removing the local Better Auth account.
+ * Apple accepts either token and recommends the durable refresh token. When an
+ * old account has neither, deletion must still proceed and the UI must direct
+ * the user to revoke Immifile manually from their Apple account settings.
+ */
+export async function revokeAppleAuthorization(
+	env: AuthEnvironment,
+	tokens: AppleAuthorizationTokens,
+	fetcher: typeof fetch = fetch,
+): Promise<AppleAuthorizationRevocationResult> {
+	const refreshToken = tokens.refreshToken?.trim()
+	const accessToken = tokens.accessToken?.trim()
+	const token = refreshToken || accessToken
+	if (!token) return 'manual-required'
+
+	const credentials = appleCredentials(env)
+	if (credentials === null) {
+		throw new Error('Apple account deletion is temporarily unavailable')
+	}
+
+	const body = new URLSearchParams({
+		client_id: credentials.clientId,
+		client_secret: await generateAppleClientSecret(credentials),
+		token,
+		token_type_hint: refreshToken ? 'refresh_token' : 'access_token',
+	})
+	const response = await fetcher('https://appleid.apple.com/auth/revoke', {
+		method: 'POST',
+		headers: { 'content-type': 'application/x-www-form-urlencoded' },
+		body,
+	})
+	if (response.status !== 200) {
+		throw new Error('Apple authorization could not be revoked')
+	}
+	return 'revoked'
 }
 
 /**
@@ -66,13 +123,8 @@ export function socialProvidersForRelease(
 			redirectURI: callbackUrl(env, 'google'),
 		}
 	}
-	if (env.APPLE_CLIENT_ID && env.APPLE_TEAM_ID && env.APPLE_KEY_ID && env.APPLE_PRIVATE_KEY) {
-		const credentials: AppleCredentials = {
-			clientId: env.APPLE_CLIENT_ID,
-			teamId: env.APPLE_TEAM_ID,
-			keyId: env.APPLE_KEY_ID,
-			privateKey: env.APPLE_PRIVATE_KEY,
-		}
+	const credentials = appleCredentials(env)
+	if (credentials !== null) {
 		providers.apple = async () => ({
 			clientId: credentials.clientId,
 			clientSecret: await generateAppleClientSecret(credentials),

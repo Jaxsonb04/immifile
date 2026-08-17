@@ -41,6 +41,11 @@ export function resolveTabIntroVisibility({
 		showIntro: phase === 'intro' || phase === 'preparing' || phase === 'dismissing',
 		contentMounted: true,
 		contentAccessible: !showCover,
+		// Header geometry must settle before the opaque cover starts fading. If
+		// content waits until it is accessible to configure its header, UIKit
+		// exposes one frame with the intro's inset before applying the content
+		// header and the page visibly jumps upward.
+		contentHeaderReady: phase === 'preparing' || phase === 'dismissing' || phase === 'content',
 		chromeHidden: phase === 'loading' || phase === 'intro',
 	}
 }

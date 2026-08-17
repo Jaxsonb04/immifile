@@ -7,6 +7,7 @@ import type { AssistantUsage } from './assistantQuota'
 import {
 	type AssistantRecommendation,
 	navigatorFactsShape,
+	preScreen,
 	recommend,
 } from './shared/navigator'
 import { assertFeatureEnabled } from './lib/releaseGate'
@@ -69,6 +70,27 @@ export const getRecommendation = action({
 			throw new Error('A previous message is too long')
 		}
 
+		// History is supplied by the client, so a caller can forge both its content
+		// and its role. Only prior user turns are useful evidence: screen every one
+		// of them deterministically, and never forward caller-labelled `assistant`
+		// turns as if they were trusted instructions from this application.
+		const userHistory = history.filter((turn) => turn.role === 'user')
+		const screenedRecommendations = [...userHistory.map((turn) => turn.content), message].map(
+			preScreen,
+		)
+		const preScreenedRecommendation =
+			screenedRecommendations.find((candidate) => candidate?.reason === 'unsupportedForm') ??
+			screenedRecommendations.find((candidate) => candidate !== null) ??
+			undefined
+
+		// Preference reads intentionally resolve to a neutral value during the
+		// client's anonymous-to-credential token swap. An action must still prove
+		// authentication before checking consent so an unauthenticated request is
+		// rejected for the right security boundary and never reaches OpenAI.
+		if ((await ctx.auth.getUserIdentity()) === null) {
+			throw new Error('Not authenticated')
+		}
+
 		const hasOpenAIConsent = await ctx.runQuery(api.preferences.getPreference, {
 			key: 'assistantOpenAIConsent',
 		})
@@ -88,7 +110,7 @@ export const getRecommendation = action({
 
 		let response: { content: string; refused: boolean }
 		try {
-			const messages: OpenAIChatMessage[] = [...history, { role: 'user', content: message }]
+			const messages: OpenAIChatMessage[] = [...userHistory, { role: 'user', content: message }]
 			response = await createChatCompletion({
 				apiKey,
 				model,
@@ -118,6 +140,6 @@ export const getRecommendation = action({
 		}
 		const parsed = navigatorFactsShape.safeParse(rawFacts)
 		const facts = parsed.success ? parsed.data : UNKNOWN_FACTS
-		return { recommendation: recommend(message, facts), usage }
+		return { recommendation: preScreenedRecommendation ?? recommend(message, facts), usage }
 	},
 })

@@ -2,7 +2,7 @@ import { literals } from 'convex-helpers/validators'
 import { v } from 'convex/values'
 import type { Doc, Id } from './_generated/dataModel'
 import { type MutationCtx, mutation, query } from './_generated/server'
-import { requireCredentialedOwnerId, requireOwnerId } from './lib/auth'
+import { getOwnerId, requireCredentialedOwnerId, requireOwnerId } from './lib/auth'
 import {
 	getDraftForApplication,
 	getOwnedApplication,
@@ -37,7 +37,8 @@ async function getOwnedCase(
 export const listCases = query({
 	args: {},
 	handler: async (ctx) => {
-		const ownerId = await requireOwnerId(ctx)
+		const ownerId = await getOwnerId(ctx)
+		if (ownerId === null) return []
 		return await ctx.db
 			.query('cases')
 			.withIndex('by_ownerId_and_receiptNumber', (q) => q.eq('ownerId', ownerId))
@@ -48,7 +49,8 @@ export const listCases = query({
 export const getCase = query({
 	args: { caseId: v.id('cases') },
 	handler: async (ctx, args) => {
-		const ownerId = await requireOwnerId(ctx)
+		const ownerId = await getOwnerId(ctx)
+		if (ownerId === null) return null
 		const found = await ctx.db.get('cases', args.caseId)
 		if (found === null || found.ownerId !== ownerId) return null
 		return found

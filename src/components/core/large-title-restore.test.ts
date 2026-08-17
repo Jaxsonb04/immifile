@@ -8,8 +8,14 @@ describe('getLargeTitleRestoreOffset', () => {
 		)
 	})
 
+	test('restores the expanded iOS 18 header after an intro reveals native chrome', () => {
+		expect(getLargeTitleRestoreOffset({ platform: 'ios', osVersion: '18.1', topInset: 20 })).toBe(
+			-116,
+		)
+	})
+
 	test.each([
-		{ platform: 'ios', osVersion: '18.1' },
+		{ platform: 'ios', osVersion: '17.7' },
 		{ platform: 'ios', osVersion: '27.0' },
 		{ platform: 'android', osVersion: 36 },
 	])('leaves native automatic inset handling alone on $platform $osVersion', (target) => {

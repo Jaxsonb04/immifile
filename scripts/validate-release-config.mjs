@@ -3,11 +3,23 @@ import { readFileSync } from 'node:fs'
 const app = JSON.parse(readFileSync(new URL('../app.json', import.meta.url), 'utf8')).expo
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
 const heroUiNativePro = JSON.parse(
-	readFileSync(new URL('../vendor/heroui-native-pro-runtime/package.json', import.meta.url), 'utf8'),
+	readFileSync(
+		new URL('../vendor/heroui-native-pro-runtime/package.json', import.meta.url),
+		'utf8',
+	),
 )
 const eas = JSON.parse(readFileSync(new URL('../eas.json', import.meta.url), 'utf8'))
 const bunLock = readFileSync(new URL('../bun.lock', import.meta.url), 'utf8')
 const policy = JSON.parse(readFileSync(new URL('../release-policy.json', import.meta.url), 'utf8'))
+const privacyPolicy = readFileSync(new URL('../docs/PRIVACY_POLICY.md', import.meta.url), 'utf8')
+const assistantConsentCopy = readFileSync(
+	new URL('../src/screens/assistant/assistant-consent-copy.ts', import.meta.url),
+	'utf8',
+)
+const openAIChatClient = readFileSync(
+	new URL('../convex/lib/openaiChat.ts', import.meta.url),
+	'utf8',
+)
 
 function assert(condition, message) {
 	if (!condition) throw new Error(`Release config: ${message}`)
@@ -117,8 +129,24 @@ for (const feature of ['filingPreparation', 'community', 'passwordRecovery']) {
 	assert(policy[feature] === false, `${feature} must be pinned off for the first review build`)
 }
 for (const feature of ['assistant', 'socialLogin']) {
-	assert(policy[feature] === true, `${feature} must be enabled for this release (see release-policy tests)`)
+	assert(
+		policy[feature] === true,
+		`${feature} must be enabled for this release (see release-policy tests)`,
+	)
 }
+for (const [surface, copy] of [
+	['public privacy policy', privacyPolicy],
+	['in-app assistant consent', assistantConsentCopy],
+]) {
+	assert(
+		copy.includes('up to 30 days') && /abuse-monitoring|abuse monitoring/.test(copy),
+		`${surface} must disclose OpenAI's default abuse-monitoring retention`,
+	)
+}
+assert(
+	openAIChatClient.includes('store: false'),
+	'OpenAI Chat Completions must explicitly disable application-state storage',
+)
 assert(
 	eas.build?.production?.environment === 'production',
 	'EAS production profile must use production env',

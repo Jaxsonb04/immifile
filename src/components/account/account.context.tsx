@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { useEffect } from 'react'
+import { View } from 'react-native'
 import { accountGateStore, useAccountGateRequest } from './account.data'
 import { UpgradeSheet } from './upgrade'
+import { resolveUpgradeAccessibility } from './upgrade/upgrade.accessibility'
 
 /**
  * Optional app-root provider that hosts the contextual upgrade bottom sheet.
@@ -13,6 +15,7 @@ import { UpgradeSheet } from './upgrade'
  */
 export function AccountGateProvider({ children }: { children: ReactNode }) {
 	const request = useAccountGateRequest()
+	const accessibility = resolveUpgradeAccessibility(request !== null)
 
 	// Advertise this surface so `useRequireAccount()` prefers the in-place sheet
 	// over the `/upgrade` modal fallback while the provider is mounted.
@@ -20,7 +23,14 @@ export function AccountGateProvider({ children }: { children: ReactNode }) {
 
 	return (
 		<>
-			{children}
+			<View
+				collapsable={false}
+				className="flex-1"
+				accessibilityElementsHidden={accessibility.backgroundAccessibilityElementsHidden}
+				importantForAccessibility={accessibility.backgroundImportantForAccessibility}
+			>
+				{children}
+			</View>
 			<UpgradeSheet
 				isOpen={request !== null}
 				recap={request?.recap}

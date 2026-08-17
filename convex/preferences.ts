@@ -1,7 +1,7 @@
 import { v } from 'convex/values'
 import { literals } from 'convex-helpers/validators'
 import { mutation, query } from './_generated/server'
-import { requireOwnerId } from './lib/auth'
+import { getOwnerId, requireOwnerId } from './lib/auth'
 
 // M6-T6: per-owner boolean UI flags. The key set is a closed allowlist so
 // clients can't grow unbounded junk rows; add new literals as features need
@@ -22,7 +22,12 @@ export const getPreference = query({
 	args: { key: preferenceKey },
 	returns: v.boolean(),
 	handler: async (ctx, args) => {
-		const ownerId = await requireOwnerId(ctx)
+		// Convex briefly clears query authentication while Better Auth replaces an
+		// anonymous token with the credentialed token. UI reads must resolve to a
+		// neutral value during that handoff instead of reaching the global error
+		// boundary; writes remain strict below.
+		const ownerId = await getOwnerId(ctx)
+		if (ownerId === null) return false
 		const row = await ctx.db
 			.query('ownerPreferences')
 			.withIndex('by_ownerId_and_key', (q) => q.eq('ownerId', ownerId).eq('key', args.key))

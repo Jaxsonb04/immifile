@@ -1,11 +1,11 @@
 import { v } from 'convex/values'
 import { internalMutation, query } from './_generated/server'
-import { requireOwnerId } from './lib/auth'
+import { getOwnerId, requireOwnerId } from './lib/auth'
 import { assertFeatureEnabled } from './lib/releaseGate'
 
-// Per-owner daily message quota for the Claude assistant (MASTER_PLAN
+// Per-owner daily message quota for the OpenAI assistant (MASTER_PLAN
 // "Interfaces": Convex stores only per-owner daily usage counters with a
-// 20-message limit; chat transcripts stay device-session-only). One row per
+// 20-message limit; Immifile does not persist a server-side transcript). One row per
 // (ownerId, day); the day key is UTC — a deliberate v1 simplification, local
 // time windows can come later. Owner is always server-derived (lib/auth.ts),
 // never accepted from the client.
@@ -79,7 +79,10 @@ export const dailyUsage = query({
 	args: { day: v.optional(v.string()) },
 	handler: async (ctx): Promise<AssistantUsage> => {
 		assertFeatureEnabled('assistant')
-		const ownerId = await requireOwnerId(ctx)
+		const ownerId = await getOwnerId(ctx)
+		if (ownerId === null) {
+			return { used: 0, limit: DAILY_MESSAGE_LIMIT, remaining: DAILY_MESSAGE_LIMIT }
+		}
 		const day = utcDay(Date.now())
 		const existing = await ctx.db
 			.query('assistantUsage')

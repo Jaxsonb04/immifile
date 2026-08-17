@@ -42,6 +42,11 @@ export async function createChatCompletion(request: OpenAIChatRequest): Promise<
 		model: request.model,
 		messages: [{ role: 'system', content: request.system }, ...request.messages],
 		max_completion_tokens: request.maxCompletionTokens,
+		// Chat Completions does not need provider-side application state for this
+		// one-shot extraction. Keep the choice explicit so a future API default or
+		// refactor cannot silently opt the assistant into stored completions. This
+		// does not disable OpenAI's separate abuse-monitoring retention.
+		store: false,
 	}
 	// GPT-5-family models spend completion budget on hidden reasoning tokens;
 	// default both knobs to the floor so the cheap tier stays cheap. Older
