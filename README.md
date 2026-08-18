@@ -111,7 +111,7 @@ current shape of the app.
 
 |                              | Version                                             |
 | ---------------------------- | --------------------------------------------------- |
-| Expo / Expo Router           | `~57.0.13`                                          |
+| Expo / Expo Router           | `~57.0.14`                                          |
 | React Native                 | `0.86.2`                                            |
 | React                        | `19.2.3`                                            |
 | TypeScript                   | `~6.0.3`                                            |
