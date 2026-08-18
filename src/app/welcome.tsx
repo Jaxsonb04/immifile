@@ -4,6 +4,7 @@ import { authClient } from '@/lib/auth-client'
 import { waitForAuthenticatedOrUnmounted } from '@/lib/auth-transition'
 import { ensureSessionResolved, getPersistedSessionCookie } from '@/lib/session-sync'
 import { TEMP_ACCOUNT_WELCOME_NOTE } from '@/lib/temp-account-notice'
+import { resolveWelcomeLayout } from '@/screens/welcome/welcome.layout'
 import { useConvexAuth } from 'convex/react'
 import { useRouter } from 'expo-router'
 import { Button } from 'heroui-native'
@@ -57,12 +58,7 @@ export default function WelcomeScreen() {
 	const [pending, setPending] = useState(false)
 	const mountedRef = useRef(true)
 	const convexAuthenticatedRef = useRef(isAuthenticated)
-	const showsScrollIndicator = height < 750 || fontScale > 1.2
-	// iPhone SE class. At full size the hero and its generous top paddings push
-	// the temporary-account note and the privacy link off the bottom of the
-	// frame — reachable only by scrolling a screen that gives no hint it
-	// scrolls. Compact trades hero scale for keeping the entry screen whole.
-	const compact = height < 750
+	const layout = resolveWelcomeLayout({ height, fontScale })
 
 	useEffect(() => {
 		mountedRef.current = true
@@ -121,19 +117,36 @@ export default function WelcomeScreen() {
 		<ScrollView
 			className="flex-1 bg-background"
 			contentContainerStyle={{ flexGrow: 1 }}
-			showsVerticalScrollIndicator={showsScrollIndicator}
+			showsVerticalScrollIndicator={layout.showsScrollIndicator}
 			bounces={false}
 		>
-			<View className="flex-1 justify-end">
-				<SheetOfRecordHero height={compact ? 190 : 288} />
+			<View className={layout.accessibilityText ? 'justify-end' : 'flex-1 justify-end'}>
+				<SheetOfRecordHero height={layout.heroHeight} />
 			</View>
 
-			<View className={compact ? 'gap-gutter px-section pt-card' : 'gap-gutter px-section pt-9'}>
+			<View
+				className={
+					layout.compact || layout.accessibilityText
+						? 'gap-gutter px-section pt-card'
+						: 'gap-gutter px-section pt-9'
+				}
+			>
 				<View className="items-center gap-tight">
-					<Text className="text-center font-display text-display text-foreground">
-						Keep your case{'\n'}close at hand.
+					<Text
+						className="text-center font-display text-foreground"
+						style={{
+							fontSize: layout.headlineFontSize,
+							lineHeight: layout.headlineLineHeight,
+						}}
+					>
+						{layout.forceHeadlineBreak
+							? `Keep your case\nclose at hand.`
+							: 'Keep your case close at hand.'}
 					</Text>
-					<Text className="max-w-[300px] text-center font-normal text-[17px] leading-relaxed text-muted">
+					<Text
+						className={`${layout.accessibilityText ? 'self-stretch' : 'max-w-[300px]'} text-center font-normal text-[17px] text-muted`}
+						style={{ lineHeight: layout.bodyLineHeight }}
+					>
 						Track your USCIS cases and open official tools in one place.
 					</Text>
 				</View>
@@ -148,12 +161,15 @@ export default function WelcomeScreen() {
 			    easy to reach without weakening informed consent. */}
 			<View
 				className={
-					compact
+					layout.compact || layout.accessibilityText
 						? 'gap-control px-section pt-card pb-safe-offset-4'
 						: 'gap-control px-section pt-10 pb-safe-offset-6'
 				}
 			>
-				<Text className="text-center text-xs leading-relaxed text-muted">
+				<Text
+					className="text-center text-xs text-muted"
+					style={{ lineHeight: layout.disclosureLineHeight }}
+				>
 					{TEMP_ACCOUNT_WELCOME_NOTE}
 				</Text>
 				<Pressable
@@ -163,20 +179,33 @@ export default function WelcomeScreen() {
 					hitSlop={8}
 					onPress={() => void openPrivacyPolicy()}
 				>
-					<Text className="font-medium text-sm text-accent underline">Privacy policy</Text>
+					<Text
+						className="font-medium text-sm text-accent underline"
+						style={{ lineHeight: layout.linkLineHeight }}
+					>
+						Privacy policy
+					</Text>
 				</Pressable>
-				<Button size="lg" isDisabled={pending} onPress={handleContinue}>
-					<Button.Label maxFontSizeMultiplier={1.5}>
+				<Button
+					size="lg"
+					className={layout.accessibilityText ? 'h-auto py-card' : undefined}
+					style={layout.accessibilityText ? { minHeight: layout.buttonMinHeight } : undefined}
+					isDisabled={pending}
+					onPress={handleContinue}
+				>
+					<Button.Label style={{ lineHeight: layout.buttonLabelLineHeight }}>
 						{pending ? 'Opening…' : 'Continue'}
 					</Button.Label>
 				</Button>
 				<Button
 					size="lg"
 					variant="ghost"
+					className={layout.accessibilityText ? 'h-auto py-card' : undefined}
+					style={layout.accessibilityText ? { minHeight: layout.buttonMinHeight } : undefined}
 					isDisabled={pending}
 					onPress={() => router.push('/sign-in')}
 				>
-					<Button.Label maxFontSizeMultiplier={1.5}>Sign in</Button.Label>
+					<Button.Label style={{ lineHeight: layout.buttonLabelLineHeight }}>Sign in</Button.Label>
 				</Button>
 			</View>
 		</ScrollView>

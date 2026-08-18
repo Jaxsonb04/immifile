@@ -6,7 +6,7 @@ permalink: /privacy/
 
 # Immifile Privacy Policy
 
-Effective August 9, 2026
+Effective August 16, 2026
 
 Immifile is an independent app. It is not affiliated with, endorsed by, or connected to USCIS, DHS, DOJ, or the U.S. government, and it does not provide legal advice.
 
@@ -16,7 +16,7 @@ This policy describes the first App Store release of Immifile. That release prov
 
 Immifile automatically creates a temporary account when a person continues past the welcome screen. A person may create a permanent account by providing a name, email address, and password or by using a configured Google or Apple sign-in option. Social sign-in may provide Immifile with the person’s name, email address, and provider account identifier. Authentication infrastructure may also process security metadata such as session identifiers, IP address, and user agent.
 
-When a person saves a case, Immifile stores the USCIS receipt number and any status or note the person enters. If a person uses the AI assistant, Immifile stores only a daily message counter and the person’s OpenAI consent choice; the conversation itself stays on the device. The app also stores small preferences, such as whether an introductory screen was dismissed, and operational records needed to provide and secure the service.
+When a person saves a case, Immifile stores the USCIS receipt number and any status or note the person enters. If a person uses the AI assistant, Immifile stores only a daily message counter and the person’s OpenAI consent choice, not a server-side chat transcript. The live chat remains in the current app session; messages sent to OpenAI are subject to the provider retention described below. The app also stores small preferences, such as whether an introductory screen was dismissed, and operational records needed to provide and secure the service.
 
 ## How we use data
 
@@ -24,7 +24,7 @@ We use data to authenticate users, display their saved cases, maintain the timel
 
 ## Service providers
 
-Convex provides the hosted application backend, database, and authentication components. Vercel hosts `auth.immifile.app`, the endpoint every sign-in, sign-out, and session request passes through, and therefore processes connection metadata such as IP address and user agent. Google and Apple process their respective social sign-in flows when a person chooses one of those options. The assistant sends nothing to OpenAI until the person explicitly agrees. After agreement, the text they type and the recent turns of that conversation are sent to OpenAI to generate the reply; do not include receipt numbers, A-Numbers, addresses, passwords, or other sensitive details. Porkbun forwards messages sent to the Immifile support address, and Google provides the monitored destination mailbox. Official USCIS and Department of Justice links open in the device browser.
+Convex provides the hosted application backend, database, and authentication components. Vercel hosts `auth.immifile.app`, the endpoint every sign-in, sign-out, and session request passes through, and therefore processes connection metadata such as IP address and user agent. Google and Apple process their respective social sign-in flows when a person chooses one of those options. The assistant sends nothing to OpenAI until the person explicitly agrees. After agreement, the person’s current and recent messages are sent to OpenAI to generate a reply; do not include receipt numbers, A-Numbers, addresses, passwords, or other sensitive details. OpenAI may retain prompts and replies in abuse-monitoring logs for up to 30 days and may retain them longer when legally required or reasonably necessary to protect its services or others. OpenAI states that API data is not used to train its models unless the API customer opts in. Porkbun forwards messages sent to the Immifile support address, and Google provides the monitored destination mailbox. Official USCIS and Department of Justice links open in the device browser.
 
 Immifile requires every service provider that accesses user data to provide the same or equal protection described in this policy and required by the App Store Review Guidelines.
 
@@ -34,7 +34,9 @@ A temporary account becomes eligible for permanent deletion after it is 48 hours
 
 In the app, open **Account → Delete account** to permanently delete the login identity, sessions, saved cases, and all other associated Immifile data.
 
-After either deletion path, Immifile may retain a short-lived opaque deletion-protection record for up to one hour. It contains no saved case content and is used only to reject requests made with a previously issued session while that session expires. It cannot be used to restore the deleted account and is removed after the protection window.
+After either deletion path, Immifile normally retains an opaque deletion-protection record for approximately one hour while previously issued sessions expire. It contains no saved case content, is used only to reject stale-session requests and safely finish deletion, and cannot restore the account. If deletion or provider/session cleanup is interrupted, the record may remain longer only until that security cleanup safely completes; it is then removed.
+
+Withdrawing AI consent stops future messages from being sent to OpenAI but does not erase prompts or replies that OpenAI already processed. Those may remain in OpenAI abuse-monitoring logs for up to 30 days, subject to the longer legal or safety retention described above.
 
 ## Security and choices
 

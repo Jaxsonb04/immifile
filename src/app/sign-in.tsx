@@ -1,4 +1,6 @@
 import { authClient } from '@/lib/auth-client'
+import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
+import { useSlowLoad } from '@/hooks/use-slow-load'
 import { PASSWORD_RECOVERY_ENABLED } from '@/lib/password-recovery'
 import { ensureSessionResolved } from '@/lib/session-sync'
 import { useSocialProviders, type SocialProvider } from '@/lib/social-login'
@@ -20,6 +22,14 @@ type Mode = 'sign-in' | 'sign-up'
 export default function SignInScreen() {
 	const router = useRouter()
 	const socialProviders = useSocialProviders()
+	const providerLoadState = resolveSlowLoadState(
+		socialProviders === undefined,
+		useSlowLoad(socialProviders === undefined),
+	)
+	// Provider discovery is optional. If it cannot resolve promptly, keep the
+	// email path usable while the reactive query continues retrying.
+	const visibleSocialProviders =
+		socialProviders ?? (providerLoadState === 'stalled' ? [] : undefined)
 	const [mode, setMode] = useState<Mode>('sign-in')
 	const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
@@ -94,7 +104,7 @@ export default function SignInScreen() {
 		}
 	}
 
-	if (socialProviders === undefined) {
+	if (visibleSocialProviders === undefined) {
 		return (
 			<KeyboardAwareScrollView
 				contentContainerClassName="min-h-96 p-gutter gap-card"
@@ -135,11 +145,16 @@ export default function SignInScreen() {
 						: 'Sign in to return to your saved cases.'}
 				</Typography.Paragraph>
 			</View>
+			{providerLoadState === 'stalled' ? (
+				<Typography.Paragraph color="muted" className="text-sm">
+					{SLOW_LOAD_RETRY_MESSAGE} Email sign-in is still available.
+				</Typography.Paragraph>
+			) : null}
 
-			{socialProviders.length > 0 ? (
+			{visibleSocialProviders.length > 0 ? (
 				<>
 					<View className="gap-control">
-						{socialProviders.map((provider) => (
+						{visibleSocialProviders.map((provider) => (
 							<SocialAuthButton
 								key={provider}
 								provider={provider}

@@ -108,6 +108,20 @@ describe('release policy is enforced on the server, not only in the UI', () => {
 })
 
 describe('the shipping surface stays open', () => {
+	test('owner-scoped reads stay neutral during an auth handoff', async () => {
+		const t = newT()
+
+		await expect(
+			t.query(api.preferences.getPreference, { key: 'casesIntroDismissed' }),
+		).resolves.toBe(false)
+		await expect(t.query(api.cases.listCases, {})).resolves.toEqual([])
+		await expect(t.query(api.assistantQuota.dailyUsage, {})).resolves.toEqual({
+			used: 0,
+			limit: 20,
+			remaining: 20,
+		})
+	})
+
 	test('a credentialed account can still track and read a case', async () => {
 		const t = newT()
 		const alice = t.withIdentity({ subject: 'alice' })

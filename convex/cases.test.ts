@@ -191,10 +191,18 @@ describe('authorization / owner isolation', () => {
 		expect(await alice.query(api.cases.listCases, {})).toHaveLength(1)
 	})
 
-	test('requires authentication', async () => {
+	test('unauthenticated reads reveal no data and writes remain authentication-gated', async () => {
 		const t = newT()
-		await expect(t.query(api.cases.listCases, {})).rejects.toThrow()
-		await expect(t.mutation(api.cases.createCase, { receiptNumber: RECEIPT })).rejects.toThrow()
+		const alice = t.withIdentity({ subject: 'alice' })
+		const caseId = await alice.mutation(api.cases.createCase, { receiptNumber: RECEIPT })
+
+		// Reactive reads may rerun during a client token handoff. A neutral result
+		// keeps the UI alive without exposing another owner's row.
+		await expect(t.query(api.cases.listCases, {})).resolves.toEqual([])
+		await expect(t.query(api.cases.getCase, { caseId })).resolves.toBeNull()
+		await expect(t.mutation(api.cases.createCase, { receiptNumber: RECEIPT })).rejects.toThrow(
+			'Not authenticated',
+		)
 	})
 })
 

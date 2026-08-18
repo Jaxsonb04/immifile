@@ -39,6 +39,7 @@ describe('resolveTabIntroVisibility', () => {
 			showIntro: false,
 			contentMounted: true,
 			contentAccessible: false,
+			contentHeaderReady: false,
 			chromeHidden: true,
 		})
 	})
@@ -57,6 +58,7 @@ describe('resolveTabIntroVisibility', () => {
 			showIntro: true,
 			contentMounted: true,
 			contentAccessible: false,
+			contentHeaderReady: false,
 			chromeHidden: true,
 		})
 	})
@@ -75,6 +77,7 @@ describe('resolveTabIntroVisibility', () => {
 			showIntro: true,
 			contentMounted: true,
 			contentAccessible: false,
+			contentHeaderReady: true,
 			chromeHidden: false,
 		})
 	})
@@ -93,6 +96,7 @@ describe('resolveTabIntroVisibility', () => {
 			showIntro: true,
 			contentMounted: true,
 			contentAccessible: false,
+			contentHeaderReady: true,
 			chromeHidden: false,
 		})
 	})
@@ -114,6 +118,7 @@ describe('resolveTabIntroVisibility', () => {
 			showIntro: false,
 			contentMounted: true,
 			contentAccessible: true,
+			contentHeaderReady: true,
 			chromeHidden: false,
 		})
 	})

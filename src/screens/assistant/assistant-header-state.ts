@@ -1,5 +1,5 @@
-/** Hidden, preloaded Assistant content must not reconfigure the native header
- * while a first-use guide owns the visible route. */
-export function shouldUseAssistantContentHeader(contentAccessible: boolean): boolean {
-	return contentAccessible
+/** The Assistant consent header takes ownership during the covered preparation
+ * phase, after the guide is acknowledged but before its cover fades away. */
+export function shouldUseAssistantContentHeader(contentHeaderReady: boolean): boolean {
+	return contentHeaderReady
 }

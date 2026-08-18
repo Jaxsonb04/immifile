@@ -1,12 +1,12 @@
 import { useConvexAuth } from 'convex/react'
 import { Redirect, Stack, usePathname } from 'expo-router'
-import { Spinner } from 'heroui-native'
-import { View } from 'react-native'
 
-import { RouteErrorBoundary } from '@/components/core'
+import { RouteErrorBoundary, ScreenLoading } from '@/components/core'
 import { Providers } from '@/components/providers'
 import { useLayoutStyle } from '@/hooks/use-layout-style'
 import { useSessionReconciler } from '@/hooks/use-session-reconciler'
+import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
+import { useSlowLoad } from '@/hooks/use-slow-load'
 import { resolveAuthRouteState } from '@/lib/auth-route-state'
 import { RELEASE_HOME_PATH, isReleasePathBlocked } from '@/lib/release-policy'
 import { useState } from 'react'
@@ -54,14 +54,16 @@ const AppContent = () => {
 		isLoading,
 		isAuthenticated,
 	})
+	const bootLoadState = resolveSlowLoadState(
+		authRoute.showBootLoader,
+		useSlowLoad(authRoute.showBootLoader),
+	)
 
 	// Only the initial hydration gets a full-screen loader. During later token
 	// refreshes retain the last guard so the Stack is never destroyed/recreated.
 	if (authRoute.showBootLoader) {
 		return (
-			<View className="flex-1 items-center justify-center bg-background">
-				<Spinner />
-			</View>
+			<ScreenLoading label={bootLoadState === 'stalled' ? SLOW_LOAD_RETRY_MESSAGE : undefined} />
 		)
 	}
 

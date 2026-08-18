@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { convexTest } from 'convex-test'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { api } from './_generated/api'
+import { api, internal } from './_generated/api'
 import schema from './schema'
 
 // This suite exercises the feature implementation itself, so it runs with the
@@ -423,10 +423,10 @@ describe('account deletion cascade wipes all forum data', () => {
 		// Bob's post now has 1 (visible) comment from alice.
 		expect((await t.query(api.community.getPost, { postId: bobPost }))?.commentCount).toBe(1)
 
-		// deleteAccountData is the anonymous-session path (same owner identity).
+		// Exercise the internal cascade with the same anonymous owner identity.
 		await t
 			.withIdentity({ subject: 'alice', isAnonymous: true })
-			.action(api.account.deleteAccountData, {})
+			.action(internal.account.deleteAccountData, {})
 
 		const counts = await t.run(async (ctx) => ({
 			profiles: (await ctx.db.query('communityProfiles').collect()).length,

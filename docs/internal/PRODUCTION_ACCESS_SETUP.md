@@ -109,10 +109,21 @@ Inbound support uses Porkbun forwarding from `support@immifile.app` to the
 monitored `jaxsonbie@gmail.com` mailbox. Porkbun's MX and SPF records are live.
 Before submission:
 
-1. Confirm the forwarding test sent from `jaxsonbie@berkeley.edu` arrives in
-   `jaxsonbie@gmail.com`.
-2. Keep the destination mailbox monitored throughout App Review.
-3. Confirm this command continues to return Porkbun's forwarding MX records:
+1. Sign in to `jaxsonbie@gmail.com` and search for the exact subject
+   `Immifile support delivery test — 2026-08-16`, sent from
+   `jaxsonbie@berkeley.edu` to `support@immifile.app`. Confirm the forwarded
+   copy is present. The connected Berkeley mailbox can prove that the test was
+   sent, but it cannot inspect the forwarding destination.
+2. Reply to that message from the destination mailbox. In Gmail's From picker,
+   select `support@immifile.app`; if that choice is not available, configure an
+   authenticated **Send mail as** address or an outbound mailbox provider first.
+   Porkbun forwarding alone proves only inbound routing.
+3. In `jaxsonbie@berkeley.edu`, confirm the reply arrives with
+   `From: support@immifile.app`, then use **Show original** to verify the
+   outbound provider reports domain-aligned SPF or DKIM and DMARC passes. Do
+   not use an unverified/spoofed From header for this test.
+4. Keep the destination mailbox monitored throughout App Review.
+5. Confirm this command continues to return Porkbun's forwarding MX records:
 
    ```sh
    dig +short MX immifile.app

@@ -1,4 +1,6 @@
 import { authClient } from '@/lib/auth-client'
+import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
+import { useSlowLoad } from '@/hooks/use-slow-load'
 import { PASSWORD_RECOVERY_ENABLED } from '@/lib/password-recovery'
 import { ensureSessionResolved } from '@/lib/session-sync'
 import { useSocialProviders, type SocialProvider } from '@/lib/social-login'
@@ -42,6 +44,12 @@ export function UpgradeActions({
 	const router = useRouter()
 	const { isCredentialed, isCredentialedReady } = useCredentialedAccountReadiness()
 	const socialProviders = useSocialProviders()
+	const providerLoadState = resolveSlowLoadState(
+		socialProviders === undefined,
+		useSlowLoad(socialProviders === undefined),
+	)
+	const visibleSocialProviders =
+		socialProviders ?? (providerLoadState === 'stalled' ? [] : undefined)
 	const bottomSheetInputHandlers = useBottomSheetAwareHandlers()
 	const [mode, setMode] = useState<UpgradeMode>('create')
 
@@ -157,7 +165,7 @@ export function UpgradeActions({
 			</View>
 		)
 	}
-	if (socialProviders === undefined) {
+	if (visibleSocialProviders === undefined) {
 		return (
 			<View className="min-h-64 items-center justify-center gap-control py-section">
 				<Spinner accessibilityLabel="Loading account options" />
@@ -168,10 +176,15 @@ export function UpgradeActions({
 
 	return (
 		<View className="gap-section">
-			{socialProviders.length > 0 ? (
+			{providerLoadState === 'stalled' ? (
+				<Typography.Paragraph color="muted" className="text-sm">
+					{SLOW_LOAD_RETRY_MESSAGE} Email account setup is still available.
+				</Typography.Paragraph>
+			) : null}
+			{visibleSocialProviders.length > 0 ? (
 				<>
 					<View className="gap-control">
-						{socialProviders.map((provider) => (
+						{visibleSocialProviders.map((provider) => (
 							<SocialAuthButton
 								key={provider}
 								provider={provider}

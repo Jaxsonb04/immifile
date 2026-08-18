@@ -92,6 +92,13 @@ const privacyBody = (await privacy.text()).toLowerCase()
 if (!privacyBody.includes('immifile') || !privacyBody.includes('privacy')) {
 	fail('public privacy page does not contain the expected Immifile privacy content')
 }
+if (
+	!privacyBody.includes('openai') ||
+	!privacyBody.includes('up to 30 days') ||
+	(!privacyBody.includes('abuse-monitoring') && !privacyBody.includes('abuse monitoring'))
+) {
+	fail('public privacy page does not disclose OpenAI abuse-monitoring retention')
+}
 
 const support = await fetchOk('Public support page', supportUrl)
 const supportBody = (await support.text()).toLowerCase()

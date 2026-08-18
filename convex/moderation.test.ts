@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import { convexTest } from 'convex-test'
 import { beforeEach, describe, expect, test, vi } from 'vitest'
-import { api } from './_generated/api'
+import { api, internal } from './_generated/api'
 import schema from './schema'
 import { parseModeratorEmails, targetIdFromKey, targetKeyFor } from './shared/community'
 
@@ -444,10 +444,10 @@ describe('per-viewer blocks', () => {
 		await bob.mutation(api.community.blockAuthor, { handle: aliceHandle }) // bob -> alice's profile
 		await alice.mutation(api.community.blockAuthor, { handle: bobHandle }) // alice -> bob's profile
 
-		// deleteAccountData is the anonymous-session path (same owner identity).
+		// Exercise the internal cascade with the same anonymous owner identity.
 		await t
 			.withIdentity({ subject: 'alice', isAnonymous: true })
-			.action(api.account.deleteAccountData, {})
+			.action(internal.account.deleteAccountData, {})
 
 		// Alice-as-blocker rows AND rows pointing at alice's profile are both gone.
 		const remaining = await t.run(async (ctx) => await ctx.db.query('communityBlocks').collect())

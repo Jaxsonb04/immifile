@@ -204,9 +204,9 @@ export default defineSchema({
 		lastSuccessAt: v.optional(v.number()),
 	}),
 
-	// Per-owner daily message counter for the Claude assistant (M1-T1,
-	// MASTER_PLAN "Interfaces"). Chat transcripts stay device-session-only; the
-	// only Convex-stored chat data is this bounded counter, which enforces the
+	// Per-owner daily message counter for the OpenAI assistant (M1-T1,
+	// MASTER_PLAN "Interfaces"). Immifile does not persist a server-side chat
+	// transcript; the only Convex-stored chat data is this bounded counter, which enforces the
 	// 20-message daily limit. One row per (ownerId, day); the day key is UTC.
 	assistantUsage: defineTable({
 		ownerId: v.string(),
@@ -233,7 +233,30 @@ export default defineSchema({
 		ownerId: v.string(),
 		createdAt: v.number(),
 		expiresAt: v.number(),
+		// Present while an auth identity still needs durable server-side
+		// completion. This is Better Auth's opaque id, not user-authored data.
+		authUserId: v.optional(v.string()),
+		// The JWT-drain TTL starts only after authoritative auth absence.
+		completedAt: v.optional(v.number()),
+		appleManualRevokeRequired: v.optional(v.boolean()),
+		// Cross-store Better Auth callbacks can finish after deletion begins.
+		// Generations make a failed late-artifact cleanup durably observable;
+		// the gate clears only after a successful post-drain sweep catches up.
+		authCleanupGeneration: v.optional(v.number()),
+		authCleanupCompletedGeneration: v.optional(v.number()),
+		lastAuthSweepAt: v.optional(v.number()),
 	}).index('by_ownerId', ['ownerId']),
+
+	// High-entropy capabilities created atomically with an auth-backed deletion
+	// gate. Keeping them separate preserves reconciliation for two devices that
+	// race the same deletion without exposing either owner or auth ids publicly.
+	accountDeletionAttempts: defineTable({
+		attemptId: v.string(),
+		ownerId: v.string(),
+		createdAt: v.number(),
+	})
+		.index('by_attemptId', ['attemptId'])
+		.index('by_ownerId', ['ownerId']),
 
 	// Origin-enforced throttling for unauthenticated account-creation and
 	// credential-recovery endpoints. The key contains only a keyed one-way

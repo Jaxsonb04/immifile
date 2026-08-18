@@ -16,20 +16,21 @@ review build to:
 - **Resources:** open curated official USCIS and Department of Justice tools.
 - **Assistant:** get an informational recommendation between Form I-765 and
   Form I-90 after explicitly consenting to OpenAI processing, capped at
-  **20 messages per day** per owner. Transcripts stay in device session state;
-  only the daily counter is persisted.
+  **20 messages per day** per owner. Immifile does not persist a server-side
+  transcript; selected user messages are sent to OpenAI and may remain in its
+  abuse-monitoring logs for up to 30 days.
 - **Account:** email/password and configured Google/Apple authentication,
   complete in-app account deletion, privacy information, terms, and support.
 
 The full policy is five booleans in [`release-policy.json`](./release-policy.json):
 
-| Feature | First release |
-|---|---|
-| `filingPreparation` | `false` |
-| `assistant` | `true` |
-| `community` | `false` |
-| `socialLogin` | `true` |
-| `passwordRecovery` | `false` |
+| Feature             | First release |
+| ------------------- | ------------- |
+| `filingPreparation` | `false`       |
+| `assistant`         | `true`        |
+| `community`         | `false`       |
+| `socialLogin`       | `true`        |
+| `passwordRecovery`  | `false`       |
 
 Filing preparation, interviews, application/document routes, public community,
 and password recovery are disabled, along with camera, microphone, Face ID,
@@ -108,20 +109,20 @@ current shape of the app.
 
 ## Tech Stack
 
-| | Version |
-|---|---|
-| Expo / Expo Router | `~57.0.12` |
-| React Native | `0.86.2` |
-| React | `19.2.3` |
-| TypeScript | `~6.0.3` |
-| Convex | `^1.42.1` |
-| Better Auth | `~1.6.22` with `@convex-dev/better-auth` `^0.12.5` |
-| HeroUI Native | `^1.0.2` |
-| HeroUI Native Pro | vendored at `file:vendor/heroui-native-pro-runtime` |
-| Uniwind (Tailwind v4 for RN) | `^1.5.0` |
-| TanStack React Form | `^1.33.0` |
-| pdf-lib | `^1.17.1` |
-| Vitest / convex-test | `^4.1.9` / `^0.0.54` |
+|                              | Version                                             |
+| ---------------------------- | --------------------------------------------------- |
+| Expo / Expo Router           | `~57.0.13`                                          |
+| React Native                 | `0.86.2`                                            |
+| React                        | `19.2.3`                                            |
+| TypeScript                   | `~6.0.3`                                            |
+| Convex                       | `^1.42.1`                                           |
+| Better Auth                  | `~1.6.22` with `@convex-dev/better-auth` `^0.12.5`  |
+| HeroUI Native                | `^1.0.2`                                            |
+| HeroUI Native Pro            | vendored at `file:vendor/heroui-native-pro-runtime` |
+| Uniwind (Tailwind v4 for RN) | `^1.5.0`                                            |
+| TanStack React Form          | `^1.33.0`                                           |
+| pdf-lib                      | `^1.17.1`                                           |
+| Vitest / convex-test         | `^4.1.9` / `^0.0.54`                                |
 
 Convex is the single backend. Better Auth handles email/password and temporary
 anonymous accounts, plus deployment-gated Google and Apple sign-in, with
@@ -203,7 +204,7 @@ npm install
 
 > **HeroUI Native Pro needs two tokens, not one.** The published package is a
 > ~9KB stub whose postinstall downloads the real library. Two consumers read two
-> *different* variable names for the same `hp_` key: the `eas-build-pre-install`
+> _different_ variable names for the same `hp_` key: the `eas-build-pre-install`
 > hook reads `HEROUI_KEY`, while `heroui-native-pro`'s own postinstall reads
 > `HEROUI_AUTH_TOKEN`. Set both to the same value. With one missing, the
 > postinstall prints "Sign in to finish installing", **exits 0**, and the build

@@ -1,9 +1,8 @@
 import type { GenericDocument, PaginationResult } from 'convex/server'
 import { v } from 'convex/values'
-import { components } from './_generated/api'
+import { components, internal } from './_generated/api'
 import { internalAction, query } from './_generated/server'
-import { purgeOwnerDataInBatches } from './account'
-import { authComponent, createAuth } from './auth'
+import { authComponent } from './auth'
 import { getAccountIdentity } from './lib/auth'
 import {
 	TEMP_ACCOUNT_RETENTION_MS,
@@ -82,9 +81,6 @@ export const cleanupTempAccounts = internalAction({
 			cursor = page.continueCursor
 		}
 
-		const { auth } = await authComponent.getAuth(createAuth, ctx)
-		const authContext = await auth.$context
-
 		let deleted = 0
 		let skipped = 0
 		for (const userId of candidateIds) {
@@ -97,9 +93,14 @@ export const cleanupTempAccounts = internalAction({
 				continue
 			}
 			const ownerId = `${siteUrl}|${userId}`
-			await purgeOwnerDataInBatches(ctx, ownerId)
-			// Sessions + oauth accounts + the user row.
-			await authContext.internalAdapter.deleteUser(userId)
+			await ctx.runMutation(internal.account.beginOwnerDeletion, {
+				ownerId,
+				authUserId: userId,
+			})
+			await ctx.runAction(internal.auth.completeAccountDeletion, {
+				ownerId,
+				authUserId: userId,
+			})
 			deleted += 1
 		}
 		if (deleted > 0 || skipped > 0) {

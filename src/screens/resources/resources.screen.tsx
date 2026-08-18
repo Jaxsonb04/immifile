@@ -2,7 +2,8 @@ import { BodyScrollView } from '@/components/core'
 import { StyledLucideIcon } from '@/components/styled-icon'
 import type { ComponentProps } from 'react'
 import { ListGroup, Separator, Typography } from 'heroui-native'
-import { Alert, Linking, View } from 'react-native'
+import { Alert, Linking, useWindowDimensions, View } from 'react-native'
+import { resolveResourcesLayout, type ResourcesLayout } from './resources.layout'
 
 type ResourceLink = {
 	title: string
@@ -58,10 +59,22 @@ async function openOfficialUrl(url: string): Promise<void> {
 	}
 }
 
-function LinkGroup({ label, links }: { label: string; links: readonly ResourceLink[] }) {
+function LinkGroup({
+	label,
+	links,
+	layout,
+}: {
+	label: string
+	links: readonly ResourceLink[]
+	layout: ResourcesLayout
+}) {
 	return (
 		<View className="gap-tight">
-			<Typography.Paragraph color="muted" className="ml-hairline text-sm">
+			<Typography.Paragraph
+				color="muted"
+				className="ml-hairline text-sm"
+				style={{ lineHeight: layout.groupLabelLineHeight }}
+			>
 				{label}
 			</Typography.Paragraph>
 			<ListGroup>
@@ -69,22 +82,30 @@ function LinkGroup({ label, links }: { label: string; links: readonly ResourceLi
 					<View key={link.url}>
 						{index > 0 ? <Separator className="mx-card" /> : null}
 						<ListGroup.Item
+							className={layout.largeText ? 'items-start' : undefined}
+							style={{ minHeight: layout.rowMinHeight }}
 							accessibilityRole="link"
 							// An explicit label suppresses ItemDescription for screen readers;
 							// fold the detail in so VoiceOver announces the destination too.
 							accessibilityLabel={`${link.title}, ${link.detail}`}
 							onPress={() => void openOfficialUrl(link.url)}
 						>
-							<ListGroup.ItemPrefix>
+							<ListGroup.ItemPrefix className={layout.largeText ? 'pt-hairline' : undefined}>
 								<View className="size-10 items-center justify-center rounded-full bg-surface-secondary">
 									<StyledLucideIcon name={link.icon} size={18} className="text-accent" />
 								</View>
 							</ListGroup.ItemPrefix>
-							<ListGroup.ItemContent>
-								<ListGroup.ItemTitle>{link.title}</ListGroup.ItemTitle>
-								<ListGroup.ItemDescription>{link.detail}</ListGroup.ItemDescription>
+							<ListGroup.ItemContent className={layout.largeText ? 'gap-hairline' : undefined}>
+								<ListGroup.ItemTitle style={{ lineHeight: layout.titleLineHeight }}>
+									{link.title}
+								</ListGroup.ItemTitle>
+								<ListGroup.ItemDescription style={{ lineHeight: layout.detailLineHeight }}>
+									{link.detail}
+								</ListGroup.ItemDescription>
 							</ListGroup.ItemContent>
-							<StyledLucideIcon name="arrow-up-right" size={16} className="text-muted" />
+							<View className={layout.largeText ? 'pt-tight' : undefined}>
+								<StyledLucideIcon name="arrow-up-right" size={16} className="text-muted" />
+							</View>
 						</ListGroup.Item>
 					</View>
 				))}
@@ -100,14 +121,21 @@ function LinkGroup({ label, links }: { label: string; links: readonly ResourceLi
  * disclaimer lives in one calm footer line instead of a banner.
  */
 export function ResourcesScreen() {
+	const { fontScale } = useWindowDimensions()
+	const layout = resolveResourcesLayout(fontScale)
 	return (
 		<BodyScrollView
 			contentContainerClassName="gap-section pt-tight pb-card"
 			restoreLargeTitleOnTabReveal
+			showsVerticalScrollIndicator={layout.largeText}
 		>
-			<LinkGroup label="USCIS tools" links={USCIS_TOOLS} />
-			<LinkGroup label="Legal help" links={LEGAL_HELP} />
-			<Typography.Paragraph color="muted" className="px-card text-center text-xs leading-relaxed">
+			<LinkGroup label="USCIS tools" links={USCIS_TOOLS} layout={layout} />
+			<LinkGroup label="Legal help" links={LEGAL_HELP} layout={layout} />
+			<Typography.Paragraph
+				color="muted"
+				className="px-card text-center text-xs"
+				style={{ lineHeight: layout.footerLineHeight }}
+			>
 				Links open official USCIS.gov and Justice.gov pages. Immifile is independent, not a
 				government agency, and does not give legal advice.
 			</Typography.Paragraph>

@@ -1,14 +1,17 @@
 import { api } from '@convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
 import { useRouter } from 'expo-router'
-import { cn, Spinner, Typography } from 'heroui-native'
+import { cn, Typography } from 'heroui-native'
 import { useRef, useState } from 'react'
 import { Alert, ScrollView, useWindowDimensions, View } from 'react-native'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useViewer } from '@/components/account'
+import { ScreenLoading } from '@/components/core'
 import { styledIcon } from '@/components/styled-icon'
+import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
+import { useSlowLoad } from '@/hooks/use-slow-load'
 
 import { Composer } from './assistant.composer'
 import { AssistantConsent } from './assistant-consent'
@@ -85,8 +88,8 @@ type RecommendationContent = Extract<AssistantContent, { kind: 'recommendation' 
 
 /**
  * M1-T3 safe-navigator chat. Navigator-first: every message runs the
- * deterministic `getRecommendation` action once; the transcript is
- * device-session-only. "Start this form" hands off to the create-application
+ * deterministic `getRecommendation` action once; Immifile does not persist
+ * the transcript. "Start this form" hands off to the create-application
  * flow (M1-T4) with the recommended form + kind preselected.
  */
 export function AssistantScreen() {
@@ -97,13 +100,10 @@ export function AssistantScreen() {
 	const [acceptedThisSession, setAcceptedThisSession] = useState(false)
 	const [isSaving, setIsSaving] = useState(false)
 	const state = resolveAssistantConsentState(persistedConsent, acceptedThisSession)
+	const loadState = resolveSlowLoadState(state === 'loading', useSlowLoad(state === 'loading'))
 
 	if (state === 'loading') {
-		return (
-			<View className="flex-1 items-center justify-center bg-background">
-				<Spinner />
-			</View>
-		)
+		return <ScreenLoading label={loadState === 'stalled' ? SLOW_LOAD_RETRY_MESSAGE : undefined} />
 	}
 
 	if (state === 'consent') {

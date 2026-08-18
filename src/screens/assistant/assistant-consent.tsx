@@ -1,5 +1,5 @@
 import { StyledLucideIcon } from '@/components/styled-icon'
-import { TabIntroTransitionContext } from '@/components/core/tab-intro-transition'
+import { TabIntroHeaderReadyContext } from '@/components/core/tab-intro-transition'
 import { Stack, useRouter } from 'expo-router'
 import { Button, Surface, Typography, useThemeColor } from 'heroui-native'
 import { use, type ComponentProps } from 'react'
@@ -45,8 +45,8 @@ export function AssistantConsent({
 	const { height, fontScale } = useWindowDimensions()
 	const router = useRouter()
 	const backgroundColor = useThemeColor('background')
-	const contentAccessible = use(TabIntroTransitionContext)
-	const ownsHeader = shouldUseAssistantContentHeader(contentAccessible)
+	const contentHeaderReady = use(TabIntroHeaderReadyContext)
+	const ownsHeader = shouldUseAssistantContentHeader(contentHeaderReady)
 	const compact = height < 750
 	// Standard text is deliberately a single, non-scrolling decision surface.
 	// Large Dynamic Type keeps a real scroll path instead of clipping disclosure

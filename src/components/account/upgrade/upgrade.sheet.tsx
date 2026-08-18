@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import type { InvestedProgress } from '../account.data'
+import { resolveUpgradeAccessibility } from './upgrade.accessibility'
 import { InvestedProgressRecap, SIGN_IN_RECAP } from './upgrade.invested-progress-recap'
 import { UpgradeActions, type UpgradeMode } from './upgrade.actions'
 
@@ -28,6 +29,7 @@ export function UpgradeSheet({ isOpen, recap, onUpgraded, onDismiss }: UpgradeSh
 	// would mislabel the form, so the heading swaps to the sign-in recap.
 	const [mode, setMode] = useState<UpgradeMode>('create')
 	const insets = useSafeAreaInsets()
+	const accessibility = resolveUpgradeAccessibility(isOpen)
 	return (
 		<BottomSheet
 			isOpen={isOpen}
@@ -37,9 +39,13 @@ export function UpgradeSheet({ isOpen, recap, onUpgraded, onDismiss }: UpgradeSh
 				}
 			}}
 		>
-			<BottomSheet.Portal>
+			<BottomSheet.Portal
+				unstable_accessibilityContainerViewIsModal={accessibility.portalIsAccessibilityModal}
+			>
 				<BottomSheet.Overlay />
 				<BottomSheet.Content
+					accessible={accessibility.sheetAccessible}
+					accessibilityViewIsModal={accessibility.sheetIsAccessibilityModal}
 					snapPoints={['92%']}
 					enableOverDrag={false}
 					enableDynamicSizing={false}
@@ -51,6 +57,9 @@ export function UpgradeSheet({ isOpen, recap, onUpgraded, onDismiss }: UpgradeSh
 						contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
 					>
 						<View className="gap-section px-section pt-tight">
+							<View className="items-end">
+								<BottomSheet.Close accessibilityLabel="Close account setup" />
+							</View>
 							<InvestedProgressRecap recap={mode === 'sign-in' ? SIGN_IN_RECAP : recap} />
 							<UpgradeActions onUpgraded={onUpgraded} onModeChange={setMode} />
 						</View>

@@ -9,8 +9,9 @@ import type { ChatTurn } from './assistant.types'
 
 // Device-session chat state for the safe navigator (M1-T3). Each user message
 // runs the deterministic navigator action once (navigator-first: one billed
-// Claude call per turn, shared 20/day quota). The transcript lives only in this
-// hook's state — nothing is persisted (MASTER_PLAN "Interfaces").
+// OpenAI call per turn, shared 20/day quota). Immifile does not persist the
+// transcript; selected user messages are sent to OpenAI under the provider
+// retention disclosed before consent (MASTER_PLAN "Interfaces").
 
 // Keep the sent history within the action's own bound (MAX_HISTORY_TURNS = 40).
 const MAX_HISTORY_TURNS = 40
