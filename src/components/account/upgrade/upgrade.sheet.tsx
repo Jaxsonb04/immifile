@@ -40,6 +40,12 @@ export function UpgradeSheet({ isOpen, recap, onUpgraded, onDismiss }: UpgradeSh
 			}}
 		>
 			<BottomSheet.Portal
+				// Social sign-in opens an ASWebAuthenticationSession. HeroUI's
+				// default FullWindowOverlay uses a second iOS window, which can stay
+				// above that system browser and make Apple/Google look dismissed until
+				// this sheet closes. Keep the upgrade sheet in the app's main window so
+				// the authentication session always owns the foreground.
+				disableFullWindowOverlay
 				unstable_accessibilityContainerViewIsModal={accessibility.portalIsAccessibilityModal}
 			>
 				<BottomSheet.Overlay />
