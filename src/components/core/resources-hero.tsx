@@ -43,32 +43,51 @@ export function ResourcesHero({ width = 150 }: ResourcesHeroProps) {
 	const reduceMotion = useReducedMotion()
 	const animated = !reduceMotion
 
+	// 34 / 50 / 29 share no common factor pairwise, so the loops never visibly
+	// re-sync.
 	const float = useIdleLoop(3400, animated)
 	const drift = useIdleLoop(5000, animated)
+	const depart = useIdleLoop(2900, animated)
 
 	const cardW = width
 	const cardH = width * 0.6
 	const badge = width * 0.3
 
+	// The signature travel: the sibling card fans out from behind the front one
+	// and tucks back. `CaseTrackingHero` earns its "this is animated" read from an
+	// envelope crossing 40px of rail; a stack breathing 6px in place reads as a
+	// static drawing however carefully it is drawn, which is exactly how this one
+	// read next to it.
 	const backStyle = useAnimatedStyle(() => ({
-		transform: [{ rotate: `${-7 + 2 * drift.value}deg` }, { translateY: 3 * float.value }],
+		transform: [
+			{ translateX: -cardW * 0.17 * drift.value },
+			{ translateY: 5 * float.value },
+			{ rotate: `${-7 - 6 * drift.value}deg` },
+		],
 	}))
 	const frontStyle = useAnimatedStyle(() => ({
-		transform: [{ translateY: -6 * float.value }, { rotate: `${1.5 - 1.2 * drift.value}deg` }],
+		transform: [{ translateY: -7 * float.value }, { rotate: `${1.5 - 1.2 * drift.value}deg` }],
 	}))
+	// "One tap away": the outbound badge leaves along its own arrow's diagonal and
+	// comes back, coupled to two loops so the path is an arc, not a line.
 	const badgeStyle = useAnimatedStyle(() => ({
-		transform: [{ translateY: -8 * float.value }, { translateX: 2 * drift.value }],
+		transform: [
+			{ translateX: 13 * depart.value },
+			{ translateY: -7 * float.value - 13 * depart.value },
+		],
 	}))
 	const shadowStyle = useAnimatedStyle(() => ({
-		transform: [{ scaleX: 1 - 0.12 * float.value }],
-		opacity: 0.1 - 0.03 * float.value,
+		transform: [{ scaleX: 1 - 0.16 * float.value }],
+		opacity: 0.1 - 0.04 * float.value,
 	}))
 
 	return (
 		<View
 			accessible={false}
 			importantForAccessibility="no-hide-descendants"
-			style={{ width: cardW * 1.5, height: cardH * 1.8 }}
+			// Wide enough that the fanned card's full travel stays inside the
+			// composition's own box instead of overhanging it.
+			style={{ width: cardW * 1.7, height: cardH * 1.8 }}
 			className="items-center justify-center"
 		>
 			<View style={{ width: cardW, height: cardH }}>
