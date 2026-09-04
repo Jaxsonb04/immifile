@@ -78,12 +78,14 @@ export function RecommendationCard({ content, onStart, isDisabled }: Recommendat
 					) : (
 						<Button
 							variant="primary"
+							className="h-auto min-h-12 py-control"
 							isDisabled={isDisabled}
 							accessibilityRole="link"
+							accessibilityLabel={`Open official USCIS ${content.formLabel}`}
 							accessibilityHint="Opens the official USCIS page for this form in your browser"
 							onPress={() => void openOfficialForm(officialUrl)}
 						>
-							<Button.Label>Open the official form page</Button.Label>
+							<Button.Label className="shrink text-center">Open {content.formLabel}</Button.Label>
 							<ExternalIcon size={16} className="text-accent-foreground" />
 						</Button>
 					)}
