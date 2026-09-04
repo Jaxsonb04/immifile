@@ -1,14 +1,12 @@
 import { StyledLucideIcon } from '@/components/styled-icon'
-import { TabIntroHeaderReadyContext } from '@/components/core/tab-intro-transition'
-import { Stack, useRouter } from 'expo-router'
-import { Button, Surface, Typography, useThemeColor } from 'heroui-native'
-import { use, type ComponentProps } from 'react'
+import { useRouter } from 'expo-router'
+import { Button, Surface, Typography } from 'heroui-native'
+import { type ComponentProps } from 'react'
 import { ScrollView, useWindowDimensions, View } from 'react-native'
 import Animated, { FadeIn, ReduceMotion } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { ASSISTANT_CONSENT_COPY } from './assistant-consent-copy'
-import { shouldUseAssistantContentHeader } from './assistant-header-state'
 
 type ConsentDetailProps = {
 	icon: ComponentProps<typeof StyledLucideIcon>['name']
@@ -20,9 +18,11 @@ type ConsentDetailProps = {
 function ConsentDetail({ icon, title, body, compact }: ConsentDetailProps) {
 	return (
 		<View className="flex-row items-start gap-control">
-			{!compact ? <View className="size-10 items-center justify-center rounded-2xl bg-surface-tertiary">
-				<StyledLucideIcon name={icon} size={18} className="text-accent" />
-			</View> : null}
+			{!compact ? (
+				<View className="size-10 items-center justify-center rounded-2xl bg-surface-tertiary">
+					<StyledLucideIcon name={icon} size={18} className="text-accent" />
+				</View>
+			) : null}
 			<View className="flex-1 gap-hairline">
 				<Typography.Paragraph className="font-semibold text-foreground">
 					{title}
@@ -45,9 +45,6 @@ export function AssistantConsent({
 	const insets = useSafeAreaInsets()
 	const { height, fontScale } = useWindowDimensions()
 	const router = useRouter()
-	const backgroundColor = useThemeColor('background')
-	const contentHeaderReady = use(TabIntroHeaderReadyContext)
-	const ownsHeader = shouldUseAssistantContentHeader(contentHeaderReady)
 	const compact = height < 750
 	// Standard text is deliberately a single, non-scrolling decision surface.
 	// Large Dynamic Type keeps a real scroll path instead of clipping disclosure
@@ -56,20 +53,6 @@ export function AssistantConsent({
 
 	return (
 		<View className="flex-1 bg-background">
-			{ownsHeader ? (
-				<>
-					<Stack.Title>Assistant</Stack.Title>
-					<Stack.Screen
-						options={{
-							title: 'Assistant',
-							headerLargeTitle: false,
-							headerTransparent: false,
-							headerShadowVisible: false,
-							headerStyle: { backgroundColor },
-						}}
-					/>
-				</>
-			) : null}
 			<ScrollView
 				className="flex-1"
 				contentInsetAdjustmentBehavior="automatic"

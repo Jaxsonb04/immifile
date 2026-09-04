@@ -8,8 +8,10 @@ import { View } from 'react-native'
  * progressively disclosed sections. Replaces the old header-avatar modal. */
 export default function AccountTab() {
 	const themeColorForeground = useThemeColor('foreground')
+	const backgroundColor = useThemeColor('background')
 	return (
 		<>
+			<Stack.Screen options={{ headerTransparent: false, headerStyle: { backgroundColor } }} />
 			<Stack.Title
 				large
 				largeStyle={{
@@ -22,6 +24,7 @@ export default function AccountTab() {
 
 			<View className="flex-1">
 				<TabIntro
+					contentStartsBelowHeader
 					prefKey="accountIntroDismissed"
 					hero={<AccountHero size={104} />}
 					title={'Your account.\nYour control.'}

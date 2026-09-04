@@ -6,8 +6,10 @@ import { View } from 'react-native'
 
 export default function CasesTab() {
 	const themeColorForeground = useThemeColor('foreground')
+	const backgroundColor = useThemeColor('background')
 	return (
 		<>
+			<Stack.Screen options={{ headerTransparent: false, headerStyle: { backgroundColor } }} />
 			<Stack.Title
 				large
 				largeStyle={{
@@ -19,6 +21,7 @@ export default function CasesTab() {
 			</Stack.Title>
 			<View className="flex-1">
 				<TabIntro
+					contentStartsBelowHeader
 					prefKey="casesIntroDismissed"
 					hero={<CaseTrackingHero width={108} />}
 					title={'Keep every case\nwithin reach.'}

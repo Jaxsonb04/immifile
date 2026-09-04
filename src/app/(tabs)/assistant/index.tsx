@@ -4,35 +4,21 @@ import { Stack } from 'expo-router'
 import { useThemeColor } from 'heroui-native'
 import { View } from 'react-native'
 
-/** The Assistant tab (post-M7 revision, MASTER_PLAN Layout) — the safe
- * navigator lives between Cases and Forum again. The floating "Ask" bubble
- * it replaced sat on top of the Forms and Cases surfaces and was reported
- * as being in the way; a dedicated tab gives it room without crowding
- * either surface. The screen itself — navigator, quota, retry — is
- * unchanged from the bubble sheet.
- *
- * The title goes through the intro's `renderTitle` rather than sitting
- * beside it: this screen owns its own layout instead of being a root
- * large-title ScrollView, so its title lives in the navigation bar, above
- * the intro cover. Handing it over withholds it for exactly as long as the
- * tab bar is hidden. */
 export default function AssistantTab() {
-	const themeColorForeground = useThemeColor('foreground')
+	const backgroundColor = useThemeColor('background')
 	return (
 		<View className="flex-1">
+			<Stack.Screen
+				options={{
+					title: 'Assistant',
+					headerLargeTitle: false,
+					headerTransparent: false,
+					headerStyle: { backgroundColor },
+				}}
+			/>
 			<TabIntro
 				prefKey="assistantIntroDismissed"
-				renderTitle={(hidden) => (
-					<Stack.Title
-						large
-						largeStyle={{
-							fontFamily: 'LibreFranklin_600SemiBold',
-							color: themeColorForeground,
-						}}
-					>
-						{hidden ? '' : 'Assistant'}
-					</Stack.Title>
-				)}
+				contentStartsBelowHeader
 				hero={<AssistantHero width={112} />}
 				title={'Not sure which form?\nLet’s figure it out.'}
 				body="Ask in your own words. The assistant points you to one of two forms — a work permit (Form I-765) or a green card (Form I-90)."

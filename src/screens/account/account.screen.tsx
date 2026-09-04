@@ -1,6 +1,6 @@
 import { TempAccountCard, useAccountSession, useViewer } from '@/components/account'
 import { BodyScrollView } from '@/components/core'
-import { styledIcon, type StyledIconComponent } from '@/components/styled-icon'
+import { StyledLucideIcon, styledIcon, type StyledIconComponent } from '@/components/styled-icon'
 import {
 	APPLE_MANUAL_REVOCATION_INSTRUCTIONS,
 	confirmAndDeleteSocialAccount,
@@ -88,17 +88,21 @@ function IdentityPreview() {
 	const user = data?.user
 
 	return (
-		<View className="items-center gap-control pt-tight">
+		<View className="flex-row items-center gap-card py-tight">
 			<Avatar size="lg" variant="soft" color="accent" alt="Your account">
 				<Avatar.Fallback>
-					<Typography.Heading className="text-xl text-accent">
-						{isTemp ? '·' : initialsFor(user?.name)}
-					</Typography.Heading>
+					{isTemp ? (
+						<StyledLucideIcon name="user-round" size={26} className="text-accent" />
+					) : (
+						<Typography.Heading className="text-xl text-accent">
+							{initialsFor(user?.name)}
+						</Typography.Heading>
+					)}
 				</Avatar.Fallback>
 			</Avatar>
-			<View className="items-center gap-hairline">
-				<Typography.Heading className="font-display text-2xl">
-					{isTemp ? 'Welcome' : (user?.name ?? 'Welcome back')}
+			<View className="flex-1 gap-hairline">
+				<Typography.Heading className="font-display text-xl">
+					{isTemp ? 'Welcome to Immifile' : (user?.name ?? 'Welcome back')}
 				</Typography.Heading>
 				<Typography.Paragraph color="muted" className="text-sm">
 					{isTemp ? 'Temporary account' : (user?.email ?? '')}
@@ -154,7 +158,7 @@ function RowGroup({ label, rows }: { label?: string; rows: Row[] }) {
 	return (
 		<View className="gap-tight">
 			{label ? (
-				<Typography.Paragraph color="muted" className="ml-hairline text-sm">
+				<Typography.Paragraph color="muted" className="ml-hairline font-semibold text-sm">
 					{label}
 				</Typography.Paragraph>
 			) : null}
@@ -183,7 +187,11 @@ function RowGroup({ label, rows }: { label?: string; rows: Row[] }) {
 								}
 							>
 								<ListGroup.ItemPrefix>
-									<Icon size={20} className={row.destructive ? 'text-danger' : 'text-muted'} />
+									<View
+										className={`size-9 items-center justify-center rounded-xl ${row.destructive ? 'bg-danger/10' : 'bg-surface-secondary'}`}
+									>
+										<Icon size={18} className={row.destructive ? 'text-danger' : 'text-muted'} />
+									</View>
 								</ListGroup.ItemPrefix>
 								<ListGroup.ItemContent>
 									<ListGroup.ItemTitle className={row.destructive ? 'text-danger' : undefined}>
@@ -191,7 +199,10 @@ function RowGroup({ label, rows }: { label?: string; rows: Row[] }) {
 									</ListGroup.ItemTitle>
 								</ListGroup.ItemContent>
 								{row.value !== undefined ? (
-									<Typography.Paragraph color="muted" className="text-sm">
+									<Typography.Paragraph
+										color="muted"
+										className="max-w-[50%] shrink text-right text-sm"
+									>
 										{row.value}
 									</Typography.Paragraph>
 								) : row.href !== undefined ? (
@@ -215,7 +226,7 @@ function BlockedAuthorsSection() {
 	if (blocks === undefined || blocks.length === 0) return null
 	return (
 		<View className="gap-control">
-			<Typography.Paragraph color="muted" className="ml-hairline text-sm">
+			<Typography.Paragraph color="muted" className="ml-hairline font-semibold text-sm">
 				Blocked in Community
 			</Typography.Paragraph>
 			{blocks.map((block) => (
@@ -462,7 +473,8 @@ function useDeleteAccountRow(linkedProviderIds: string[] | undefined): {
 			deletionMode === 'loading' ||
 			(deletionMode === 'credentialed' && credentialedMethod === 'loading')
 		) {
-			if (!busy) Alert.alert('Checking sign-in method', 'Please wait for account verification to finish.')
+			if (!busy)
+				Alert.alert('Checking sign-in method', 'Please wait for account verification to finish.')
 			return
 		}
 		if (deletionMode === 'credentialed' && credentialedMethod === 'unsupported') {
@@ -518,11 +530,13 @@ export function AccountScreen() {
 
 	const accountRows: Row[] = [
 		...(linkedAccounts.providerIds?.length === 0
-			? [{
-				icon: styledIcon({ family: 'lucide', name: 'refresh-cw' }),
-				title: 'Retry sign-in verification',
-				onPress: linkedAccounts.retry,
-			} satisfies Row]
+			? [
+					{
+						icon: styledIcon({ family: 'lucide', name: 'refresh-cw' }),
+						title: 'Retry sign-in verification',
+						onPress: linkedAccounts.retry,
+					} satisfies Row,
+				]
 			: []),
 		...(linkedAccounts.label !== null
 			? [
@@ -552,11 +566,7 @@ export function AccountScreen() {
 	// Keep native large-title inset behavior and enough trailing scroll range for
 	// the destructive row to clear iOS's floating tab bar on compact screens.
 	return (
-		<BodyScrollView
-			contentContainerClassName="gap-section pt-tight"
-			bottomClearance={72}
-			restoreLargeTitleOnTabReveal
-		>
+		<BodyScrollView contentContainerClassName="gap-section pt-tight" bottomClearance={72}>
 			<IdentityPreview />
 			{isTemp ? <TempAccountCard /> : null}
 			{RELEASE_FEATURES.filingPreparation ? (

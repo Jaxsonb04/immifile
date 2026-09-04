@@ -7,9 +7,19 @@ import { RELEASE_FEATURES, releaseApplicationLink } from '@/lib/release-policy'
 import type { Id } from '@convex/_generated/dataModel'
 import { isValidReceiptNumber, normalizeReceiptNumber } from '@convex/shared/applicationShapes'
 import { router } from 'expo-router'
-import { Button, FieldError, Input, Label, Surface, TextField, Typography } from 'heroui-native'
+import {
+	Button,
+	Card,
+	Description,
+	FieldError,
+	Input,
+	Label,
+	Surface,
+	TextField,
+	Typography,
+} from 'heroui-native'
 import { useRef, useState } from 'react'
-import { Alert, Keyboard, Pressable, View } from 'react-native'
+import { Alert, Keyboard, Pressable, Text, View } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { StyledLucideIcon } from '@/components/styled-icon'
 import { useCreateCase, useLinkableApplications, type LinkableApplication } from './cases.data'
@@ -137,27 +147,51 @@ export function NewCaseScreen() {
 
 	return (
 		<BodyScrollView contentContainerClassName="gap-section py-gutter">
-			<View className="gap-hairline">
-				<Typography.Paragraph color="muted">
-					Save the USCIS receipt number from your notice for quick access. Immifile does not
-					automatically receive status updates from USCIS.
+			<View className="gap-tight">
+				<Typography.Heading className="font-display text-2xl">
+					Start with your USCIS notice.
+				</Typography.Heading>
+				<Typography.Paragraph color="muted" className="text-sm leading-relaxed">
+					Each filing has its own receipt number. Save yours here, then keep the updates you receive
+					in one timeline.
 				</Typography.Paragraph>
 			</View>
+
+			<Card className="gap-control rounded-3xl border border-border p-gutter">
+				<Card.Header className="flex-row items-center gap-tight">
+					<StyledLucideIcon name="file-text" size={18} className="text-accent" />
+					<Card.Title className="text-sm">Where to find it</Card.Title>
+				</Card.Header>
+				<Card.Description className="text-sm leading-relaxed">
+					Look for “Receipt Number” on the notice USCIS sent after you filed.
+				</Card.Description>
+				<View className="gap-hairline rounded-xl bg-surface-secondary p-control">
+					<Text className="text-xs text-muted">Example · 3 letters + 10 characters</Text>
+					<Text className="font-mono text-lg tracking-wide text-foreground">IOE1234567890</Text>
+				</View>
+			</Card>
 
 			<TextField isInvalid={showError && !isValid}>
 				<Label>USCIS receipt number</Label>
 				<Input
 					accessibilityLabel="USCIS receipt number"
+					testID="case-receipt-input"
 					value={receipt}
 					onChangeText={(value) => {
 						setReceipt(value)
 						if (showError) setShowError(false)
 					}}
-					placeholder="e.g. EAC1234567890"
+					placeholder="IOE1234567890"
+					className="font-mono text-lg"
+					accessibilityHint="13 characters from your USCIS receipt notice. Keep any asterisks."
+					editable={!busy}
 					autoCapitalize="characters"
 					autoCorrect={false}
 					returnKeyType="done"
 				/>
+				<Description hideOnInvalid>
+					13 characters. Keep any asterisks (*); spaces and dashes are removed.
+				</Description>
 				{showError && !isValid ? (
 					<FieldError>
 						Enter the 13-character receipt number from your notice, such as EAC1234567890. Keep any
@@ -187,9 +221,18 @@ export function NewCaseScreen() {
 				</View>
 			) : null}
 
-			<Button isDisabled={busy || normalized.length === 0} onPress={submit}>
-				<Button.Label>{busy ? 'Adding…' : 'Track this case'}</Button.Label>
-			</Button>
+			<View className="gap-control">
+				<Typography.Paragraph color="muted" className="text-sm leading-relaxed">
+					Updates are manual. Check the official USCIS tool for the latest status.
+				</Typography.Paragraph>
+				<Button
+					className="h-auto min-h-12 py-control"
+					isDisabled={busy || normalized.length === 0}
+					onPress={submit}
+				>
+					<Button.Label>{busy ? 'Adding…' : 'Save case'}</Button.Label>
+				</Button>
+			</View>
 		</BodyScrollView>
 	)
 }

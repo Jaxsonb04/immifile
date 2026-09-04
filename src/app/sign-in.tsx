@@ -1,3 +1,5 @@
+import { StyledLucideIcon } from '@/components/styled-icon'
+import { PasswordInput } from '@/components/core/password-input'
 import { authClient } from '@/lib/auth-client'
 import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
 import { useSlowLoad } from '@/hooks/use-slow-load'
@@ -110,14 +112,31 @@ export default function SignInScreen() {
 				contentContainerClassName="min-h-96 p-gutter gap-card"
 				contentInsetAdjustmentBehavior="automatic"
 			>
-				<View className="gap-hairline pt-hairline">
-					<Text className="font-display text-title text-foreground">
+				<View className="gap-tight">
+					<View className="mb-tight flex-row items-center justify-between">
+						<View className="size-12 items-center justify-center rounded-2xl bg-accent/10">
+							<StyledLucideIcon
+								name={isSignUp ? 'user-round-plus' : 'lock-keyhole'}
+								size={24}
+								className="text-accent"
+							/>
+						</View>
+						<Button
+							variant="ghost"
+							isIconOnly
+							accessibilityLabel="Close sign in"
+							onPress={() => (router.canGoBack() ? router.back() : router.replace('/welcome'))}
+						>
+							<StyledLucideIcon name="x" size={20} className="text-muted" />
+						</Button>
+					</View>
+					<Text className="font-display text-[28px] leading-9 text-foreground">
 						{isSignUp ? 'Create your account' : 'Welcome back'}
 					</Text>
 					<Typography.Paragraph color="muted" className="text-[15px]">
 						{isSignUp
-							? 'Save cases and keep your account across devices.'
-							: 'Sign in to return to your saved cases.'}
+							? 'One account for your cases, wherever you are.'
+							: 'Your cases and updates are right where you left them.'}
 					</Typography.Paragraph>
 				</View>
 				<View className="min-h-64 items-center justify-center gap-control">
@@ -130,19 +149,36 @@ export default function SignInScreen() {
 
 	return (
 		<KeyboardAwareScrollView
-			contentContainerClassName="p-gutter gap-card"
+			contentContainerClassName="px-section pt-gutter pb-12 gap-section"
 			keyboardDismissMode="on-drag"
 			keyboardShouldPersistTaps="handled"
 			contentInsetAdjustmentBehavior="automatic"
 		>
-			<View className="gap-hairline pt-hairline">
-				<Text className="font-display text-title text-foreground">
+			<View className="gap-tight">
+				<View className="mb-tight flex-row items-center justify-between">
+					<View className="size-12 items-center justify-center rounded-2xl bg-accent/10">
+						<StyledLucideIcon
+							name={isSignUp ? 'user-round-plus' : 'lock-keyhole'}
+							size={24}
+							className="text-accent"
+						/>
+					</View>
+					<Button
+						variant="ghost"
+						isIconOnly
+						accessibilityLabel="Close sign in"
+						onPress={() => (router.canGoBack() ? router.back() : router.replace('/welcome'))}
+					>
+						<StyledLucideIcon name="x" size={20} className="text-muted" />
+					</Button>
+				</View>
+				<Text className="font-display text-[28px] leading-9 text-foreground">
 					{isSignUp ? 'Create your account' : 'Welcome back'}
 				</Text>
 				<Typography.Paragraph color="muted" className="text-[15px]">
 					{isSignUp
-						? 'Save cases and keep your account across devices.'
-						: 'Sign in to return to your saved cases.'}
+						? 'One account for your cases, wherever you are.'
+						: 'Your cases and updates are right where you left them.'}
 				</Typography.Paragraph>
 			</View>
 			{providerLoadState === 'stalled' ? (
@@ -185,6 +221,7 @@ export default function SignInScreen() {
 							placeholder="Jane Doe"
 							autoCapitalize="words"
 							textContentType="name"
+							returnKeyType="done"
 							editable={!pending}
 						/>
 					</TextField>
@@ -201,18 +238,19 @@ export default function SignInScreen() {
 						autoComplete="email"
 						keyboardType="email-address"
 						textContentType="emailAddress"
+						returnKeyType="done"
 						editable={!pending}
 					/>
 				</TextField>
 
 				<TextField>
 					<Label>Password</Label>
-					<Input
+					<PasswordInput
+						key={mode}
 						accessibilityLabel="Password"
 						value={password}
 						onChangeText={setPassword}
-						placeholder="••••••••"
-						secureTextEntry
+						placeholder="Enter your password"
 						autoCapitalize="none"
 						textContentType={isSignUp ? 'newPassword' : 'password'}
 						editable={!pending}
@@ -223,7 +261,7 @@ export default function SignInScreen() {
 				</TextField>
 
 				<Button
-					className="h-auto min-h-12 py-control"
+					className="mt-tight h-auto min-h-12 py-control"
 					isDisabled={pending}
 					onPress={handleEmailAuth}
 				>

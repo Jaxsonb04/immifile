@@ -12,7 +12,7 @@ export const TEMP_ACCOUNT_START_DISCLOSURE = `To browse without signing up, Immi
 
 /** Compact disclosure for the Welcome screen, where the full paragraph
  * overwhelmed the entry moment. Keep the eligibility and cleanup timing exact. */
-export const TEMP_ACCOUNT_WELCOME_NOTE = `Continue starts a temporary account — eligible for deletion after ${RETENTION_HOURS} hours; cleanup runs hourly unless you sign up.`
+export const TEMP_ACCOUNT_WELCOME_NOTE = `Explore with a temporary account, eligible for deletion after ${RETENTION_HOURS} hours; cleanup runs hourly unless you sign up.`
 
 const TEMP_ACCOUNT_PENDING_DESCRIPTION = `This account and everything in it becomes eligible for permanent deletion after ${RETENTION_HOURS} hours; hourly cleanup removes it after that. Create an account to keep using Immifile.`
 

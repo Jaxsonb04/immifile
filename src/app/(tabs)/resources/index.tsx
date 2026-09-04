@@ -6,8 +6,10 @@ import { View } from 'react-native'
 
 export default function ResourcesTab() {
 	const foreground = useThemeColor('foreground')
+	const backgroundColor = useThemeColor('background')
 	return (
 		<>
+			<Stack.Screen options={{ headerTransparent: false, headerStyle: { backgroundColor } }} />
 			<Stack.Title
 				large
 				largeStyle={{
@@ -20,6 +22,7 @@ export default function ResourcesTab() {
 
 			<View className="flex-1">
 				<TabIntro
+					contentStartsBelowHeader
 					prefKey="resourcesIntroDismissed"
 					hero={<ResourcesHero width={130} />}
 					title={'Official help,\none tap away.'}

@@ -92,17 +92,15 @@ export function TempAccountCard() {
 	const description = tempAccountCardDescription(deleteAt, now)
 
 	return (
-		<Surface variant="secondary" className="gap-control rounded-2xl p-card">
+		<Surface className="gap-card rounded-3xl border border-border p-gutter">
 			<View className="gap-hairline">
-				<Typography.Paragraph className="font-medium">
-					You’re using a temporary account
-				</Typography.Paragraph>
+				<Typography.Paragraph className="font-medium">A place for your cases</Typography.Paragraph>
 				<Typography.Paragraph color="muted" className="text-sm leading-snug">
 					{description}
 				</Typography.Paragraph>
 			</View>
 			<Button
-				size="sm"
+				className="h-auto min-h-12 py-control"
 				onPress={() =>
 					void requireAccount({
 						title: 'Keep your work',

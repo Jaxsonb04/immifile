@@ -1,50 +1,51 @@
 appId: dev.uing.immigrationrenewalhelp
 ---
-- tapOn: "Add a case"
-- tapOn: "e.g. EAC1234567890"
-- inputText: "${QA_RECEIPT}"
+- tapOn: 'Add a case'
 - tapOn:
-    text: "Done"
+    id: case-receipt-input
+- inputText: '${QA_RECEIPT}'
+- tapOn:
+    text: 'Done'
     optional: true
-- tapOn: "Track this case"
-- assertVisible: "Create an account to save a case"
+- tapOn: 'Save case'
+- assertVisible: 'Create an account to save a case'
 - scrollUntilVisible:
-    element: "Back to receipt number"
+    element: 'Back to receipt number'
     centerElement: true
-- tapOn: "Back to receipt number"
-- assertVisible: "${QA_RECEIPT}"
-- tapOn: "Track this case"
+- tapOn: 'Back to receipt number'
+- assertVisible: '${QA_RECEIPT}'
+- tapOn: 'Save case'
 - scrollUntilVisible:
-    element: "Already have an account.*"
+    element: 'Already have an account.*'
     centerElement: true
-- tapOn: "Already have an account.*"
+- tapOn: 'Already have an account.*'
 - scrollUntilVisible:
-    element: "you@example.com"
+    element: 'you@example.com'
     direction: UP
     centerElement: true
-- tapOn: "you@example.com"
-- inputText: "${QA_EMAIL}"
-- tapOn: "Done"
+- tapOn: 'you@example.com'
+- inputText: '${QA_EMAIL}'
+- tapOn: 'Done'
 - scrollUntilVisible:
-    element: "Password"
+    element: 'Password'
     centerElement: true
-- tapOn: "••••••••"
-- inputText: "${QA_PASSWORD}"
-- tapOn: "Done"
+- tapOn: 'Enter your password'
+- inputText: '${QA_PASSWORD}'
+- tapOn: 'Done'
 - scrollUntilVisible:
-    element: "Sign in"
+    element: 'Sign in'
     centerElement: true
-- tapOn: "Sign in"
+- tapOn: 'Sign in'
 - tapOn:
-    text: "Not Now"
+    text: 'Not Now'
     optional: true
 - extendedWaitUntil:
-    visible: "${QA_RECEIPT}.*"
+    visible: '.*${QA_RECEIPT}.*'
     timeout: 30000
-- tapOn: "${QA_RECEIPT}.*"
+- tapOn: '.*${QA_RECEIPT}.*'
 - scrollUntilVisible:
-    element: "Remove from Immifile"
+    element: 'Remove from Immifile'
     centerElement: true
-- tapOn: "Remove from Immifile"
-- tapOn: "Remove case"
-- assertNotVisible: "${QA_RECEIPT}.*"
+- tapOn: 'Remove from Immifile'
+- tapOn: 'Remove case'
+- assertNotVisible: '.*${QA_RECEIPT}.*'

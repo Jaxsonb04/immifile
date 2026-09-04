@@ -1,3 +1,4 @@
+import { PasswordInput } from '@/components/core/password-input'
 import { authClient } from '@/lib/auth-client'
 import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
 import { useSlowLoad } from '@/hooks/use-slow-load'
@@ -241,12 +242,12 @@ export function UpgradeActions({
 
 				<TextField>
 					<Label>Password</Label>
-					<Input
+					<PasswordInput
+						key={mode}
 						accessibilityLabel="Password"
 						value={password}
 						onChangeText={setPassword}
-						placeholder="••••••••"
-						secureTextEntry
+						placeholder="Enter your password"
 						autoCapitalize="none"
 						textContentType={mode === 'create' ? 'newPassword' : 'password'}
 						returnKeyType="done"

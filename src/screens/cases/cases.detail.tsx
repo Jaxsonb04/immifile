@@ -36,14 +36,25 @@ const DOT_COLOR = { attention: 'bg-warning', positive: 'bg-success', neutral: 'b
 
 type TimelineEntry = CaseDetail['statusHistory'][number]
 
-function TimelineRow({ entry, isLatest }: { entry: TimelineEntry; isLatest: boolean }) {
+function TimelineRow({
+	entry,
+	isLatest,
+	isLast,
+}: {
+	entry: TimelineEntry
+	isLatest: boolean
+	isLast: boolean
+}) {
 	const tone = statusTone(entry.status)
 	return (
 		<View className="flex-row gap-control">
-			<View className="items-center pt-hairline">
-				<View className={`h-3 w-3 rounded-full ${DOT_COLOR[tone]}`} />
+			<View className="w-5 items-center pt-tight">
+				<View
+					className={`size-2.5 rounded-full ${isLatest && tone === 'neutral' ? 'bg-accent' : DOT_COLOR[tone]}`}
+				/>
+				{!isLast ? <View className="mt-hairline w-px flex-1 bg-separator" /> : null}
 			</View>
-			<View className="flex-1 gap-hairline pb-card">
+			<View className="flex-1 gap-hairline pb-section">
 				<Typography.Paragraph className={isLatest ? 'font-semibold' : 'font-medium'}>
 					{caseStatusLabels[entry.status]}
 				</Typography.Paragraph>
@@ -205,7 +216,10 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 
 	return (
 		<BodyScrollView contentContainerClassName="gap-gutter py-card">
-			<View className="gap-tight">
+			<Surface className="gap-control rounded-3xl border border-border p-gutter">
+				<Typography.Paragraph color="muted" className="text-xs">
+					USCIS RECEIPT NUMBER
+				</Typography.Paragraph>
 				<Typography.Heading selectable className="text-2xl font-mono-semibold tabular-nums">
 					{receiptNumber}
 				</Typography.Heading>
@@ -224,7 +238,7 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 						<Chip.Label className="shrink">{caseStatusLabels[detail.status]}</Chip.Label>
 					</Chip>
 				</View>
-			</View>
+			</Surface>
 
 			{isRfe ? (
 				<Alert status="warning">
@@ -257,13 +271,16 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 			</Pressable>
 
 			<View className="gap-control">
-				<Typography.Heading className="text-base font-semibold">Timeline</Typography.Heading>
+				<Typography.Heading className="text-base font-semibold">
+					Your case timeline
+				</Typography.Heading>
 				<View>
 					{timeline.map((entry, index) => (
 						<TimelineRow
 							key={`${entry.status}-${entry.occurredAt}`}
 							entry={entry}
 							isLatest={index === 0}
+							isLast={index === timeline.length - 1}
 						/>
 					))}
 				</View>
