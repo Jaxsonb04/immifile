@@ -13,29 +13,7 @@ import type { ChatTurn } from './assistant.types'
 // transcript; selected user messages are sent to OpenAI under the provider
 // retention disclosed before consent (MASTER_PLAN "Interfaces").
 
-// Keep the sent history within the action's own bound (MAX_HISTORY_TURNS = 40).
-const MAX_HISTORY_TURNS = 40
-
-type ActionHistoryTurn = { role: 'user' | 'assistant'; content: string }
-
-/** Flatten prior transcript turns into the {role, content} history the action
- * accepts, so the extractor can combine facts across the clarification loop.
- * Pending/error turns carry no content and are skipped. */
-function toActionHistory(turns: ChatTurn[]): ActionHistoryTurn[] {
-	const history: ActionHistoryTurn[] = []
-	for (const turn of turns) {
-		if (turn.kind === 'user') {
-			history.push({ role: 'user', content: turn.text })
-		} else if (turn.kind === 'assistant') {
-			const content =
-				turn.content.kind === 'text'
-					? turn.content.text
-					: `${turn.content.title} (${turn.content.formLabel})`
-			history.push({ role: 'assistant', content })
-		}
-	}
-	return history.slice(-MAX_HISTORY_TURNS)
-}
+import { prepareAssistantRetry, toActionHistory } from './assistant.history'
 
 export type AssistantChat = ReturnType<typeof useAssistantChat>
 
@@ -63,19 +41,23 @@ export function useAssistantChat() {
 	 * the user's text. The network round-trip resolves the pending bubble later.
 	 */
 	const send = useCallback(
-		(raw: string): boolean => {
+		(raw: string, retryId?: string): boolean => {
 			const message = raw.trim()
 			if (message.length === 0 || isSendingRef.current || outOfMessages) return false
+
+			const retryRequest = retryId ? prepareAssistantRetry(turns, retryId) : null
+			if (retryId && !retryRequest) return false
 
 			isSendingRef.current = true
 			setIsSending(true)
 
 			// Snapshot history BEFORE appending this turn, then optimistically show
 			// the user bubble and an assistant "thinking" placeholder.
-			const history = toActionHistory(turns)
+			const history = retryRequest?.history ?? toActionHistory(turns)
 			const userId = nextId()
-			const pendingId = nextId()
-			setTurns((prev) => [
+			const pendingId = retryId ?? nextId()
+			if (retryRequest) setTurns(retryRequest.turns)
+			else setTurns((prev) => [
 				...prev,
 				{ id: userId, kind: 'user', text: message },
 				{ id: pendingId, kind: 'pending' },
@@ -110,11 +92,10 @@ export function useAssistantChat() {
 		[getRecommendation, outOfMessages, turns],
 	)
 
-	/** Drop the failed turn and resend its text. */
+	/** A rejected retry leaves the error and the original message intact. */
 	const retry = useCallback(
 		(failedId: string, failedText: string) => {
-			setTurns((prev) => prev.filter((turn) => turn.id !== failedId))
-			send(failedText)
+			send(failedText, failedId)
 		},
 		[send],
 	)
