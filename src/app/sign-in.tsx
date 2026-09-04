@@ -179,6 +179,7 @@ export default function SignInScreen() {
 					<TextField>
 						<Label>Name</Label>
 						<Input
+							accessibilityLabel="Name"
 							value={name}
 							onChangeText={setName}
 							placeholder="Jane Doe"
@@ -192,6 +193,7 @@ export default function SignInScreen() {
 				<TextField>
 					<Label>Email</Label>
 					<Input
+						accessibilityLabel="Email"
 						value={email}
 						onChangeText={setEmail}
 						placeholder="you@example.com"
@@ -206,6 +208,7 @@ export default function SignInScreen() {
 				<TextField>
 					<Label>Password</Label>
 					<Input
+						accessibilityLabel="Password"
 						value={password}
 						onChangeText={setPassword}
 						placeholder="••••••••"
@@ -219,8 +222,12 @@ export default function SignInScreen() {
 					/>
 				</TextField>
 
-				<Button isDisabled={pending} onPress={handleEmailAuth}>
-					<Button.Label>
+				<Button
+					className="h-auto min-h-12 py-control"
+					isDisabled={pending}
+					onPress={handleEmailAuth}
+				>
+					<Button.Label className="shrink text-center">
 						{pending
 							? isSignUp
 								? 'Creating account…'
@@ -233,10 +240,14 @@ export default function SignInScreen() {
 
 				<Button
 					variant="ghost"
+					className="h-auto min-h-12 py-control"
 					isDisabled={pending}
-					onPress={() => setMode(isSignUp ? 'sign-in' : 'sign-up')}
+					onPress={() => {
+						setMode(isSignUp ? 'sign-in' : 'sign-up')
+						setPassword('')
+					}}
 				>
-					<Button.Label>
+					<Button.Label className="shrink text-center">
 						{isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
 					</Button.Label>
 				</Button>
@@ -254,7 +265,7 @@ export default function SignInScreen() {
 						isDisabled={pending}
 						onPress={() => router.push('/forgot-password')}
 					>
-						<Button.Label>Forgot password?</Button.Label>
+						<Button.Label className="shrink text-center">Forgot password?</Button.Label>
 					</Button>
 				) : null}
 			</View>

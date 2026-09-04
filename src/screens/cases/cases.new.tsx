@@ -1,4 +1,5 @@
-import { useRequireAccount } from '@/components/account'
+import { UpgradeActions } from '@/components/account/upgrade/upgrade.actions'
+import { useCredentialedAccountReadiness } from '@/components/account/account.session'
 import { BodyScrollView } from '@/components/core'
 import { situationLabel } from '@/lib/application-labels'
 import { humanErrorMessage } from '@/lib/error-message'
@@ -7,8 +8,9 @@ import type { Id } from '@convex/_generated/dataModel'
 import { isValidReceiptNumber, normalizeReceiptNumber } from '@convex/shared/applicationShapes'
 import { router } from 'expo-router'
 import { Button, FieldError, Input, Label, Surface, TextField, Typography } from 'heroui-native'
-import { useState } from 'react'
-import { Alert, Pressable, View } from 'react-native'
+import { useRef, useState } from 'react'
+import { Alert, Keyboard, Pressable, View } from 'react-native'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { StyledLucideIcon } from '@/components/styled-icon'
 import { useCreateCase, useLinkableApplications, type LinkableApplication } from './cases.data'
 
@@ -44,28 +46,37 @@ function ApplicationOption(props: {
 /** Create-case modal (M3-T2): enter a USCIS receipt number and optionally link
  * a filed application, then track it. */
 export function NewCaseScreen() {
-	const requireAccount = useRequireAccount()
+	const { isCredentialedReady } = useCredentialedAccountReadiness()
 	const createCase = useCreateCase()
 	const applications = useLinkableApplications(RELEASE_FEATURES.filingPreparation)
 	const [receipt, setReceipt] = useState('')
 	const [linkedId, setLinkedId] = useState<Id<'applications'> | null>(null)
 	const [showError, setShowError] = useState(false)
 	const [busy, setBusy] = useState(false)
+	const savingRef = useRef(false)
+	const [showAccountSetup, setShowAccountSetup] = useState(false)
+	const [accountMode, setAccountMode] = useState<'create' | 'sign-in'>('create')
 
 	const normalized = normalizeReceiptNumber(receipt)
 	const isValid = isValidReceiptNumber(normalized)
 
-	async function submit() {
+	function submit() {
+		if (savingRef.current) return
 		if (!isValid) {
 			setShowError(true)
 			return
 		}
-		const hasAccount = await requireAccount({
-			title: 'Create an account to save a case',
-			description:
-				'A permanent account keeps your receipt number out of a temporary workspace that becomes eligible for hourly deletion after 48 hours.',
-		})
-		if (!hasAccount) return
+		Keyboard.dismiss()
+		if (!isCredentialedReady) {
+			setShowAccountSetup(true)
+			return
+		}
+		void save()
+	}
+
+	async function save() {
+		if (savingRef.current) return
+		savingRef.current = true
 		setBusy(true)
 		try {
 			await createCase({
@@ -77,8 +88,50 @@ export function NewCaseScreen() {
 		} catch (error) {
 			Alert.alert('Could not add case', humanErrorMessage(error, 'Please try again.'))
 		} finally {
+			savingRef.current = false
 			setBusy(false)
 		}
+	}
+
+	// This screen is already a native modal. The app-root upgrade sheet sits
+	// behind it, so present account setup inside this modal and retain the receipt.
+	if (showAccountSetup) {
+		return (
+			<KeyboardAwareScrollView
+				contentContainerClassName="gap-section p-gutter pb-16"
+				keyboardShouldPersistTaps="handled"
+				keyboardDismissMode="on-drag"
+				bottomOffset={24}
+			>
+				<View className="gap-tight">
+					<Typography.Heading className="text-2xl font-semibold">
+						{accountMode === 'create'
+							? 'Create an account to save a case'
+							: 'Sign in to save this case'}
+					</Typography.Heading>
+					<Typography.Paragraph color="muted">
+						Your receipt number will be saved after you sign in. A permanent account keeps your
+						cases available across devices.
+					</Typography.Paragraph>
+				</View>
+				<UpgradeActions
+					onModeChange={setAccountMode}
+					onUpgraded={() => {
+						setShowAccountSetup(false)
+						void save()
+					}}
+				/>
+				<Button
+					variant="ghost"
+					onPress={() => {
+						setShowAccountSetup(false)
+						setAccountMode('create')
+					}}
+				>
+					<Button.Label>Back to receipt number</Button.Label>
+				</Button>
+			</KeyboardAwareScrollView>
+		)
 	}
 
 	return (
@@ -93,6 +146,7 @@ export function NewCaseScreen() {
 			<TextField isInvalid={showError && !isValid}>
 				<Label>USCIS receipt number</Label>
 				<Input
+					accessibilityLabel="USCIS receipt number"
 					value={receipt}
 					onChangeText={(value) => {
 						setReceipt(value)
