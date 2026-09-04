@@ -7,7 +7,20 @@ import { withUniwind } from 'uniwind'
 // weight and keeps every glyph looking drawn for this system. Do not add
 // other families — pick the closest Lucide glyph instead.
 
-export const StyledLucideIcon = withUniwind(Lucide)
+const UniwindLucideIcon = withUniwind(Lucide)
+
+/** Decorative glyphs must not become private-use characters in VoiceOver. */
+export function StyledLucideIcon(props: ComponentProps<typeof UniwindLucideIcon>) {
+	const labelled = Boolean(props.accessibilityLabel)
+	return (
+		<UniwindLucideIcon
+			accessible={labelled}
+			accessibilityElementsHidden={!labelled}
+			importantForAccessibility={labelled ? 'auto' : 'no'}
+			{...props}
+		/>
+	)
+}
 
 type LucideIconName = ComponentProps<typeof Lucide>['name']
 

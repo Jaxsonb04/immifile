@@ -14,12 +14,13 @@ import {
 	Button,
 	Chip,
 	Input,
+	Label,
 	Separator,
 	Surface,
 	TextField,
 	Typography,
 } from 'heroui-native'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Alert as RNAlert, Linking, Pressable, View } from 'react-native'
 import {
 	formatCaseDate,
@@ -65,9 +66,11 @@ function AddUpdate({ caseId }: { caseId: Id<'cases'> }) {
 	const [status, setStatus] = useState<CaseStatus | null>(null)
 	const [note, setNote] = useState('')
 	const [busy, setBusy] = useState(false)
+	const savingRef = useRef(false)
 
 	async function save() {
-		if (status === null) return
+		if (status === null || savingRef.current) return
+		savingRef.current = true
 		setBusy(true)
 		try {
 			await addStatusUpdate({ caseId, status, note: note.trim() || undefined })
@@ -77,6 +80,7 @@ function AddUpdate({ caseId }: { caseId: Id<'cases'> }) {
 		} catch (error) {
 			RNAlert.alert('Could not add update', humanErrorMessage(error, 'Try again.'))
 		} finally {
+			savingRef.current = false
 			setBusy(false)
 		}
 	}
@@ -96,16 +100,23 @@ function AddUpdate({ caseId }: { caseId: Id<'cases'> }) {
 				{caseStatuses.map((option) => (
 					<Chip
 						key={option}
+						accessibilityRole="button"
+						accessibilityState={{ selected: status === option, disabled: busy }}
+						disabled={busy}
+						className="h-auto min-h-11 max-w-full py-tight"
 						variant={status === option ? 'primary' : 'soft'}
 						color="accent"
 						onPress={() => setStatus(option)}
 					>
-						<Chip.Label>{caseStatusLabels[option]}</Chip.Label>
+						<Chip.Label className="shrink">{caseStatusLabels[option]}</Chip.Label>
 					</Chip>
 				))}
 			</View>
 			<TextField>
+				<Label>Note (optional)</Label>
 				<Input
+					accessibilityLabel="Note (optional)"
+					editable={!busy}
 					value={note}
 					onChangeText={setNote}
 					placeholder="Add a note (optional)"
@@ -114,11 +125,20 @@ function AddUpdate({ caseId }: { caseId: Id<'cases'> }) {
 					className="min-h-11"
 				/>
 			</TextField>
-			<View className="flex-row gap-tight">
-				<Button variant="ghost" className="flex-1" isDisabled={busy} onPress={() => setOpen(false)}>
+			<View className="gap-tight">
+				<Button
+					variant="ghost"
+					className="h-auto min-h-12 py-control"
+					isDisabled={busy}
+					onPress={() => setOpen(false)}
+				>
 					<Button.Label>Cancel</Button.Label>
 				</Button>
-				<Button className="flex-[2]" isDisabled={busy || status === null} onPress={save}>
+				<Button
+					className="h-auto min-h-12 py-control"
+					isDisabled={busy || status === null}
+					onPress={save}
+				>
 					<Button.Label>{busy ? 'Saving…' : 'Save update'}</Button.Label>
 				</Button>
 			</View>
@@ -153,7 +173,10 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 					style: 'destructive',
 					onPress: () => {
 						void deleteCase({ caseId })
-							.then(() => router.back())
+							.then(() => {
+								if (router.canGoBack()) router.back()
+								else router.replace('/(tabs)/cases')
+							})
 							.catch((error) => {
 								RNAlert.alert(
 									'Could not remove case',
@@ -189,6 +212,7 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 				<View className="flex-row">
 					<Chip
 						variant="soft"
+						className="h-auto max-w-full py-1"
 						color={
 							statusTone(detail.status) === 'positive'
 								? 'success'
@@ -197,7 +221,7 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 									: 'default'
 						}
 					>
-						<Chip.Label>{caseStatusLabels[detail.status]}</Chip.Label>
+						<Chip.Label className="shrink">{caseStatusLabels[detail.status]}</Chip.Label>
 					</Chip>
 				</View>
 			</View>

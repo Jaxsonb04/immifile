@@ -20,8 +20,13 @@ const TONE_COLOR = {
 
 function StatusChip({ status }: { status: CaseSummary['status'] }) {
 	return (
-		<Chip variant="soft" color={TONE_COLOR[statusTone(status)]} size="sm">
-			<Chip.Label>{caseStatusLabels[status]}</Chip.Label>
+		<Chip
+			variant="soft"
+			color={TONE_COLOR[statusTone(status)]}
+			size="sm"
+			className="h-auto max-w-full py-1"
+		>
+			<Chip.Label className="shrink">{caseStatusLabels[status]}</Chip.Label>
 		</Chip>
 	)
 }
@@ -30,7 +35,7 @@ function CaseRow({ item }: { item: CaseSummary }) {
 	return (
 		<Pressable accessibilityRole="button" onPress={() => router.push(`/cases/${item._id}`)}>
 			<Surface variant="secondary" className="gap-tight rounded-2xl p-card">
-				<View className="flex-row items-center justify-between gap-control">
+				<View className="flex-row flex-wrap items-center justify-between gap-control">
 					<Typography.Paragraph className="font-mono tabular-nums">
 						{item.receiptNumber}
 					</Typography.Paragraph>

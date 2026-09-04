@@ -1,6 +1,6 @@
 import { Button, Spinner, Typography } from 'heroui-native'
 import type { ReactNode } from 'react'
-import { ScrollView, View } from 'react-native'
+import { ScrollView, useWindowDimensions, View } from 'react-native'
 import { initialWindowMetrics, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import type { StyledIconComponent } from '@/components/styled-icon'
@@ -19,12 +19,13 @@ const TAB_BAR_CLEARANCE = 72
  * unreachable. `grow` keeps the content centered while it fits and only starts
  * scrolling once it doesn't.
  *
- * Note there is no top padding and no `contentInsetAdjustmentBehavior`: both
- * push the centered content down far enough that the trailing action lands
- * behind the tab bar at ordinary text sizes.
+ * Automatic native header insets are needed when large text makes this content
+ * scroll. At ordinary sizes, centering already places it below the header and
+ * adding that inset would push the trailing action behind the tab bar.
  */
 function StateShell({ children }: { children: ReactNode }) {
 	const insets = useSafeAreaInsets()
+	const { fontScale } = useWindowDimensions()
 	const bottomPadding = getStableStateShellBottomPadding({
 		initialBottomInset: initialWindowMetrics?.insets.bottom,
 		liveBottomInset: insets.bottom,
@@ -33,6 +34,7 @@ function StateShell({ children }: { children: ReactNode }) {
 	return (
 		<ScrollView
 			className="flex-1 bg-background"
+			contentInsetAdjustmentBehavior={fontScale > 1.2 ? 'automatic' : 'never'}
 			contentContainerClassName="grow items-center justify-center gap-gutter px-8"
 			contentContainerStyle={{ paddingBottom: bottomPadding }}
 			showsVerticalScrollIndicator={false}
@@ -83,12 +85,21 @@ type ScreenEmptyProps = {
 }
 
 /** Empty state: no data yet, optionally with a single primary action. */
-export function ScreenEmpty({ icon, visual, title, description, action, footer }: ScreenEmptyProps) {
+export function ScreenEmpty({
+	icon,
+	visual,
+	title,
+	description,
+	action,
+	footer,
+}: ScreenEmptyProps) {
 	return (
 		<StateShell>
 			{visual ?? (icon ? <StateIcon icon={icon} /> : null)}
 			<View className="gap-tight">
-				<Typography.Heading className="text-center text-xl font-semibold">{title}</Typography.Heading>
+				<Typography.Heading className="text-center text-xl font-semibold">
+					{title}
+				</Typography.Heading>
 				{description ? (
 					<Typography.Paragraph color="muted" className="text-center text-base leading-relaxed">
 						{description}
@@ -96,8 +107,12 @@ export function ScreenEmpty({ icon, visual, title, description, action, footer }
 				) : null}
 			</View>
 			{action ? (
-				<Button variant="secondary" onPress={action.onPress}>
-					<Button.Label>{action.label}</Button.Label>
+				<Button
+					variant="secondary"
+					className="h-auto min-h-12 max-w-full py-control"
+					onPress={action.onPress}
+				>
+					<Button.Label className="shrink text-center">{action.label}</Button.Label>
 				</Button>
 			) : null}
 			{footer ?? null}
@@ -123,7 +138,9 @@ export function ScreenError({
 		<StateShell>
 			{icon ? <StateIcon icon={icon} /> : null}
 			<View className="gap-tight">
-				<Typography.Heading className="text-center text-xl font-semibold">{title}</Typography.Heading>
+				<Typography.Heading className="text-center text-xl font-semibold">
+					{title}
+				</Typography.Heading>
 				{description ? (
 					<Typography.Paragraph color="muted" className="text-center text-base leading-relaxed">
 						{description}

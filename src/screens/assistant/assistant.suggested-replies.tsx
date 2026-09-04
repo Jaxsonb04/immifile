@@ -18,12 +18,15 @@ export function SuggestedReplies({ replies, onPick, isDisabled }: SuggestedRepli
 			{replies.map((reply) => (
 				<Chip
 					key={reply.id}
+					accessibilityRole="button"
+					accessibilityState={{ disabled: Boolean(isDisabled) }}
+					className="h-auto min-h-11 max-w-full py-tight"
 					variant="soft"
 					color="accent"
 					disabled={isDisabled}
 					onPress={() => onPick(reply.message)}
 				>
-					<Chip.Label>{reply.label}</Chip.Label>
+					<Chip.Label className="shrink">{reply.label}</Chip.Label>
 				</Chip>
 			))}
 		</View>

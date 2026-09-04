@@ -37,6 +37,7 @@ export function Composer({ onSend, isSending, canSend, outOfMessages }: Composer
 	return (
 		<InputGroup isDisabled={outOfMessages}>
 			<InputGroup.Input
+				accessibilityLabel="Message to assistant"
 				value={value}
 				onChangeText={setValue}
 				maxLength={MAX_ASSISTANT_MESSAGE_CHARS}
