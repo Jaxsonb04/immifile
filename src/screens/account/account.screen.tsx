@@ -12,6 +12,7 @@ import {
 } from '@/lib/account-deletion'
 import { authClient } from '@/lib/auth-client'
 import { humanErrorMessage } from '@/lib/error-message'
+import { resolveLinkedAccountProviders } from '@/lib/linked-account-providers'
 import { RELEASE_FEATURES } from '@/lib/release-policy'
 import { ensureSessionResolved, ensureSignedOutAfterDeletion } from '@/lib/session-sync'
 import { useMyBlocks, useUnblockAuthor } from '@/screens/community/community.data'
@@ -42,19 +43,25 @@ const PROVIDER_LABELS: Record<string, string> = {
 type LinkedAccountState = {
 	providerIds: string[] | undefined
 	label: string | null
+	retry: () => void
 }
 
 /** The linked sign-in method(s), e.g. "Google" — loaded once per session. */
 function useLinkedAccounts(isCredentialed: boolean): LinkedAccountState {
 	const [providerIds, setProviderIds] = useState<string[] | undefined>()
+	const [attempt, setAttempt] = useState(0)
+	function retry() {
+		setProviderIds(undefined)
+		setAttempt((value) => value + 1)
+	}
 	useEffect(() => {
 		if (!isCredentialed) return
 		let cancelled = false
 		void authClient
 			.listAccounts()
-			.then(({ data }) => {
-				if (cancelled || !data) return
-				setProviderIds([...new Set(data.map((account) => account.providerId))])
+			.then((result) => {
+				if (cancelled) return
+				setProviderIds(resolveLinkedAccountProviders(result))
 			})
 			.catch(() => {
 				// Fail closed for deletion when the linked method cannot be verified.
@@ -63,10 +70,10 @@ function useLinkedAccounts(isCredentialed: boolean): LinkedAccountState {
 		return () => {
 			cancelled = true
 		}
-	}, [isCredentialed])
-	if (!isCredentialed) return { providerIds: [], label: null }
+	}, [isCredentialed, attempt])
+	if (!isCredentialed) return { providerIds: [], label: null, retry }
 	const labels = providerIds?.map((id) => PROVIDER_LABELS[id] ?? id) ?? []
-	return { providerIds, label: labels.length > 0 ? labels.join(', ') : null }
+	return { providerIds, label: labels.length > 0 ? labels.join(', ') : null, retry }
 }
 
 /**
@@ -244,6 +251,9 @@ function confirmSignOut(providerLabel: string | null) {
 			onPress: () =>
 				void authClient
 					.signOut({ fetchOptions: { disableSignal: true } })
+					.then(({ error }) => {
+						if (error) throw new Error(error.message ?? 'Could not sign out. Please try again.')
+					})
 					.catch((error: unknown) => {
 						Alert.alert(
 							'Sign out',
@@ -452,6 +462,7 @@ function useDeleteAccountRow(linkedProviderIds: string[] | undefined): {
 			deletionMode === 'loading' ||
 			(deletionMode === 'credentialed' && credentialedMethod === 'loading')
 		) {
+			if (!busy) Alert.alert('Checking sign-in method', 'Please wait for account verification to finish.')
 			return
 		}
 		if (deletionMode === 'credentialed' && credentialedMethod === 'unsupported') {
@@ -506,6 +517,13 @@ export function AccountScreen() {
 	const { busy, confirmDelete } = useDeleteAccountRow(linkedAccounts.providerIds)
 
 	const accountRows: Row[] = [
+		...(linkedAccounts.providerIds?.length === 0
+			? [{
+				icon: styledIcon({ family: 'lucide', name: 'refresh-cw' }),
+				title: 'Retry sign-in verification',
+				onPress: linkedAccounts.retry,
+			} satisfies Row]
+			: []),
 		...(linkedAccounts.label !== null
 			? [
 					{
