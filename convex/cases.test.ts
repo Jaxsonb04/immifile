@@ -38,6 +38,15 @@ describe('createCase', () => {
 		expect(tracked!.statusHistory[0]).toMatchObject({ status: 'caseReceived' })
 	})
 
+	test('preserves receipt asterisks and removes pasted separator dashes', async () => {
+		const t = newT()
+		const alice = t.withIdentity({ subject: 'alice' })
+		const caseId = await alice.mutation(api.cases.createCase, {
+			receiptNumber: ' eac-*234-567-890 ',
+		})
+		expect((await alice.query(api.cases.getCase, { caseId }))?.receiptNumber).toBe('EAC*234567890')
+	})
+
 	test('requires a permanent account before storing a receipt number', async () => {
 		const t = newT()
 		const temporary = t.withIdentity({ subject: 'temp', isAnonymous: true })

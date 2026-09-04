@@ -107,7 +107,7 @@ export const listLinkableApplications = query({
 
 /**
  * Track a new case by its USCIS receipt number. The receipt is normalized and
- * validated (`^[A-Z]{3}\d{10}$`), unique per owner, and seeds a one-entry status
+ * validated (including asterisks printed on a notice), unique per owner, and seeds a one-entry status
  * timeline. An optional application link must belong to the same owner.
  *
  * Case-link assisted filing (decision 6): a real receipt number is decisive
@@ -129,7 +129,9 @@ export const createCase = mutation({
 		const ownerId = await requireCredentialedOwnerId(ctx)
 		const receiptNumber = normalizeReceiptNumber(args.receiptNumber)
 		if (!isValidReceiptNumber(receiptNumber)) {
-			throw new Error('Enter a receipt number like EAC1234567890 (3 letters + 10 digits)')
+			throw new Error(
+				'Enter the 13-character receipt number from your notice, including any asterisks',
+			)
 		}
 
 		const existing = await ctx.db

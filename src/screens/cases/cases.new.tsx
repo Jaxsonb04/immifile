@@ -83,8 +83,9 @@ export function NewCaseScreen() {
 				receiptNumber: normalized,
 				applicationId: releaseApplicationLink(linkedId),
 			})
-			if (router.canGoBack()) router.back()
-			else router.replace('/(tabs)/cases')
+			// A case can be opened from an external link while another tab is active.
+			// Always reveal the saved result in Cases.
+			router.dismissTo('/(tabs)/cases')
 		} catch (error) {
 			Alert.alert('Could not add case', humanErrorMessage(error, 'Please try again.'))
 		} finally {
@@ -155,10 +156,12 @@ export function NewCaseScreen() {
 					placeholder="e.g. EAC1234567890"
 					autoCapitalize="characters"
 					autoCorrect={false}
+					returnKeyType="done"
 				/>
 				{showError && !isValid ? (
 					<FieldError>
-						Enter a receipt number like EAC1234567890 — 3 letters and 10 digits.
+						Enter the 13-character receipt number from your notice, such as EAC1234567890. Keep any
+						asterisks (*).
 					</FieldError>
 				) : null}
 			</TextField>

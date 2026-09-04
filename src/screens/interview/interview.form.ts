@@ -382,7 +382,7 @@ export const fieldValidators = {
 		.string()
 		.refine(
 			(value) => RECEIPT_NUMBER_RE.test(normalizeReceiptNumber(value)),
-			'A receipt number is 3 letters followed by 10 digits',
+			'Enter the 13-character receipt number from your notice, including any asterisks',
 		),
 	// i90 personal-details / physical-description (choice sets are enforced by
 	// the pickers; these gate required-ness and formats).
