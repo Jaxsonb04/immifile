@@ -14,14 +14,15 @@ type ConsentDetailProps = {
 	icon: ComponentProps<typeof StyledLucideIcon>['name']
 	title: string
 	body: string
+	compact?: boolean
 }
 
-function ConsentDetail({ icon, title, body }: ConsentDetailProps) {
+function ConsentDetail({ icon, title, body, compact }: ConsentDetailProps) {
 	return (
 		<View className="flex-row items-start gap-control">
-			<View className="size-10 items-center justify-center rounded-2xl bg-surface-tertiary">
+			{!compact ? <View className="size-10 items-center justify-center rounded-2xl bg-surface-tertiary">
 				<StyledLucideIcon name={icon} size={18} className="text-accent" />
-			</View>
+			</View> : null}
 			<View className="flex-1 gap-hairline">
 				<Typography.Paragraph className="font-semibold text-foreground">
 					{title}
@@ -72,10 +73,10 @@ export function AssistantConsent({
 			<ScrollView
 				className="flex-1"
 				contentInsetAdjustmentBehavior="automatic"
-				scrollEnabled={scrollForAccessibility}
+				scrollEnabled
 				bounces={scrollForAccessibility}
 				showsVerticalScrollIndicator={scrollForAccessibility}
-				contentContainerClassName={`grow px-gutter ${compact ? 'gap-card pt-card' : 'gap-section pt-section'}`}
+				contentContainerClassName={`grow px-gutter ${compact ? 'gap-control pt-control' : 'gap-section pt-section'}`}
 				contentContainerStyle={{ paddingBottom: insets.bottom + (compact ? 60 : 72) }}
 			>
 				<Animated.View
@@ -99,11 +100,13 @@ export function AssistantConsent({
 						className={`rounded-3xl border border-border p-card ${compact ? 'gap-control' : 'gap-section'}`}
 					>
 						<ConsentDetail
+							compact={compact}
 							icon="smartphone"
 							title={ASSISTANT_CONSENT_COPY.storageTitle}
 							body={ASSISTANT_CONSENT_COPY.storageBody}
 						/>
 						<ConsentDetail
+							compact={compact}
 							icon="shield-alert"
 							title={ASSISTANT_CONSENT_COPY.privacyTitle}
 							body={ASSISTANT_CONSENT_COPY.privacyBody}
