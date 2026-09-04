@@ -47,11 +47,14 @@ export const listCases = query({
 })
 
 export const getCase = query({
-	args: { caseId: v.id('cases') },
+	// External links can contain stale or malformed IDs. Normalize before reading.
+	args: { caseId: v.string() },
 	handler: async (ctx, args) => {
 		const ownerId = await getOwnerId(ctx)
 		if (ownerId === null) return null
-		const found = await ctx.db.get('cases', args.caseId)
+		const caseId = ctx.db.normalizeId('cases', args.caseId)
+		if (caseId === null) return null
+		const found = await ctx.db.get('cases', caseId)
 		if (found === null || found.ownerId !== ownerId) return null
 		return found
 	},

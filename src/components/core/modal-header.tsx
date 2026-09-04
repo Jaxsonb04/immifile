@@ -35,7 +35,13 @@ export function ModalHeader({ title, subtitle, onClose }: ModalHeaderProps) {
 			<Pressable
 				accessibilityRole="button"
 				accessibilityLabel="Close"
-				onPress={onClose ?? (() => router.back())}
+				onPress={
+					onClose ??
+					(() => {
+						if (router.canGoBack()) router.back()
+						else router.replace('/cases')
+					})
+				}
 				className="size-9 items-center justify-center rounded-full bg-surface-secondary active:opacity-70"
 				hitSlop={8}
 			>

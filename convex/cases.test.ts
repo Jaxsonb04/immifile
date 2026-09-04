@@ -329,3 +329,21 @@ describe('listLinkableApplications', () => {
 		expect(await bob.query(api.cases.listLinkableApplications, {})).toHaveLength(0)
 	})
 })
+
+describe('case links', () => {
+	test('returns not found for malformed deep-link identifiers', async () => {
+		const t = newT()
+		const alice = t.withIdentity({ subject: 'alice' })
+		await expect(alice.query(api.cases.getCase, { caseId: 'not-a-case-id' })).resolves.toBeNull()
+	})
+
+	test('returns not found for identifiers from another table', async () => {
+		const t = newT()
+		const alice = t.withIdentity({ subject: 'alice' })
+		const applicantId = await alice.mutation(api.applicants.createApplicant, {
+			displayName: 'Alice',
+			isSelf: true,
+		})
+		await expect(alice.query(api.cases.getCase, { caseId: applicantId })).resolves.toBeNull()
+	})
+})
