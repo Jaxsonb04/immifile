@@ -59,6 +59,13 @@
   --text-title--line-height: 1.15;
 }
 
+/* HeroUI's default soft success/warning labels mix with black in both themes.
+   Use theme-specific ink so status chips remain readable on dark surfaces. */
+@theme inline {
+  --color-warning-soft-foreground: var(--warning-soft-foreground);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+}
+
 @layer theme {
   @variant light {
     /* Porcelain paper ground + navy document ink. */
@@ -91,6 +98,8 @@
     --success: oklch(51% 0.09 158);
     --success-foreground: oklch(98% 0.004 240);
     --warning: oklch(62% 0.11 75);
+    --warning-soft-foreground: oklch(40.3% 0.0715 75);
+    --success-soft-foreground: oklch(35.7% 0.063 158);
     --warning-foreground: oklch(22% 0.05 75);
     --danger: oklch(51% 0.15 25);
     --danger-foreground: oklch(98% 0.004 240);
@@ -138,6 +147,8 @@
     --success: oklch(71% 0.1 158);
     --success-foreground: oklch(16% 0.04 158);
     --warning: oklch(76% 0.11 80);
+    --warning-soft-foreground: var(--warning);
+    --success-soft-foreground: var(--success);
     --warning-foreground: oklch(20% 0.05 80);
     --danger: oklch(67% 0.14 25);
     --danger-foreground: oklch(17% 0.05 25);
