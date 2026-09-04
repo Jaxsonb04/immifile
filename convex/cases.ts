@@ -120,6 +120,9 @@ export const createCase = mutation({
 		note: v.optional(v.string()),
 	},
 	handler: async (ctx, args): Promise<Id<'cases'>> => {
+		// Cases ship independently of filing preparation. An older client must
+		// not use the optional link to access or transition a disabled filing.
+		if (args.applicationId !== undefined) assertFeatureEnabled('filingPreparation')
 		const ownerId = await requireCredentialedOwnerId(ctx)
 		const receiptNumber = normalizeReceiptNumber(args.receiptNumber)
 		if (!isValidReceiptNumber(receiptNumber)) {
