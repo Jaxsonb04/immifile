@@ -1,4 +1,3 @@
-import { StyledLucideIcon } from '@/components/styled-icon'
 import { WelcomeCasePreview } from '@/screens/welcome/welcome.case-preview'
 import { establishAnonymousSession } from '@/lib/anonymous-session'
 import { authClient } from '@/lib/auth-client'
@@ -7,6 +6,7 @@ import { ensureSessionResolved, getPersistedSessionCookie } from '@/lib/session-
 import { TEMP_ACCOUNT_WELCOME_NOTE } from '@/lib/temp-account-notice'
 import { resolveWelcomeLayout } from '@/screens/welcome/welcome.layout'
 import { useConvexAuth } from 'convex/react'
+import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { Button } from 'heroui-native'
 import { useEffect, useRef, useState } from 'react'
@@ -91,6 +91,8 @@ export default function WelcomeScreen() {
 
 	return (
 		<ScrollView
+			// Re-measure native text when Dynamic Type changes while this screen is open.
+			key={fontScale}
 			className="flex-1 bg-background"
 			contentContainerStyle={{
 				flexGrow: 1,
@@ -101,36 +103,27 @@ export default function WelcomeScreen() {
 			showsVerticalScrollIndicator={layout.showsScrollIndicator}
 			bounces={false}
 		>
-			<View className="flex-row items-center gap-tight">
-				<View className="size-8 items-center justify-center rounded-xl bg-accent">
-					<StyledLucideIcon name="folder" size={18} className="text-accent-foreground" />
-				</View>
-				<Text className="font-display text-lg text-foreground">Immifile</Text>
+			<View className="flex-row items-center gap-control">
+				<Image
+					source={require('../../assets/images/icon.png')}
+					style={{ width: 44, height: 44, borderRadius: 12 }}
+					accessible={false}
+				/>
+				<Text className="font-display text-xl text-foreground">Immifile</Text>
 			</View>
 
-			<View className={layout.compact ? 'gap-tight pt-gutter' : 'gap-control pt-8'}>
+			<View className="flex-1 justify-center gap-8 py-8">
 				<Text
 					accessibilityRole="header"
 					className="font-display tracking-tight text-foreground"
 					style={{ fontSize: layout.headlineFontSize, lineHeight: layout.headlineLineHeight }}
 				>
-					{layout.forceHeadlineBreak
-						? 'Less searching.\nMore clarity.'
-						: 'Less searching. More clarity.'}
+					{layout.forceHeadlineBreak ? 'Your case.\nMore clarity.' : 'Your case. More clarity.'}
 				</Text>
-				<Text className="text-base text-muted" style={{ lineHeight: layout.bodyLineHeight }}>
-					Your USCIS cases, updates, and official tools. Together in one place.
-				</Text>
-			</View>
-
-			<View className={layout.compact ? 'py-gutter' : 'flex-1 justify-center py-section'}>
 				<WelcomeCasePreview compact={layout.compact || layout.accessibilityText} />
 			</View>
 
 			<View className="gap-tight">
-				<Text className="text-center font-semibold text-base text-foreground">
-					Take a look. Make it yours.
-				</Text>
 				<Text
 					className="text-center text-xs text-muted"
 					style={{ lineHeight: layout.disclosureLineHeight }}

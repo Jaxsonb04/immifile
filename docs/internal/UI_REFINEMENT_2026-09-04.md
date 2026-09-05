@@ -1,10 +1,10 @@
 # UI refinement — September 4, 2026
 
-The welcome screen now leads with the value of Immifile and a clearly labelled case preview. The first-use introductions fade away without resizing native navigation or repositioning the page beneath them.
+The welcome screen now uses the app icon, a single short headline, and an animated receipt example. The first-use introductions fade away without resizing native navigation or repositioning the page beneath them.
 
 ## Changes
 
-- **Welcome:** replaced the animated blank document with a product preview showing a work permit, a labelled USCIS receipt number, and an example manual update. Added “Less searching. More clarity.” and “Explore Immifile.” The temporary-account deletion window remains visible before account creation.
+- **Welcome:** replaced the blank document and verbose product preview with “Your case. More clarity.” and a compact USCIS receipt typing animation. The app icon supplies the logo. “Explore Immifile,” Sign in, and the temporary-account deletion window remain immediately available.
 - **Sign-in and account creation:** clearer heading and spacing, a shared accessible show/hide password control, and an explicit sign-in close button. Existing Apple, Google, and email authentication paths are preserved.
 - **Cases:** HeroUI Pro EmptyState, a clear primary action, contextual receipt guidance, consistent case cards, and a connected status timeline. Receipt entry explains where to find the number and preserves asterisks while normalizing spaces/dashes.
 - **Resources:** stronger section hierarchy, consistent icon containers, and clearer destination context.
@@ -48,3 +48,11 @@ Local screenshots and transition recordings are under `.gstack/qa-reports/2026-0
 - `screenshots/design-assistant-dark.png`
 - `screenshots/design-account-dark.png`
 - `intro-transitions-fixed.mp4`
+
+## Welcome simplification follow-up
+
+The entry screen now uses the actual `assets/images/icon.png` app icon beside the wordmark. A single “Your case. More clarity.” headline replaces the introductory paragraph and extra slogan. The example card contains only a USCIS receipt label and a receipt number that types in, then settles. The temporary-account footer keeps the 48-hour boundary in plain language.
+
+The typing animation uses fixed-width character slots and an overlaid caret, so it cannot shift surrounding content. It stops after its entrance; system Reduce Motion renders the completed number immediately. VoiceOver encounters one labelled example image instead of thirteen changing characters. Main copy and controls retain Dynamic Type and scrolling.
+
+Follow-up validation: 10 focused tests passed; TypeScript, ESLint, and production iOS export passed. On iPhone SE (iOS 18.1), light/dark appearance, standard/Accessibility Large text, live text-size changes, sign-in opening/closing, and footer-action reachability were checked. Frame inspection confirmed that typing keeps the layout stationary and Reduce Motion shows the complete receipt from the first visible frame. Simulator preferences were restored. Evidence: `welcome-typing.mp4`, `welcome-reduced-motion.mp4`, and `screenshots/se-welcome-minimal-final.png`.
