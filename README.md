@@ -146,9 +146,10 @@ warm-paper/terracotta identity.
   **IBM Plex Mono** the data face — receipt numbers and document artifacts,
   where digit alignment is the point.
 
-Logo, splash, and icon assets are generated from the token set by
-`scripts/generate-logo-assets.mjs`; `app.json` splash grounds match it. Both
-themes are deliberate, not one derived from the other.
+The lowercase “i” filing-page mark lives in `assets/images/logo.svg`.
+`scripts/generate-logo-assets.mjs` generates the iOS icon, Android adaptive and
+themed icons, web favicon, and both splash appearances from that source;
+`app.json` points every platform to the generated set.
 
 ## Repository Map
 

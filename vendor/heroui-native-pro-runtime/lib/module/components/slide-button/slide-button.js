@@ -5,7 +5,7 @@ import { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import { View } from 'react-native';
 import { GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useSharedValue, withSpring } from 'react-native-reanimated';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { useControllableState } from "../../helpers/internal/hooks/index.js";
 import { createContext } from "../../helpers/internal/utils/index.js";
 import { useSlideButtonOverlayAnimation, useSlideButtonRootAnimation, useSlideButtonThumbAnimation, useSlideButtonUnderlayAnimation } from "./slide-button.animation.js";

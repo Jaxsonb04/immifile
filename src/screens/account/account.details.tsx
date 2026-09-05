@@ -3,7 +3,8 @@ import { authClient } from '@/lib/auth-client'
 import { api } from '@convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
 import { Button, Input, Label, Spinner, TextField, Typography } from 'heroui-native'
-import { Calendar, DatePicker, type DatePickerOption } from 'heroui-native-pro'
+import { Calendar } from 'heroui-native-pro/calendar'
+import { DatePicker, type DatePickerOption } from 'heroui-native-pro/date-picker'
 import { useState } from 'react'
 import { Alert, View } from 'react-native'
 
@@ -83,10 +84,7 @@ function DateOfBirthField(props: { value: string; onChange: (value: string) => v
 		? { value: props.value, label: formatIsoDate(props.value) }
 		: undefined
 	return (
-		<DatePicker
-			value={selected}
-			onValueChange={(option) => props.onChange(option?.value ?? '')}
-		>
+		<DatePicker value={selected} onValueChange={(option) => props.onChange(option?.value ?? '')}>
 			<Label>Date of birth</Label>
 			<DatePicker.Select presentation="dialog">
 				<DatePicker.Trigger>
@@ -107,8 +105,12 @@ function DateOfBirthField(props: { value: string; onChange: (value: string) => v
 								<Calendar.NavButton slot="next" />
 							</Calendar.Header>
 							<Calendar.Grid>
-								<Calendar.GridHeader>{(day) => <Calendar.HeaderCell day={day} />}</Calendar.GridHeader>
-								<Calendar.GridBody>{(gridDate) => <Calendar.Cell date={gridDate} />}</Calendar.GridBody>
+								<Calendar.GridHeader>
+									{(day) => <Calendar.HeaderCell day={day} />}
+								</Calendar.GridHeader>
+								<Calendar.GridBody>
+									{(gridDate) => <Calendar.Cell date={gridDate} />}
+								</Calendar.GridBody>
 							</Calendar.Grid>
 							<Calendar.YearPickerGrid>
 								<Calendar.YearPickerGridBody>
@@ -219,12 +221,39 @@ function DetailsForm({ initial }: { initial: Draft }) {
 				You’re the applicant on your own filings — these details prefill every form you start.
 			</Typography.Paragraph>
 
-			<Field label="First (given) name" value={draft.givenName} onChangeText={set('givenName')} autoCapitalize="words" />
-			<Field label="Middle name" value={draft.middleName} onChangeText={set('middleName')} autoCapitalize="words" />
-			<Field label="Family (last) name" value={draft.familyName} onChangeText={set('familyName')} autoCapitalize="words" />
+			<Field
+				label="First (given) name"
+				value={draft.givenName}
+				onChangeText={set('givenName')}
+				autoCapitalize="words"
+			/>
+			<Field
+				label="Middle name"
+				value={draft.middleName}
+				onChangeText={set('middleName')}
+				autoCapitalize="words"
+			/>
+			<Field
+				label="Family (last) name"
+				value={draft.familyName}
+				onChangeText={set('familyName')}
+				autoCapitalize="words"
+			/>
 			<DateOfBirthField value={draft.dateOfBirth} onChange={set('dateOfBirth')} />
-			<Field label="Country of birth" value={draft.countryOfBirth} onChangeText={set('countryOfBirth')} autoCapitalize="words" />
-			<Field label="A-Number (if you have one)" value={draft.aNumber} onChangeText={set('aNumber')} placeholder="7–9 digits" keyboardType="number-pad" maxLength={9} />
+			<Field
+				label="Country of birth"
+				value={draft.countryOfBirth}
+				onChangeText={set('countryOfBirth')}
+				autoCapitalize="words"
+			/>
+			<Field
+				label="A-Number (if you have one)"
+				value={draft.aNumber}
+				onChangeText={set('aNumber')}
+				placeholder="7–9 digits"
+				keyboardType="number-pad"
+				maxLength={9}
+			/>
 
 			<View className="gap-hairline pt-hairline">
 				<Typography.Paragraph className="font-medium">Mailing address</Typography.Paragraph>
@@ -232,15 +261,33 @@ function DetailsForm({ initial }: { initial: Draft }) {
 					Where USCIS sends notices and cards.
 				</Typography.Paragraph>
 			</View>
-			<Field label="Street address" value={draft.street} onChangeText={set('street')} autoCapitalize="words" />
+			<Field
+				label="Street address"
+				value={draft.street}
+				onChangeText={set('street')}
+				autoCapitalize="words"
+			/>
 			<Field label="Apt / unit (optional)" value={draft.unit} onChangeText={set('unit')} />
 			<Field label="City" value={draft.city} onChangeText={set('city')} autoCapitalize="words" />
 			<View className="flex-row gap-control">
 				<View className="flex-1">
-					<Field label="State" value={draft.state} onChangeText={set('state')} placeholder="CA" autoCapitalize="characters" maxLength={2} />
+					<Field
+						label="State"
+						value={draft.state}
+						onChangeText={set('state')}
+						placeholder="CA"
+						autoCapitalize="characters"
+						maxLength={2}
+					/>
 				</View>
 				<View className="flex-1">
-					<Field label="ZIP code" value={draft.zipCode} onChangeText={set('zipCode')} keyboardType="number-pad" maxLength={10} />
+					<Field
+						label="ZIP code"
+						value={draft.zipCode}
+						onChangeText={set('zipCode')}
+						keyboardType="number-pad"
+						maxLength={10}
+					/>
 				</View>
 			</View>
 

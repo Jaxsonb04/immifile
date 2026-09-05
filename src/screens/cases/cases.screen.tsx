@@ -1,4 +1,4 @@
-import { EmptyState } from 'heroui-native-pro'
+import { EmptyState } from 'heroui-native-pro/empty-state'
 import { StyledLucideIcon } from '@/components/styled-icon'
 import { BodyScrollView, ScreenLoading, SectionHeading } from '@/components/core'
 import { useSlowLoad } from '@/hooks/use-slow-load'

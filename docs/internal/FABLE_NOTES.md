@@ -138,6 +138,15 @@ sign into the APP through the regular sign-in screen (keychain reset →
 Welcome → pbcopy+Paste per field → Sign in), which Maestro CAN drive. This
 unlocked the full live moderation round-trip (hide/restore/block/unblock).
 
+## One “i” mark now ships everywhere (2026-09-05)
+
+**Summary:** `assets/images/logo.svg` now holds the selected lowercase “i”
+filing-page mark on a flat light-blue ground. The generator produces the iOS
+icon, Android adaptive foreground and monochrome themed icon, web favicon, and
+light/dark splash marks, then refreshes local generated iOS catalogs when they
+exist. `app.json` references the same set for every platform, and the release
+configuration check prevents those paths from drifting.
+
 ## Logo has a vector source now (2026-07-09)
 
 **Summary:** `assets/images/logo.svg` is the canonical Immifile monogram —

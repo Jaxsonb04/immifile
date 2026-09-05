@@ -1,6 +1,6 @@
 import { router } from 'expo-router'
 import { Button, Typography } from 'heroui-native'
-import { EmptyState } from 'heroui-native-pro'
+import { EmptyState } from 'heroui-native-pro/empty-state'
 import { Pressable, useWindowDimensions, View } from 'react-native'
 import Animated, { FadeInDown, ReduceMotion } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'

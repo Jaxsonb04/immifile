@@ -6,7 +6,7 @@ import { forwardRef, memo, useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { getCalendarCellDataAttributes } from "../../helpers/external/utils/index.js";
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { useControllableState } from "../../helpers/internal/hooks/use-controllable-state.js";
 import { ChevronLeftIcon, ChevronRightIcon } from "../../helpers/internal/icons/index.js";
 import { childrenToString, getGregorianYearOffset } from "../../helpers/internal/utils/index.js";

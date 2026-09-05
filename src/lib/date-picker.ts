@@ -1,4 +1,4 @@
-import type { DatePickerOption } from 'heroui-native-pro'
+import type { DatePickerOption } from 'heroui-native-pro/date-picker'
 
 /** Today as a local ISO date (YYYY-MM-DD) — not UTC, so a late evening never
  * rolls the default over to tomorrow. */

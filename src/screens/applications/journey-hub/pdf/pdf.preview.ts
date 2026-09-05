@@ -6,7 +6,7 @@ import { Asset } from 'expo-asset'
 import * as FileSystem from 'expo-file-system/legacy'
 import * as Sharing from 'expo-sharing'
 import * as WebBrowser from 'expo-web-browser'
-import { renderDraftPreview, renderFilingPackage, type RenderDraftArgs } from './pdf.render'
+import type { RenderDraftArgs } from './pdf.render'
 
 // On-device glue for the watermarked draft Preview: resolve the bundled
 // current-edition USCIS template, render it via the pure engine (pdf.render.ts),
@@ -44,11 +44,6 @@ const PACKAGE_FILENAMES: Record<FormType, string> = {
 	i90: 'i-90-filing-package.pdf',
 }
 
-type RenderFn = (
-	templateBase64: string,
-	args: RenderDraftArgs,
-) => Promise<{ base64: string; filledCount: number }>
-
 /**
  * Resolve the bundled template, render it, and write the result to the cache
  * directory only (generated on demand, never persisted — ADR-0007). Returns the
@@ -56,7 +51,7 @@ type RenderFn = (
  */
 async function renderToCacheUri(
 	args: RenderDraftArgs,
-	options: { render: RenderFn; filename: string },
+	options: { render: 'draft' | 'filing'; filename: string },
 ): Promise<string> {
 	const asset = Asset.fromModule(TEMPLATE_MODULES[args.formType])
 	if (!asset.localUri) {
@@ -66,7 +61,12 @@ async function renderToCacheUri(
 		encoding: FileSystem.EncodingType.Base64,
 	})
 
-	const { base64 } = await options.render(templateBase64, args)
+	// pdf-lib is large and some web runtimes cannot initialize it during the
+	// router's eager module scan. Load the renderer only when the user asks for
+	// a PDF; native behavior is unchanged and the entry bundle stays portable.
+	const { renderDraftPreview, renderFilingPackage } = await import('./pdf.render')
+	const render = options.render === 'draft' ? renderDraftPreview : renderFilingPackage
+	const { base64 } = await render(templateBase64, args)
 
 	const outUri = `${FileSystem.cacheDirectory}${options.filename}`
 	await FileSystem.writeAsStringAsync(outUri, base64, {
@@ -79,7 +79,7 @@ async function renderToCacheUri(
  * destinations) — the right affordance for the real clean export. */
 async function renderAndShare(
 	args: RenderDraftArgs,
-	options: { render: RenderFn; filename: string; dialogTitle: string },
+	options: { render: 'draft' | 'filing'; filename: string; dialogTitle: string },
 ): Promise<void> {
 	const outUri = await renderToCacheUri(args, options)
 	// Fail loudly rather than silently no-op: without the share sheet the file
@@ -103,7 +103,7 @@ async function renderAndShare(
  */
 export async function openDraftInApp(args: RenderDraftArgs): Promise<void> {
 	const outUri = await renderToCacheUri(args, {
-		render: renderDraftPreview,
+		render: 'draft',
 		filename: DRAFT_FILENAMES[args.formType],
 	})
 	try {
@@ -125,7 +125,7 @@ export async function openDraftInApp(args: RenderDraftArgs): Promise<void> {
  */
 export function openFilingPackage(args: RenderDraftArgs): Promise<void> {
 	return renderAndShare(args, {
-		render: renderFilingPackage,
+		render: 'filing',
 		filename: PACKAGE_FILENAMES[args.formType],
 		dialogTitle: `${situationLabel(args.formType, args.applicationKind).primary} — filing package`,
 	})

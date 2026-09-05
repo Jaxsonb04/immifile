@@ -3,7 +3,7 @@
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useMemo } from 'react';
 import { View } from 'react-native';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { childrenToString } from "../../helpers/internal/utils/index.js";
 import { useWidgetRootAnimation } from "./widget.animation.js";
 import { DISPLAY_NAME } from "./widget.constants.js";

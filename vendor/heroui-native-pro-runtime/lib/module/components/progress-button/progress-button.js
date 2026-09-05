@@ -5,7 +5,7 @@ import { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import { Pressable } from 'react-native';
 import Animated, { useAnimatedReaction } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { useControllableState } from "../../helpers/internal/hooks/index.js";
 import { childrenToString, createContext } from "../../helpers/internal/utils/index.js";
 import { useProgressButtonMaskLabelAnimation, useProgressButtonOverlayAnimation, useProgressButtonRootAnimation } from "./progress-button.animation.js";

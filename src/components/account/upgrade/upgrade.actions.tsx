@@ -16,7 +16,7 @@ import {
 	Typography,
 	useBottomSheetAwareHandlers,
 } from 'heroui-native'
-import { SocialAuthButton } from 'heroui-native-pro'
+import { SocialAuthButton } from 'heroui-native-pro/social-auth-button'
 import { useEffect, useRef, useState } from 'react'
 import { Alert, View } from 'react-native'
 import { useCredentialedAccountReadiness } from '../account.session'

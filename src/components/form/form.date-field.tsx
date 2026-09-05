@@ -1,6 +1,7 @@
 import { isoToOption } from '@/lib/date-picker'
 import { Description, FieldError, Label } from 'heroui-native'
-import { Calendar, DatePicker } from 'heroui-native-pro'
+import { Calendar } from 'heroui-native-pro/calendar'
+import { DatePicker } from 'heroui-native-pro/date-picker'
 import { useFieldContext } from './form.context'
 import { fieldErrorText } from './form.utils'
 

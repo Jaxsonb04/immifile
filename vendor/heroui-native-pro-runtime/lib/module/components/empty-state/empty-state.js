@@ -3,7 +3,7 @@
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useMemo } from 'react';
 import { View } from 'react-native';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { useEmptyStateRootAnimation } from "./empty-state.animation.js";
 import { DISPLAY_NAME } from "./empty-state.constants.js";
 import { emptyStateClassNames } from "./empty-state.styles.js";
