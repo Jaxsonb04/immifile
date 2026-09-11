@@ -4,36 +4,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ page.title | escape }}</title>
-    <meta name="description" content="{{ site.description | escape }}">
+    <meta name="description" content="{{ page.description | default: site.description | escape }}">
+    <link rel="canonical" href="{{ page.url | absolute_url }}">
+    <meta property="og:title" content="{{ page.title | escape }}">
+    <meta property="og:description" content="{{ page.description | default: site.description | escape }}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ page.url | absolute_url }}">
     <meta name="theme-color" content="#eaf4ff">
     <link rel="icon" type="image/png" href="{{ '/assets/favicon.png' | relative_url }}">
     <link rel="apple-touch-icon" href="{{ '/assets/icon.png' | relative_url }}">
-    <style>
-      * { box-sizing: border-box; }
-      html { color-scheme: light; }
-      body { margin: 0; color: #16345c; background: #f8fbff; font: 16px/1.7 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-      a { color: #2357aa; text-underline-offset: .2em; }
-      a:hover { color: #16345c; }
-      a:focus-visible { outline: 2px solid #2563eb; outline-offset: 5px; border-radius: 4px; }
-      .skip { position: fixed; top: -100px; left: 16px; padding: 12px; background: white; z-index: 2; }
-      .skip:focus { top: 12px; }
-      header { border-bottom: 1px solid #dce7f3; background: #eaf4ff; }
-      .header-inner { max-width: 1000px; margin: auto; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 12px 32px; flex-wrap: wrap; }
-      .brand { display: inline-flex; align-items: center; gap: 10px; color: #16345c; font-size: 21px; font-weight: 500; text-decoration: none; }
-      .brand img { width: 44px; height: 44px; border-radius: 12px; }
-      nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
-      nav a { display: inline-flex; align-items: center; min-height: 44px; text-decoration: none; font-size: 15px; }
-      nav a[aria-current="page"] { text-decoration: underline; color: #16345c; }
-      main { max-width: 760px; margin: auto; padding: 48px 24px 72px; overflow-wrap: anywhere; }
-      h1, h2, h3 { color: #132c4a; line-height: 1.25; font-weight: 600; letter-spacing: -.025em; }
-      h1 { font-size: clamp(28px, 5vw, 38px); margin: 0 0 28px; }
-      h2 { font-size: 23px; margin: 40px 0 16px; }
-      h3 { font-size: 19px; margin: 28px 0 12px; }
-      p, ul, ol { margin: 0 0 20px; }
-      li + li { margin-top: 8px; }
-      footer { max-width: 760px; margin: auto; padding: 24px; border-top: 1px solid #dce7f3; color: #51657d; font-size: 14px; }
-      @media (max-width: 480px) { .header-inner { padding: 16px 24px; } main { padding-top: 32px; } }
-    </style>
+    <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -50,7 +30,7 @@
         </nav>
       </div>
     </header>
-    <main id="main" tabindex="-1">{{ content }}</main>
+    <main id="main"{% if page.url == "/" %} class="home"{% endif %} tabindex="-1">{{ content }}</main>
     <footer>Immifile · Independent immigration tools.</footer>
   </body>
 </html>
