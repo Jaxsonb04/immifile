@@ -1,14 +1,13 @@
 ---
 layout: default
 title: Immifile Support
+description: Get help with your Immifile account, privacy requests, and app feedback.
 permalink: /support/
 ---
 
-# Immifile Support
+# Support
 
-Immifile is an independent app. It is not affiliated with, endorsed by, or connected to USCIS, DHS, DOJ, or the U.S. government, and it does not provide legal advice.
-
-This page describes the support channels for the first App Store release of Immifile.
+Help with your account, privacy, or the app.
 
 ## Private account and privacy help
 
@@ -35,3 +34,5 @@ This release does not include self-service password reset or email verification.
 ## Case-specific help
 
 Immifile cannot answer questions about a USCIS decision or provide legal advice. For case-specific help, contact [USCIS](https://www.uscis.gov/contactcenter), a licensed immigration attorney, or a Department of Justice-accredited representative.
+
+Immifile is an independent app. It is not affiliated with, endorsed by, or connected to USCIS, DHS, DOJ, or the U.S. government, and it does not provide legal advice.
