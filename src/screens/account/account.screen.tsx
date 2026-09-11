@@ -429,7 +429,12 @@ function useDeleteAccountRow(linkedProviderIds: string[] | undefined): {
 			}
 			Alert.alert(
 				'Delete account',
-				humanErrorMessage(error, 'Something went wrong. Please try again.'),
+				humanErrorMessage(
+					error,
+					credentialedMethod === 'password'
+						? 'Could not delete your account. Check your password and connection, then try again.'
+						: 'Could not delete your account. Check your connection and try again.',
+				),
 			)
 		} finally {
 			setBusy(false)

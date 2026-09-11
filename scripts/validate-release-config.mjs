@@ -62,6 +62,14 @@ assert(
 	'Android adaptive, themed, and background assets must use the canonical brand set',
 )
 assert(app.web?.favicon === brandAssets.favicon, 'web must publish the canonical favicon')
+for (const file of ['icon.png', 'favicon.png']) {
+	assert(
+		readFileSync(new URL(`../docs/assets/${file}`, import.meta.url)).equals(
+			readFileSync(new URL(`../assets/images/${file}`, import.meta.url)),
+		),
+		`public support site ${file} is out of sync; run scripts/generate-logo-assets.mjs`,
+	)
+}
 assert(pkg.dependencies?.['react-native-web'], 'web support requires react-native-web')
 const splashPlugin = (app.plugins ?? []).find(
 	(plugin) => Array.isArray(plugin) && plugin[0] === 'expo-splash-screen',

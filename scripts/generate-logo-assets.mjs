@@ -6,7 +6,7 @@
  *   node scripts/generate-logo-assets.mjs
  */
 import { Resvg } from '@resvg/resvg-js'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -108,6 +108,13 @@ for (const variant of variants) {
 	output.set(variant.file, png)
 	writeFileSync(join(imagesDir, variant.file), png)
 	console.log(`wrote assets/images/${variant.file} (${variant.size}px)`)
+}
+
+// The public support/privacy site is built separately from Expo web.
+const publicSiteAssets = join(projectDir, 'docs', 'assets')
+mkdirSync(publicSiteAssets, { recursive: true })
+for (const file of ['icon.png', 'favicon.png']) {
+	writeFileSync(join(publicSiteAssets, file), output.get(file))
 }
 
 // Keep generated native projects visually current for local simulator builds.

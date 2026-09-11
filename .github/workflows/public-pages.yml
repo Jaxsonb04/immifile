@@ -9,6 +9,8 @@ on:
       - 'docs/SUPPORT.md'
       - 'docs/_config.yml'
       - 'docs/index.md'
+      - 'docs/_layouts/**'
+      - 'docs/assets/**'
       - '.github/workflows/public-pages.yml'
   workflow_dispatch:
 

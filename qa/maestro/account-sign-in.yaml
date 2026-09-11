@@ -1,0 +1,23 @@
+# Start on Welcome. Supply QA_EMAIL and QA_PASSWORD for an empty disposable
+# account created by the QA run; never use a real user's account.
+appId: dev.uing.immigrationrenewalhelp
+---
+- tapOn: Sign in
+- tapOn: you@example.com
+- inputText: ${QA_EMAIL}
+- hideKeyboard
+- scrollUntilVisible:
+    element: Enter your password
+    centerElement: true
+- tapOn: Enter your password
+- inputText: ${QA_PASSWORD}
+- hideKeyboard
+- tapOn: Sign in
+- tapOn:
+    text: Not Now
+    optional: true
+- extendedWaitUntil:
+    visible: Your cases start here.
+    timeout: 30000
+- tapOn: Account
+- assertVisible: Signed in with, Email & password
