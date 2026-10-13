@@ -9,7 +9,7 @@ import type { ApplicationKind, FormType } from '@convex/shared/applicationShapes
  * message it sends on tap (so a single tap can carry a complete situation). */
 export type SuggestedReply = { id: string; label: string; message: string }
 
-/** Only explicit recovery choices leave the previous conversation topic behind. */
+/** A recovery choice can start a new topic before the current exchange completes. */
 export type AssistantSendOptions = { startNewTopic?: boolean }
 
 /** What an assistant turn renders. The navigator returns a structured

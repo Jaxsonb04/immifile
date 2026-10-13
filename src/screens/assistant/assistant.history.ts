@@ -20,6 +20,17 @@ export function toActionHistory(turns: ChatTurn[], startNewTopic = false) {
 	return history.slice(-40)
 }
 
+/** History and topic marker for a new message; retries retain their original exchange. */
+export function prepareAssistantSend(turns: ChatTurn[], startNewTopic = false) {
+	const latest = turns.at(-1)
+	// A form recommendation completes the current topic. Only the transcript's
+	// latest turn can close it: older cards must not erase a clarification or a
+	// failed request that the user is still continuing.
+	const startsNewTopic =
+		startNewTopic || (latest?.kind === 'assistant' && latest.content.kind === 'recommendation')
+	return { history: toActionHistory(turns, startsNewTopic), startsNewTopic }
+}
+
 /** Retry the original exchange in place, with only the history preceding it. */
 export function prepareAssistantRetry(turns: ChatTurn[], failedId: string) {
 	const index = turns.findIndex((turn) => turn.id === failedId && turn.kind === 'error')

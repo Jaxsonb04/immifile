@@ -13,7 +13,7 @@ import type { AssistantSendOptions, ChatTurn } from './assistant.types'
 // transcript; selected user messages are sent to OpenAI under the provider
 // retention disclosed before consent (MASTER_PLAN "Interfaces").
 
-import { prepareAssistantRetry, toActionHistory } from './assistant.history'
+import { prepareAssistantRetry, prepareAssistantSend } from './assistant.history'
 
 export type AssistantChat = ReturnType<typeof useAssistantChat>
 
@@ -50,20 +50,21 @@ export function useAssistantChat() {
 
 			const retryRequest = retryId ? prepareAssistantRetry(turns, retryId) : null
 			if (retryId && !retryRequest) return false
+			const newRequest = retryRequest ? null : prepareAssistantSend(turns, startNewTopic)
 
 			isSendingRef.current = true
 			setIsSending(true)
 
 			// Snapshot history BEFORE appending this turn, then optimistically show
 			// the user bubble and an assistant "thinking" placeholder.
-			const history = retryRequest?.history ?? toActionHistory(turns, startNewTopic)
+			const history = retryRequest?.history ?? newRequest!.history
 			const userId = nextId()
 			const pendingId = retryId ?? nextId()
 			if (retryRequest) setTurns(retryRequest.turns)
 			else
 				setTurns((prev) => [
 					...prev,
-					{ id: userId, kind: 'user', text: message, startsNewTopic: startNewTopic },
+					{ id: userId, kind: 'user', text: message, startsNewTopic: newRequest?.startsNewTopic },
 					{ id: pendingId, kind: 'pending' },
 				])
 
