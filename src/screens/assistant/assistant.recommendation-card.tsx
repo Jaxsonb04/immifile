@@ -50,6 +50,7 @@ const settle = FadeInDown.duration(280).reduceMotion(ReduceMotion.System)
  */
 export function RecommendationCard({ content, onStart, isDisabled }: RecommendationCardProps) {
 	const canStartFiling = RELEASE_FEATURES.filingPreparation
+	// Opening an existing government link sends no message and never spends quota.
 	const officialUrl = OFFICIAL_FORM_URL[content.formType]
 	return (
 		<Animated.View entering={settle} className="max-w-[92%] self-start">
@@ -79,7 +80,6 @@ export function RecommendationCard({ content, onStart, isDisabled }: Recommendat
 						<Button
 							variant="primary"
 							className="h-auto min-h-12 py-control"
-							isDisabled={isDisabled}
 							accessibilityRole="link"
 							accessibilityLabel={`Open official USCIS ${content.formLabel}`}
 							accessibilityHint="Opens the official USCIS page for this form in your browser"

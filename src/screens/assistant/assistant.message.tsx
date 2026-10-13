@@ -5,7 +5,7 @@ import { styledIcon } from '@/components/styled-icon'
 
 import { RecommendationCard } from './assistant.recommendation-card'
 import { SuggestedReplies } from './assistant.suggested-replies'
-import type { AssistantContent, ChatTurn } from './assistant.types'
+import type { AssistantContent, AssistantSendOptions, ChatTurn } from './assistant.types'
 
 const SparkleIcon = styledIcon({ family: 'lucide', name: 'sparkles' })
 
@@ -34,7 +34,7 @@ type RecommendationContent = Extract<AssistantContent, { kind: 'recommendation' 
 
 type MessageProps = {
 	turn: ChatTurn
-	onPick: (message: string) => void
+	onPick: (message: string, options?: AssistantSendOptions) => void
 	onStart: (content: RecommendationContent) => void
 	onRetry: (id: string, failedText: string) => void
 	isBusy: boolean
@@ -53,7 +53,10 @@ export function Message({ turn, onPick, onStart, onRetry, isBusy }: MessageProps
 	if (turn.kind === 'pending') {
 		return (
 			<AssistantRow>
-				<Surface variant="secondary" className="self-start rounded-2xl rounded-bl-md px-card py-control">
+				<Surface
+					variant="secondary"
+					className="self-start rounded-2xl rounded-bl-md px-card py-control"
+				>
 					<Spinner size="sm" />
 				</Surface>
 			</AssistantRow>
@@ -87,7 +90,7 @@ export function Message({ turn, onPick, onStart, onRetry, isBusy }: MessageProps
 		return <RecommendationCard content={turn.content} onStart={onStart} isDisabled={isBusy} />
 	}
 
-	const { text, suggestions } = turn.content
+	const { text, suggestions, suggestionsStartNewTopic } = turn.content
 	return (
 		<View className="gap-tight">
 			<AssistantRow>
@@ -100,7 +103,11 @@ export function Message({ turn, onPick, onStart, onRetry, isBusy }: MessageProps
 			</AssistantRow>
 			{suggestions ? (
 				<View className="pl-9">
-					<SuggestedReplies replies={suggestions} onPick={onPick} isDisabled={isBusy} />
+					<SuggestedReplies
+						replies={suggestions}
+						onPick={(message) => onPick(message, { startNewTopic: suggestionsStartNewTopic })}
+						isDisabled={isBusy}
+					/>
 				</View>
 			) : null}
 		</View>

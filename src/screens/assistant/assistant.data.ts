@@ -5,7 +5,7 @@ import { useCallback, useRef, useState } from 'react'
 import { useToday } from '@/hooks/use-today'
 
 import { describeRecommendation } from './assistant.recommendation'
-import type { ChatTurn } from './assistant.types'
+import type { AssistantSendOptions, ChatTurn } from './assistant.types'
 
 // Device-session chat state for the safe navigator (M1-T3). Each user message
 // runs the deterministic navigator action once (navigator-first: one billed
@@ -41,7 +41,10 @@ export function useAssistantChat() {
 	 * the user's text. The network round-trip resolves the pending bubble later.
 	 */
 	const send = useCallback(
-		(raw: string, retryId?: string): boolean => {
+		(
+			raw: string,
+			{ startNewTopic = false, retryId }: AssistantSendOptions & { retryId?: string } = {},
+		): boolean => {
 			const message = raw.trim()
 			if (message.length === 0 || isSendingRef.current || outOfMessages) return false
 
@@ -53,15 +56,16 @@ export function useAssistantChat() {
 
 			// Snapshot history BEFORE appending this turn, then optimistically show
 			// the user bubble and an assistant "thinking" placeholder.
-			const history = retryRequest?.history ?? toActionHistory(turns)
+			const history = retryRequest?.history ?? toActionHistory(turns, startNewTopic)
 			const userId = nextId()
 			const pendingId = retryId ?? nextId()
 			if (retryRequest) setTurns(retryRequest.turns)
-			else setTurns((prev) => [
-				...prev,
-				{ id: userId, kind: 'user', text: message },
-				{ id: pendingId, kind: 'pending' },
-			])
+			else
+				setTurns((prev) => [
+					...prev,
+					{ id: userId, kind: 'user', text: message, startsNewTopic: startNewTopic },
+					{ id: pendingId, kind: 'pending' },
+				])
 
 			void (async () => {
 				try {
@@ -95,7 +99,7 @@ export function useAssistantChat() {
 	/** A rejected retry leaves the error and the original message intact. */
 	const retry = useCallback(
 		(failedId: string, failedText: string) => {
-			send(failedText, failedId)
+			send(failedText, { retryId: failedId })
 		},
 		[send],
 	)

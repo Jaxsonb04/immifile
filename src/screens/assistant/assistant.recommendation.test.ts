@@ -86,6 +86,7 @@ describe('describeRecommendation — outOfScope', () => {
 			expect(reply.message).toMatch(/renew|replace|first time|applying/i)
 			expect(reply.message).not.toMatch(/\?/)
 		}
+		expect(content.suggestionsStartNewTopic).toBe(true)
 	})
 
 	test('legal-advice copy explicitly declines to advise', () => {

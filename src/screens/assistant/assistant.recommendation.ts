@@ -149,6 +149,7 @@ export function describeRecommendation(rec: AssistantRecommendation): AssistantC
 				kind: 'text',
 				text: OUT_OF_SCOPE_COPY[rec.reason],
 				suggestions: OUT_OF_SCOPE_SUGGESTIONS[rec.reason],
+				suggestionsStartNewTopic: true,
 			}
 		default: {
 			const _exhaustive: never = rec
