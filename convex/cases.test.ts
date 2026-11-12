@@ -65,7 +65,7 @@ describe('createCase', () => {
 		expect(tracked!.receiptNumber).toBe(RECEIPT)
 	})
 
-	test.each(['EAC123', 'EA1234567890', 'EAC12345678901', '1234567890EAC', 'EACABCDEFGHIJ'])(
+	test.each(['EAC123', 'EA1234567890', 'EAC12345678901', '1234567890EAC', 'EACABCDEFGHIJ', 'EAC**********'])(
 		'rejects malformed receipt %s',
 		async (bad) => {
 			const t = newT()

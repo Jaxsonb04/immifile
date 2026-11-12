@@ -58,13 +58,12 @@ export function useAssistantChat() {
 			// Snapshot history BEFORE appending this turn, then optimistically show
 			// the user bubble and an assistant "thinking" placeholder.
 			const history = retryRequest?.history ?? newRequest!.history
-			const userId = nextId()
 			const pendingId = retryId ?? nextId()
 			if (retryRequest) setTurns(retryRequest.turns)
 			else
 				setTurns((prev) => [
 					...prev,
-					{ id: userId, kind: 'user', text: message, startsNewTopic: newRequest?.startsNewTopic },
+					{ id: nextId(), kind: 'user', text: message, startsNewTopic: newRequest?.startsNewTopic },
 					{ id: pendingId, kind: 'pending' },
 				])
 

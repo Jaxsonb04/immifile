@@ -39,7 +39,6 @@ export function prepareAssistantRetry(turns: ChatTurn[], failedId: string) {
 	if (failed?.kind !== 'error' || user?.kind !== 'user' || user.text !== failed.failedText)
 		return null
 	return {
-		message: failed.failedText,
 		history: toActionHistory(turns.slice(0, index - 1), user.startsNewTopic),
 		turns: turns.map((turn): ChatTurn =>
 			turn.id === failedId ? { id: failedId, kind: 'pending' } : turn,

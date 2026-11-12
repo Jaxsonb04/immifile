@@ -13,7 +13,6 @@ const turns: ChatTurn[] = [
 
 test('retry preserves one user bubble and excludes that message from its own history', () => {
 	const retry = prepareAssistantRetry(turns, 'e2')!
-	expect(retry.message).toBe('Renew my green card')
 	expect(retry.history).toEqual([
 		{ role: 'user', content: 'Earlier question' },
 		{ role: 'assistant', content: 'Earlier reply' },

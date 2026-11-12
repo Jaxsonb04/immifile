@@ -187,7 +187,8 @@ export function isUsStateCode(value: unknown): boolean {
 // SRC/MSC/IOE) followed by 10 digits, with asterisks retained when printed
 // on the notice (https://egov.uscis.gov/e-request/ndd). Shared so the case backend,
 // the M3 case UI, and the I-765 c(26) receipt item validate identically.
-export const RECEIPT_NUMBER_RE = /^[A-Z]{3}[\d*]{10}$/
+// At least one digit, so a fully masked placeholder never saves as a case.
+export const RECEIPT_NUMBER_RE = /^[A-Z]{3}(?=[\d*]*\d)[\d*]{10}$/
 
 // One "other name" row (I-765 Items 2-3 offer three rows).
 export const otherNameShape = z.object({

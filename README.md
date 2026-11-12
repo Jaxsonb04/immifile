@@ -14,7 +14,7 @@ and figure out which form they need, without pretending to be a lawyer.
 ![React Native](https://img.shields.io/badge/React%20Native-0.86-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)
 ![Convex](https://img.shields.io/badge/backend-Convex-EE342F)
-![Tests](https://img.shields.io/badge/tests-885%20passing-2EA043)
+![Tests](https://img.shields.io/badge/tests-886%20passing-2EA043)
 
 <br/>
 
@@ -179,7 +179,7 @@ flowchart LR
 
 ## By the numbers
 
-| 16 weeks | 220+ | 43k | 885 | 20 | 15 |
+| 16 weeks | 220+ | 43k | 886 | 20 | 15 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
 | first commit to release candidate | commits | lines of TypeScript | tests, all passing | database tables | design decision records |
 
