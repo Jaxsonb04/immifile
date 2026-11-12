@@ -11,7 +11,7 @@ import { interviewStepKeys } from '../shared/interviewSteps'
 const completeAllSteps = (formType: FormType): Record<string, boolean> =>
 	Object.fromEntries(interviewStepKeys[formType].map((key) => [key, true]))
 
-// Walkthrough-phase demo data (REARCHITECTURE.md "Resolved Decisions" #12).
+// Walkthrough-phase demo data (docs/internal/REARCHITECTURE.md "Resolved Decisions" #12).
 // The family demo makes every Home / Documents / Journey Hub / Review state
 // reachable, and doubles as the walkthrough acceptance checklist:
 //   - 3 applicants (self + spouse + child)

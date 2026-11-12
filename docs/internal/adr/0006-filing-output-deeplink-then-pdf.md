@@ -16,4 +16,4 @@ Build the `pdf-lib` field maps and current-edition templates regardless. The use
 
 ## Amended (2026-07-01)
 
-Deep-link/PDF mechanics unchanged. Data source corrected per [ADR-0014](./0014-draft-only-answers-promote-at-review.md): the PDF is filled from the **application's own draft** plus the vault — not from the shared applicant profile. The profile's role is seeding a *new* application's draft (autofill at creation), after which the draft is the render source. Language: Application is the unit noun per CONTEXT.md.
+Deep-link/PDF mechanics unchanged. Data source corrected per [ADR-0014](./0014-draft-only-answers-promote-at-review.md): the PDF is filled from the **application's own draft** plus the vault — not from the shared applicant profile. The profile's role is seeding a *new* application's draft (autofill at creation), after which the draft is the render source. Language: Application is the unit noun per docs/internal/CONTEXT.md.

@@ -705,7 +705,7 @@ changed. Verified after every change: `tsc --noEmit` clean, `eslint .` clean,
 | **F-33** proxy checkout | **Fixed** | `immifile-auth-proxy` fast-forwarded to `main` @ `cd8228a`; merged branch deleted. |
 | **F-36** stray artifact | **Fixed** | Removed. |
 | **F-37** unbounded label | **Fixed** | `documents.saveDocument` / `uploadNewVersion` cap `label` at 120 chars via the existing `optionalText` helper. |
-| **F-38** published internal docs | **Fixed** | Only `index.md`, `PRIVACY_POLICY.md`, and `SUPPORT.md` remain at `docs/`. Everything else moved to `docs/internal/` and `docs/_config.yml` excludes it — default-deny for anything added later. Public URLs are unchanged (both pages keep their `permalink`). Cross-references updated in actionable files; historical narrative (`MASTER_PLAN.md`, `FABLE_BRIEF*`) deliberately left as written. |
+| **F-38** published internal docs | **Fixed** | Only `index.md`, `PRIVACY_POLICY.md`, and `SUPPORT.md` remain at `docs/`. Everything else moved to `docs/internal/` and `docs/_config.yml` excludes it — default-deny for anything added later. Public URLs are unchanged (both pages keep their `permalink`). Cross-references updated in actionable files; historical narrative (`docs/internal/MASTER_PLAN.md`, `FABLE_BRIEF*`) deliberately left as written. |
 
 ### Deliberately not done
 

@@ -79,7 +79,7 @@ in full. The load-bearing ones, restated:
 
 1. **Tab order:** `Forms` · `Case Status` · `AI Assistant` · `Community` (currently
    Assistant · Forms · Cases · Community). Four tabs only. Update the tab layout **and** the
-   `MASTER_PLAN.md` "Layout" section to match.
+   `docs/internal/MASTER_PLAN.md` "Layout" section to match.
 2. **Profile lives off the header avatar as a full-screen page** — not a fifth tab. Expand
    today's account modal into a full Profile screen.
 3. **Temporary accounts** are the anonymous Better Auth sessions created by "Start filing."
@@ -111,7 +111,7 @@ in full. The load-bearing ones, restated:
    whatever was last pushed (this bit us in Run 1; see `docs/FABLE_NOTES.md`). Do all dev/test
    against the **dev** deployment (`dev:impressive-fish-50`); a production deploy is a
    checkpoint.
-3. **Extend `MASTER_PLAN.md`, don't reinvent it.** Add a new milestone block (e.g. **M6**) for
+3. **Extend `docs/internal/MASTER_PLAN.md`, don't reinvent it.** Add a new milestone block (e.g. **M6**) for
    this run, mirroring the existing `status:` YAML header and the checkbox / `Status:` /
    `Done when:` / `Evidence:` format verbatim. Flip `status` back to `in_progress` and set
    `next_task` to your first M6 task. A task is `DONE` only when its tests + acceptance checks
@@ -160,7 +160,7 @@ Each stream de-risks the next. Parallelize within a stream where it's safe.
 ### Stream 1 — Navigation, personalization spine, and the logo
 
 - **Reorder the tabs** to Forms · Case Status · AI Assistant · Community in
-  `src/app/(tabs)/_layout.tsx`, and update the `MASTER_PLAN.md` Layout section. Keep labels
+  `src/app/(tabs)/_layout.tsx`, and update the `docs/internal/MASTER_PLAN.md` Layout section. Keep labels
   short for a native tab bar ("Cases" is fine if "Case Status" crowds; you decide).
 - **Personalization spine.** Add one source of truth for the current viewer: a hook returning
   `{ isTemp, firstName }` (temp = anonymous session; `firstName` only known post-conversion,
@@ -256,7 +256,7 @@ light scroll only if content genuinely warrants.
 
 ## Definition of Done
 
-- Tabs reordered to Forms · Case Status · AI Assistant · Community; `MASTER_PLAN.md` Layout
+- Tabs reordered to Forms · Case Status · AI Assistant · Community; `docs/internal/MASTER_PLAN.md` Layout
   updated. Profile is a full screen off the header avatar. Logo dot is a warm near-black across
   every icon/splash/favicon asset and any in-app logo, from a vector source you now own.
 - Temp accounts: gated at file/export behind Google/email account creation, with verified data
@@ -270,7 +270,7 @@ light scroll only if content genuinely warrants.
   populated and calm in both light and dark.
 - `npx eslint .`, `bun run typecheck`, and vitest are green. Simulator screenshots (light +
   dark) of each changed screen. Fresh-context verification passed on the auth / deletion-cron /
-  export-gate / PII work. `MASTER_PLAN.md` M6 tasks are `DONE` with evidence lines.
+  export-gate / PII work. `docs/internal/MASTER_PLAN.md` M6 tasks are `DONE` with evidence lines.
 
 ## Verify as you build
 

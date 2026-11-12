@@ -24,7 +24,7 @@ import {
  * The interview host (ADR-0013): ONE `useAppForm` instance and a host-owned
  * visible-step index, swapping step bodies rather than routes. Every Next
  * validates the step's fields, persists via the idempotent
- * `saveApplicationStep`, then advances — no autosave (REARCHITECTURE.md
+ * `saveApplicationStep`, then advances — no autosave (docs/internal/REARCHITECTURE.md
  * "Save Semantics"). Closing mid-step keeps everything already saved by
  * earlier Nexts and drops only the current step's unsaved edits, by design.
  *

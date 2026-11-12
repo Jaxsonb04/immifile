@@ -16,4 +16,4 @@ The anonymous → credentialed account-linking flow (profile-preserving) is requ
 
 ## Amended (2026-07-01)
 
-Read this ADR through [ADR-0010](./0010-account-gate-at-first-sensitive-action.md): the "upgrade required at the Review / complete-filing step" clause was already superseded by the contextual gate at the first sensitive action, and the 2026-07-01 rebuild re-confirmed that gate. What still holds here: the anonymous-first principle, the silent anonymous session, and the `onLinkAccount` backfill. Language: "filing" above reads as *Application* (the unit) per CONTEXT.md.
+Read this ADR through [ADR-0010](./0010-account-gate-at-first-sensitive-action.md): the "upgrade required at the Review / complete-filing step" clause was already superseded by the contextual gate at the first sensitive action, and the 2026-07-01 rebuild re-confirmed that gate. What still holds here: the anonymous-first principle, the silent anonymous session, and the `onLinkAccount` backfill. Language: "filing" above reads as *Application* (the unit) per docs/internal/CONTEXT.md.

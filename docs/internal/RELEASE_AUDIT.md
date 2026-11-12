@@ -17,7 +17,7 @@
 >   `src/app/(tabs)/forms/index.tsx`) no longer exist; the M7 restructure moved
 >   account settings to `src/screens/account/account.settings.tsx`.
 >
-> The current assessment is `RELEASE_AUDIT_2026-07-27.md` in the repository root.
+> The current assessment is `docs/internal/RELEASE_AUDIT_2026-07-27.md`.
 
 Scope note: the plan's "Release audit" was reframed for this run per owner
 decision — App Store submission work (store metadata, EAS submit, the App

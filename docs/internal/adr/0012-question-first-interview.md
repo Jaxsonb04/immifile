@@ -19,4 +19,4 @@ Faithful form-shape replication (low value, high abandonment — rejected); **qu
 
 ## Amended (2026-07-01)
 
-Mechanics unchanged. Language: the Interview prepares an **Application** (CONTEXT.md); "filing" above reads as the act of filing or the Filing Package. Reaching Review also triggers person-fact promotion per [ADR-0014](./0014-draft-only-answers-promote-at-review.md).
+Mechanics unchanged. Language: the Interview prepares an **Application** (docs/internal/CONTEXT.md); "filing" above reads as the act of filing or the Filing Package. Reaching Review also triggers person-fact promotion per [ADR-0014](./0014-draft-only-answers-promote-at-review.md).

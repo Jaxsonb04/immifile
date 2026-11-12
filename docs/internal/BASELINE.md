@@ -23,7 +23,7 @@ Total: **85 tests, all passing.**
 
 ## Notes
 
-- `MASTER_PLAN.md` and `apps/` were untracked at baseline capture.
+- `docs/internal/MASTER_PLAN.md` and `apps/` were untracked at baseline capture.
 - Amended in the same task: ADR-0003 now brings the Community forum (M4) and
   Recent news (M5-T2) into v1 scope, and reconciles the stale "monetization"
   exclusion against ADR-0011. See

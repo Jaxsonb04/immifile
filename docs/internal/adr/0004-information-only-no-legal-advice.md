@@ -8,4 +8,4 @@ This boundary governs copy, feature scope, the preparer-section handling, and on
 
 ## Amended (2026-07-01)
 
-Substance unchanged. Language: "every filing" above reads as "every Application" — Application is the unit noun per CONTEXT.md.
+Substance unchanged. Language: "every filing" above reads as "every Application" — Application is the unit noun per docs/internal/CONTEXT.md.

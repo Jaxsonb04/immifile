@@ -6,7 +6,7 @@ import type {
 } from '@convex/shared/applicationShapes'
 import { evidenceRequirementFor } from '@convex/shared/evidenceRequirements'
 
-// Plain labels first, technical labels second (REARCHITECTURE.md
+// Plain labels first, technical labels second (docs/internal/REARCHITECTURE.md
 // "Terminology"): display copy is composed from formType + applicationKind —
 // never stored, never the raw form number as the primary label.
 

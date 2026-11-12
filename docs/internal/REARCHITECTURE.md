@@ -280,7 +280,7 @@ details but not their legal/privacy constraints.
 
 These resolve the ambiguities and conflicts between this document and the
 foundations consolidation plan. Where they conflict with older text above,
-these win. CONTEXT.md and ADR-0001/0003/0007/0010/0011/0012/0013 amendments
+these win. docs/internal/CONTEXT.md and ADR-0001/0003/0007/0010/0011/0012/0013 amendments
 plus ADR-0014 record the same decisions.
 
 1. **Terminology.** Application is the unit noun everywhere (UI, schema,
