@@ -22,7 +22,7 @@ Gate at Review (ADR-0009 — more accumulated effort, but later identity capture
 
 ## Amended (2026-07-01)
 
-Re-checked for the ground-up rebuild: the contextual gate at the first sensitive action **survives unchanged** (document upload, obtaining the Filing Package, push reminders). "Start filing" entry copy and the silent anonymous session stay. During the **walkthrough phase**, the gate UI exists but is non-blocking (stubbed) and RevenueCat/IAP is not installed; enforcement lands in the PII/security and IAP phases. Language: Filing → Application per CONTEXT.md.
+Re-checked for the ground-up rebuild: the contextual gate at the first sensitive action **survives unchanged** (document upload, obtaining the Filing Package, push reminders). "Start filing" entry copy and the silent anonymous session stay. During the **walkthrough phase**, the gate UI exists but is non-blocking (stubbed) and RevenueCat/IAP is not installed; enforcement lands in the PII/security and IAP phases. Language: Filing → Application per docs/internal/CONTEXT.md.
 
 ## Amended (2026-07-06) — the community forum duplicates the gate on the server
 

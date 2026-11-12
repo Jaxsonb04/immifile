@@ -6,9 +6,8 @@ describe('resolveWelcomeLayout', () => {
 		expect(resolveWelcomeLayout({ height: 667, fontScale: 1 })).toMatchObject({
 			compact: true,
 			accessibilityText: false,
-			heroHeight: 190,
-			headlineFontSize: 42,
-			headlineLineHeight: 46.2,
+			headlineFontSize: 36,
+			headlineLineHeight: 40,
 			forceHeadlineBreak: true,
 		})
 	})
@@ -17,9 +16,8 @@ describe('resolveWelcomeLayout', () => {
 		expect(resolveWelcomeLayout({ height: 667, fontScale: 3.1 })).toEqual({
 			compact: true,
 			accessibilityText: true,
-			heroHeight: 96,
-			headlineFontSize: 22,
-			headlineLineHeight: 28,
+			headlineFontSize: 26,
+			headlineLineHeight: 34,
 			bodyLineHeight: 24,
 			disclosureLineHeight: 18,
 			linkLineHeight: 20,
@@ -30,7 +28,7 @@ describe('resolveWelcomeLayout', () => {
 		})
 	})
 
-	test('retains the full-height artwork on a tall standard-text phone', () => {
-		expect(resolveWelcomeLayout({ height: 852, fontScale: 1 }).heroHeight).toBe(288)
+	test('uses the larger headline only when the viewport has room', () => {
+		expect(resolveWelcomeLayout({ height: 852, fontScale: 1 }).headlineFontSize).toBe(42)
 	})
 })

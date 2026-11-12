@@ -1,7 +1,7 @@
 import { api } from '@convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
 import { useRouter } from 'expo-router'
-import { cn, Typography } from 'heroui-native'
+import { cn, ListGroup, Separator, Typography } from 'heroui-native'
 import { useRef, useState } from 'react'
 import { Alert, ScrollView, useWindowDimensions, View } from 'react-native'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useViewer } from '@/components/account'
 import { ScreenLoading } from '@/components/core'
-import { styledIcon } from '@/components/styled-icon'
+import { StyledLucideIcon, styledIcon } from '@/components/styled-icon'
 import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
 import { useSlowLoad } from '@/hooks/use-slow-load'
 
@@ -20,30 +20,62 @@ import { useAssistantChat } from './assistant.data'
 import { Message } from './assistant.message'
 import { assistantQuotaCopy } from './assistant-quota-copy'
 import { OPENING_REPLIES } from './assistant.recommendation'
-import type { AssistantContent, ChatTurn } from './assistant.types'
+import type { AssistantContent } from './assistant.types'
 
 const InfoIcon = styledIcon({ family: 'lucide', name: 'info' })
 
-/** The intro turn shown while the transcript is empty. Reuses the assistant
- * bubble + suggestion layout so first-run looks like a real message. Greets by
- * name only for converted accounts (M6-T1 viewer spine); anonymous sessions
- * always get the neutral "Hi!". */
-function greetingTurn(firstName: string | null): ChatTurn {
-	const hi = firstName ? `Hi ${firstName}!` : 'Hi!'
-	return {
-		id: 'greeting',
-		kind: 'assistant',
-		content: {
-			kind: 'text',
-			// Names the two forms and the five situations up front, and points at
-			// the taps first: the suggestions below cover every supported case
-			// deterministically, while free text has to survive extraction. Setting
-			// that expectation is what keeps an off-topic question feeling like a
-			// scope boundary rather than a refusal.
-			text: `${hi} I help with two USCIS forms — a work permit (Form I-765) or a green card (Form I-90). Pick the closest match below, or describe your situation in your own words. I share general information only, not legal advice.`,
-			suggestions: OPENING_REPLIES,
-		},
-	}
+function AssistantStart({
+	firstName,
+	onPick,
+	disabled,
+}: {
+	firstName: string | null
+	onPick: (message: string) => void
+	disabled: boolean
+}) {
+	const { height } = useWindowDimensions()
+	const compact = height < 750
+	return (
+		<View className="gap-section py-control">
+			<View className="gap-tight">
+				{!compact ? (
+					<View className="mb-tight size-11 items-center justify-center rounded-2xl bg-accent/10">
+						<StyledLucideIcon name="sparkles" size={22} className="text-accent" />
+					</View>
+				) : null}
+				{!compact ? (
+					<Typography.Paragraph color="muted" className="text-sm">
+						{firstName ? `Hi, ${firstName}` : 'Let’s find your next step'}
+					</Typography.Paragraph>
+				) : null}
+				<Typography.Heading className="font-display text-2xl">
+					What brings you here?
+				</Typography.Heading>
+				<Typography.Paragraph color="muted" className="text-sm leading-relaxed">
+					Work permits (I-765) and green cards (I-90). Choose a topic or ask below.
+				</Typography.Paragraph>
+			</View>
+			<ListGroup>
+				{OPENING_REPLIES.map((reply, index) => (
+					<View key={reply.id}>
+						{index > 0 ? <Separator className="mx-card" /> : null}
+						<ListGroup.Item
+							accessibilityRole="button"
+							accessibilityLabel={reply.label}
+							accessibilityState={{ disabled }}
+							disabled={disabled}
+							onPress={() => onPick(reply.message)}
+						>
+							<ListGroup.ItemContent>
+								<ListGroup.ItemTitle className="text-sm">{reply.label}</ListGroup.ItemTitle>
+							</ListGroup.ItemContent>
+							<ListGroup.ItemSuffix />
+						</ListGroup.Item>
+					</View>
+				))}
+			</ListGroup>
+		</View>
+	)
 }
 
 /** Above this text scale the disclaimer and the quota can no longer share a
@@ -150,7 +182,6 @@ function AssistantChatScreen() {
 	}
 
 	const isEmpty = turns.length === 0
-	const visibleTurns = isEmpty ? [greetingTurn(firstName)] : turns
 
 	return (
 		<View className="flex-1 bg-background">
@@ -175,7 +206,10 @@ function AssistantChatScreen() {
 					}
 				}}
 			>
-				{visibleTurns.map((turn) => (
+				{isEmpty ? (
+					<AssistantStart firstName={firstName} onPick={send} disabled={!canSend} />
+				) : null}
+				{turns.map((turn) => (
 					<Message
 						key={turn.id}
 						turn={turn}

@@ -1,0 +1,22 @@
+# Start on Account with a disposable temporary account created by this QA run.
+# This permanently removes that account. Never use an existing user's session.
+appId: dev.uing.immigrationrenewalhelp
+---
+- assertVisible: Temporary account
+- tapOn: Cases
+- assertVisible: Your cases start here.
+- tapOn: Account
+- scrollUntilVisible:
+    element: Delete account
+    centerElement: true
+- tapOn: Delete account
+- assertVisible: Delete your account?
+- waitForAnimationToEnd
+- tapOn: Cancel
+- tapOn: Delete account
+- assertVisible: Delete your account?
+- waitForAnimationToEnd
+- tapOn: Delete everything
+- extendedWaitUntil:
+    visible: Explore Immifile
+    timeout: 30000

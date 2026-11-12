@@ -72,7 +72,7 @@ function LinkGroup({
 		<View className="gap-tight">
 			<Typography.Paragraph
 				color="muted"
-				className="ml-hairline text-sm"
+				className="ml-hairline font-semibold text-sm"
 				style={{ lineHeight: layout.groupLabelLineHeight }}
 			>
 				{label}
@@ -91,7 +91,7 @@ function LinkGroup({
 							onPress={() => void openOfficialUrl(link.url)}
 						>
 							<ListGroup.ItemPrefix className={layout.largeText ? 'pt-hairline' : undefined}>
-								<View className="size-10 items-center justify-center rounded-full bg-surface-secondary">
+								<View className="size-10 items-center justify-center rounded-xl bg-accent/10">
 									<StyledLucideIcon name={link.icon} size={18} className="text-accent" />
 								</View>
 							</ListGroup.ItemPrefix>
@@ -126,9 +126,16 @@ export function ResourcesScreen() {
 	return (
 		<BodyScrollView
 			contentContainerClassName="gap-section pt-tight pb-card"
-			restoreLargeTitleOnTabReveal
 			showsVerticalScrollIndicator={layout.largeText}
 		>
+			<View className="gap-tight">
+				<Typography.Heading className="font-display text-xl">
+					The right source. A clear next step.
+				</Typography.Heading>
+				<Typography.Paragraph color="muted" className="text-sm leading-relaxed">
+					Check a case, plan your next step, or find qualified help with these official resources.
+				</Typography.Paragraph>
+			</View>
 			<LinkGroup label="USCIS tools" links={USCIS_TOOLS} layout={layout} />
 			<LinkGroup label="Legal help" links={LEGAL_HELP} layout={layout} />
 			<Typography.Paragraph

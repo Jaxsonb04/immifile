@@ -6,7 +6,7 @@ import { forwardRef, useMemo } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { createContext } from "../../helpers/internal/utils/index.js";
 import { useProgressCircleFillAnimation, useProgressCircleIndicatorRootAnimation, useProgressCircleRootAnimation, useProgressCircleSpinAnimation } from "./progress-circle.animation.js";
 import { CENTER, DEFAULT_COLOR, DEFAULT_FORMAT_OPTIONS, DEFAULT_MAX_VALUE, DEFAULT_MIN_VALUE, DEFAULT_SIZE, DISPLAY_NAME, SIZE_MAP, STROKE_WIDTH } from "./progress-circle.constants.js";

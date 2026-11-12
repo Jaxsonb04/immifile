@@ -14,12 +14,13 @@ import {
 	Button,
 	Chip,
 	Input,
+	Label,
 	Separator,
 	Surface,
 	TextField,
 	Typography,
 } from 'heroui-native'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Alert as RNAlert, Linking, Pressable, View } from 'react-native'
 import {
 	formatCaseDate,
@@ -35,14 +36,25 @@ const DOT_COLOR = { attention: 'bg-warning', positive: 'bg-success', neutral: 'b
 
 type TimelineEntry = CaseDetail['statusHistory'][number]
 
-function TimelineRow({ entry, isLatest }: { entry: TimelineEntry; isLatest: boolean }) {
+function TimelineRow({
+	entry,
+	isLatest,
+	isLast,
+}: {
+	entry: TimelineEntry
+	isLatest: boolean
+	isLast: boolean
+}) {
 	const tone = statusTone(entry.status)
 	return (
 		<View className="flex-row gap-control">
-			<View className="items-center pt-hairline">
-				<View className={`h-3 w-3 rounded-full ${DOT_COLOR[tone]}`} />
+			<View className="w-5 items-center pt-tight">
+				<View
+					className={`size-2.5 rounded-full ${isLatest && tone === 'neutral' ? 'bg-accent' : DOT_COLOR[tone]}`}
+				/>
+				{!isLast ? <View className="mt-hairline w-px flex-1 bg-separator" /> : null}
 			</View>
-			<View className="flex-1 gap-hairline pb-card">
+			<View className="flex-1 gap-hairline pb-section">
 				<Typography.Paragraph className={isLatest ? 'font-semibold' : 'font-medium'}>
 					{caseStatusLabels[entry.status]}
 				</Typography.Paragraph>
@@ -65,9 +77,11 @@ function AddUpdate({ caseId }: { caseId: Id<'cases'> }) {
 	const [status, setStatus] = useState<CaseStatus | null>(null)
 	const [note, setNote] = useState('')
 	const [busy, setBusy] = useState(false)
+	const savingRef = useRef(false)
 
 	async function save() {
-		if (status === null) return
+		if (status === null || savingRef.current) return
+		savingRef.current = true
 		setBusy(true)
 		try {
 			await addStatusUpdate({ caseId, status, note: note.trim() || undefined })
@@ -77,6 +91,7 @@ function AddUpdate({ caseId }: { caseId: Id<'cases'> }) {
 		} catch (error) {
 			RNAlert.alert('Could not add update', humanErrorMessage(error, 'Try again.'))
 		} finally {
+			savingRef.current = false
 			setBusy(false)
 		}
 	}
@@ -96,16 +111,23 @@ function AddUpdate({ caseId }: { caseId: Id<'cases'> }) {
 				{caseStatuses.map((option) => (
 					<Chip
 						key={option}
+						accessibilityRole="button"
+						accessibilityState={{ selected: status === option, disabled: busy }}
+						disabled={busy}
+						className="h-auto min-h-11 max-w-full py-tight"
 						variant={status === option ? 'primary' : 'soft'}
 						color="accent"
 						onPress={() => setStatus(option)}
 					>
-						<Chip.Label>{caseStatusLabels[option]}</Chip.Label>
+						<Chip.Label className="shrink">{caseStatusLabels[option]}</Chip.Label>
 					</Chip>
 				))}
 			</View>
 			<TextField>
+				<Label>Note (optional)</Label>
 				<Input
+					accessibilityLabel="Note (optional)"
+					editable={!busy}
 					value={note}
 					onChangeText={setNote}
 					placeholder="Add a note (optional)"
@@ -114,11 +136,20 @@ function AddUpdate({ caseId }: { caseId: Id<'cases'> }) {
 					className="min-h-11"
 				/>
 			</TextField>
-			<View className="flex-row gap-tight">
-				<Button variant="ghost" className="flex-1" isDisabled={busy} onPress={() => setOpen(false)}>
+			<View className="gap-tight">
+				<Button
+					variant="ghost"
+					className="h-auto min-h-12 py-control"
+					isDisabled={busy}
+					onPress={() => setOpen(false)}
+				>
 					<Button.Label>Cancel</Button.Label>
 				</Button>
-				<Button className="flex-[2]" isDisabled={busy || status === null} onPress={save}>
+				<Button
+					className="h-auto min-h-12 py-control"
+					isDisabled={busy || status === null}
+					onPress={save}
+				>
 					<Button.Label>{busy ? 'Saving…' : 'Save update'}</Button.Label>
 				</Button>
 			</View>
@@ -153,7 +184,10 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 					style: 'destructive',
 					onPress: () => {
 						void deleteCase({ caseId })
-							.then(() => router.back())
+							.then(() => {
+								if (router.canGoBack()) router.back()
+								else router.replace('/(tabs)/cases')
+							})
 							.catch((error) => {
 								RNAlert.alert(
 									'Could not remove case',
@@ -182,13 +216,17 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 
 	return (
 		<BodyScrollView contentContainerClassName="gap-gutter py-card">
-			<View className="gap-tight">
+			<Surface className="gap-control rounded-3xl border border-border p-gutter">
+				<Typography.Paragraph color="muted" className="text-xs">
+					USCIS RECEIPT NUMBER
+				</Typography.Paragraph>
 				<Typography.Heading selectable className="text-2xl font-mono-semibold tabular-nums">
 					{receiptNumber}
 				</Typography.Heading>
 				<View className="flex-row">
 					<Chip
 						variant="soft"
+						className="h-auto max-w-full py-1"
 						color={
 							statusTone(detail.status) === 'positive'
 								? 'success'
@@ -197,10 +235,10 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 									: 'default'
 						}
 					>
-						<Chip.Label>{caseStatusLabels[detail.status]}</Chip.Label>
+						<Chip.Label className="shrink">{caseStatusLabels[detail.status]}</Chip.Label>
 					</Chip>
 				</View>
-			</View>
+			</Surface>
 
 			{isRfe ? (
 				<Alert status="warning">
@@ -233,13 +271,16 @@ export function CaseDetailScreen({ caseId }: { caseId: Id<'cases'> }) {
 			</Pressable>
 
 			<View className="gap-control">
-				<Typography.Heading className="text-base font-semibold">Timeline</Typography.Heading>
+				<Typography.Heading className="text-base font-semibold">
+					Your case timeline
+				</Typography.Heading>
 				<View>
 					{timeline.map((entry, index) => (
 						<TimelineRow
 							key={`${entry.status}-${entry.occurredAt}`}
 							entry={entry}
 							isLatest={index === 0}
+							isLast={index === timeline.length - 1}
 						/>
 					))}
 				</View>

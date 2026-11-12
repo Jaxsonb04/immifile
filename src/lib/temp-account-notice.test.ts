@@ -17,8 +17,7 @@ describe('temporary account disclosure', () => {
 	})
 
 	test('does not promise deletion at the exact 48-hour boundary on Welcome', () => {
-		expect(TEMP_ACCOUNT_WELCOME_NOTE).toContain('eligible for deletion after 48 hours')
-		expect(TEMP_ACCOUNT_WELCOME_NOTE).toContain('cleanup runs hourly')
+		expect(TEMP_ACCOUNT_WELCOME_NOTE).toContain('May be deleted after 48 hours')
 		expect(TEMP_ACCOUNT_WELCOME_NOTE).toMatch(/sign up/i)
 	})
 

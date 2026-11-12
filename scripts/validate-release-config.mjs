@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 
 const app = JSON.parse(readFileSync(new URL('../app.json', import.meta.url), 'utf8')).expo
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'))
@@ -40,6 +40,47 @@ assert(
 )
 assert(Number.isInteger(app.android?.versionCode), 'android.versionCode must be an integer')
 assert(Boolean(app.ios?.bundleIdentifier), 'ios.bundleIdentifier is required')
+const brandAssets = {
+	icon: './assets/images/icon.png',
+	adaptive: './assets/images/adaptive-icon.png',
+	monochrome: './assets/images/monochrome-icon.png',
+	favicon: './assets/images/favicon.png',
+	splash: './assets/images/splash-icon.png',
+	splashDark: './assets/images/splash-icon-dark.png',
+}
+for (const asset of Object.values(brandAssets)) {
+	assert(
+		existsSync(new URL(`..${asset.slice(1)}`, import.meta.url)),
+		`configured brand asset is missing: ${asset}`,
+	)
+}
+assert(app.icon === brandAssets.icon, 'all platforms must use the canonical app icon')
+assert(
+	app.android?.adaptiveIcon?.foregroundImage === brandAssets.adaptive &&
+		app.android?.adaptiveIcon?.monochromeImage === brandAssets.monochrome &&
+		app.android?.adaptiveIcon?.backgroundColor?.toLowerCase() === '#eaf4ff',
+	'Android adaptive, themed, and background assets must use the canonical brand set',
+)
+assert(app.web?.favicon === brandAssets.favicon, 'web must publish the canonical favicon')
+for (const file of ['icon.png', 'favicon.png']) {
+	assert(
+		readFileSync(new URL(`../docs/assets/${file}`, import.meta.url)).equals(
+			readFileSync(new URL(`../assets/images/${file}`, import.meta.url)),
+		),
+		`public support site ${file} is out of sync; run scripts/generate-logo-assets.mjs`,
+	)
+}
+assert(pkg.dependencies?.['react-native-web'], 'web support requires react-native-web')
+const splashPlugin = (app.plugins ?? []).find(
+	(plugin) => Array.isArray(plugin) && plugin[0] === 'expo-splash-screen',
+)
+assert(
+	Array.isArray(splashPlugin) &&
+		splashPlugin[1]?.image === brandAssets.splash &&
+		splashPlugin[1]?.dark?.image === brandAssets.splashDark &&
+		splashPlugin[1]?.backgroundColor?.toLowerCase() === '#eaf4ff',
+	'light and dark splash screens must use the canonical brand set',
+)
 // iPhone-only for the first release. Turning iPad support on makes a 13-inch
 // iPad screenshot set mandatory in App Store Connect and puts a portrait-only
 // layout in front of a reviewer in iPad landscape, so it is a deliberate

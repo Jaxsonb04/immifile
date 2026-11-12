@@ -1,5 +1,5 @@
 import { Description, FieldError, Label } from 'heroui-native'
-import { NumberField as HeroNumberField } from 'heroui-native-pro'
+import { NumberField as HeroNumberField } from 'heroui-native-pro/number-field'
 import { useFieldContext } from './form.context'
 import { fieldErrorText } from './form.utils'
 

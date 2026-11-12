@@ -6,7 +6,7 @@ import { useThemeColor } from 'heroui-native/hooks';
 import { forwardRef, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import Animated, { useDerivedValue } from 'react-native-reanimated';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { useAugmentedRef, useControllableState } from "../../helpers/internal/hooks/index.js";
 import { createContext } from "../../helpers/internal/utils/index.js";
 import { useOptionalWheelPickerGroup } from "../wheel-picker-group/wheel-picker-group.context.js";

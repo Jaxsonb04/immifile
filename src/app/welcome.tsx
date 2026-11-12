@@ -1,4 +1,4 @@
-import { SheetOfRecordHero } from '@/components/core'
+import { WelcomeCasePreview } from '@/screens/welcome/welcome.case-preview'
 import { establishAnonymousSession } from '@/lib/anonymous-session'
 import { authClient } from '@/lib/auth-client'
 import { waitForAuthenticatedOrUnmounted } from '@/lib/auth-transition'
@@ -6,9 +6,11 @@ import { ensureSessionResolved, getPersistedSessionCookie } from '@/lib/session-
 import { TEMP_ACCOUNT_WELCOME_NOTE } from '@/lib/temp-account-notice'
 import { resolveWelcomeLayout } from '@/screens/welcome/welcome.layout'
 import { useConvexAuth } from 'convex/react'
+import { Image } from 'expo-image'
 import { useRouter } from 'expo-router'
 import { Button } from 'heroui-native'
 import { useEffect, useRef, useState } from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
 	Alert,
 	Linking,
@@ -19,35 +21,8 @@ import {
 	View,
 } from 'react-native'
 
-/**
- * Anonymous-first entry point (ADR-0009). Continue creates a temporary Better
- * Auth session for browsing the stable release surfaces. Persistent case writes
- * remain account-gated; returning users can open the dedicated sign-in screen.
- *
- * MOTION. There is deliberately NO entrance on the headline, the body copy, the
- * buttons, the 48-hour disclosure or the privacy link. They are simply present,
- * complete, at frame 1; `SheetOfRecordHero` carries the screen's entire
- * entrance on its own clock. This is on purpose and should not be "restored":
- *
- *   · A promise that fades in reads as less certain than one that was already
- *     there. On a screen whose subject is waiting, the right statement is that
- *     the interface is ready immediately and only the artwork takes its time.
- *   · The pre-creation 48-hour disclosure can never appear after Continue is
- *     tappable, because `entering` does not gate touches and a staggered note
- *     is momentarily less visible than the button it qualifies. Present-at-
- *     frame-1 is the strongest possible form of that commitment.
- *   · Welcome stays mounted underneath the sign-in formSheet, and `entering`
- *     animations do not replay when that sheet is dismissed. Nothing here
- *     depends on an entrance having played.
- *   · The 42px Libre Franklin headline is never caught mid-opacity on a cold start.
- *
- * If this ever tests as too static on a large phone, the sanctioned fallback is
- * a SINGLE shared opacity ramp on the copy block and a SINGLE shared opacity
- * ramp on the whole action block, with zero translate and zero stagger — never
- * a return to the staggered `FadeInDown`, and never splitting the action block
- * into separately timed children.
- */
-
+/** Anonymous-first entry: all copy, account disclosure, and actions are visible
+ * immediately. The preview illustrates manual case organization, not live data. */
 const PRIVACY_POLICY_URL =
 	process.env.EXPO_PUBLIC_PRIVACY_URL ?? 'https://jaxsonb04.github.io/immifile/privacy/'
 
@@ -55,6 +30,7 @@ export default function WelcomeScreen() {
 	const router = useRouter()
 	const { isAuthenticated } = useConvexAuth()
 	const { height, fontScale } = useWindowDimensions()
+	const insets = useSafeAreaInsets()
 	const [pending, setPending] = useState(false)
 	const mountedRef = useRef(true)
 	const convexAuthenticatedRef = useRef(isAuthenticated)
@@ -115,98 +91,80 @@ export default function WelcomeScreen() {
 
 	return (
 		<ScrollView
+			// Re-measure native text when Dynamic Type changes while this screen is open.
+			key={fontScale}
 			className="flex-1 bg-background"
-			contentContainerStyle={{ flexGrow: 1 }}
+			contentContainerStyle={{
+				flexGrow: 1,
+				paddingTop: insets.top + (layout.compact ? 12 : 20),
+				paddingBottom: Math.max(insets.bottom, 16),
+			}}
+			contentContainerClassName="px-section"
 			showsVerticalScrollIndicator={layout.showsScrollIndicator}
 			bounces={false}
 		>
-			<View className={layout.accessibilityText ? 'justify-end' : 'flex-1 justify-end'}>
-				<SheetOfRecordHero height={layout.heroHeight} />
+			<View className="flex-row items-center gap-control">
+				<Image
+					source={require('../../assets/images/icon.png')}
+					style={{ width: 44, height: 44, borderRadius: 12 }}
+					accessible={false}
+				/>
+				<Text className="font-display text-xl text-foreground">Immifile</Text>
 			</View>
 
-			<View
-				className={
-					layout.compact || layout.accessibilityText
-						? 'gap-gutter px-section pt-card'
-						: 'gap-gutter px-section pt-9'
-				}
-			>
-				<View className="items-center gap-tight">
-					<Text
-						className="text-center font-display text-foreground"
-						style={{
-							fontSize: layout.headlineFontSize,
-							lineHeight: layout.headlineLineHeight,
-						}}
-					>
-						{layout.forceHeadlineBreak
-							? `Keep your case\nclose at hand.`
-							: 'Keep your case close at hand.'}
-					</Text>
-					<Text
-						className={`${layout.accessibilityText ? 'self-stretch' : 'max-w-[300px]'} text-center font-normal text-[17px] text-muted`}
-						style={{ lineHeight: layout.bodyLineHeight }}
-					>
-						Track your USCIS cases and open official tools in one place.
-					</Text>
-				</View>
+			<View className="flex-1 justify-center gap-8 py-8">
+				<Text
+					accessibilityRole="header"
+					className="font-display tracking-tight text-foreground"
+					style={{ fontSize: layout.headlineFontSize, lineHeight: layout.headlineLineHeight }}
+				>
+					{layout.forceHeadlineBreak ? 'Your case.\nMore clarity.' : 'Your case. More clarity.'}
+				</Text>
+				<WelcomeCasePreview compact={layout.compact || layout.accessibilityText} />
 			</View>
 
-			{/* The 48-hour disclosure, Privacy policy, Continue, and Sign in are
-			    ONE block and must stay one block. Their arrival time is a compliance
-			    surface, not a design variable: the disclosure is a documented
-			    pre-creation commitment (RELEASE_AUDIT_2026-07-27:445), and the
-			    privacy link is what App Review looks for on the first screen. Keep
-			    the disclosure before Continue so the bottom-anchored actions remain
-			    easy to reach without weakening informed consent. */}
-			<View
-				className={
-					layout.compact || layout.accessibilityText
-						? 'gap-control px-section pt-card pb-safe-offset-4'
-						: 'gap-control px-section pt-10 pb-safe-offset-6'
-				}
-			>
+			<View className="gap-tight">
 				<Text
 					className="text-center text-xs text-muted"
 					style={{ lineHeight: layout.disclosureLineHeight }}
 				>
 					{TEMP_ACCOUNT_WELCOME_NOTE}
 				</Text>
+				<Button
+					size="lg"
+					className="mt-hairline h-auto min-h-12 py-control"
+					style={layout.accessibilityText ? { minHeight: layout.buttonMinHeight } : undefined}
+					isDisabled={pending}
+					onPress={handleContinue}
+				>
+					<Button.Label
+						className="shrink text-center"
+						style={{ lineHeight: layout.buttonLabelLineHeight }}
+					>
+						{pending ? 'Opening…' : 'Explore Immifile'}
+					</Button.Label>
+				</Button>
+				<Button
+					variant="ghost"
+					className="h-auto min-h-11 py-tight"
+					isDisabled={pending}
+					onPress={() => router.push('/sign-in')}
+				>
+					<Button.Label className="shrink text-center">Sign in</Button.Label>
+				</Button>
 				<Pressable
 					accessibilityRole="link"
 					accessibilityLabel="Open Immifile privacy policy"
-					className="self-center px-control py-tight"
-					hitSlop={8}
+					className="min-h-11 items-center justify-center self-center px-control"
 					onPress={() => void openPrivacyPolicy()}
 				>
 					<Text
-						className="font-medium text-sm text-accent underline"
+						className="text-xs text-muted underline"
 						style={{ lineHeight: layout.linkLineHeight }}
 					>
 						Privacy policy
 					</Text>
 				</Pressable>
-				<Button
-					size="lg"
-					className={layout.accessibilityText ? 'h-auto py-card' : undefined}
-					style={layout.accessibilityText ? { minHeight: layout.buttonMinHeight } : undefined}
-					isDisabled={pending}
-					onPress={handleContinue}
-				>
-					<Button.Label style={{ lineHeight: layout.buttonLabelLineHeight }}>
-						{pending ? 'Opening…' : 'Continue'}
-					</Button.Label>
-				</Button>
-				<Button
-					size="lg"
-					variant="ghost"
-					className={layout.accessibilityText ? 'h-auto py-card' : undefined}
-					style={layout.accessibilityText ? { minHeight: layout.buttonMinHeight } : undefined}
-					isDisabled={pending}
-					onPress={() => router.push('/sign-in')}
-				>
-					<Button.Label style={{ lineHeight: layout.buttonLabelLineHeight }}>Sign in</Button.Label>
-				</Button>
 			</View>
 		</ScrollView>
 	)

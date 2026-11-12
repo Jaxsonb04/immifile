@@ -1,7 +1,7 @@
 import type { MutationCtx } from '../_generated/server'
 import { targetKeyFor } from '../shared/community'
 
-// The account-deletion contract (REARCHITECTURE.md): removing an owner wipes
+// The account-deletion contract (docs/internal/REARCHITECTURE.md): removing an owner wipes
 // every app-owned row AND every stored file. No financial records survive in
 // Convex. The walkthrough seed's reset path reuses this same cascade so the
 // two can never drift apart.

@@ -68,15 +68,18 @@ export function AssistantHero({ width = 140 }: AssistantHeroProps) {
 
 	// The answer: grounded and steady — vertical breathing only.
 	const cardStyle = useAnimatedStyle(() => ({
-		transform: [{ translateY: -6 * float.value }, { rotate: `${1.5 - 1.2 * drift.value}deg` }],
+		transform: [{ translateY: -7 * float.value }, { rotate: `${1.5 - 1.2 * drift.value}deg` }],
 	}))
-	// The question: unmoored — lateral wander and a wider tilt that runs against
+	// The question: unmoored — a wide lateral wander and a tilt that runs against
 	// the card's on the same `drift`, so the pair never looks mechanically linked.
+	// The wander is this piece's signature travel and has to cross real ground to
+	// say "still searching": at the old 4px it read as a static drawing beside
+	// `CaseTrackingHero`, whose envelope crosses 40px of rail.
 	const askStyle = useAnimatedStyle(() => ({
 		transform: [
-			{ translateY: -4 * pulse.value },
-			{ translateX: 4 * drift.value },
-			{ rotate: `${-2.5 + 2 * drift.value}deg` },
+			{ translateY: -5 * pulse.value },
+			{ translateX: 22 * drift.value },
+			{ rotate: `${-2.5 + 4 * drift.value}deg` },
 		],
 	}))
 	// Still open: the one opacity beat in the piece, and it never nears zero.
@@ -85,12 +88,12 @@ export function AssistantHero({ width = 140 }: AssistantHeroProps) {
 	}))
 	// The badge overshoots its card, coupled to two loops (house idiom).
 	const badgeStyle = useAnimatedStyle(() => ({
-		transform: [{ translateY: -8 * float.value - 3 * drift.value }],
+		transform: [{ translateY: -10 * float.value - 6 * drift.value }],
 	}))
 	// Ground shadow sells the float; hairline-border system, so it stays faint.
 	const shadowStyle = useAnimatedStyle(() => ({
-		transform: [{ scaleX: 1 - 0.12 * float.value }],
-		opacity: 0.1 - 0.03 * float.value,
+		transform: [{ scaleX: 1 - 0.16 * float.value }],
+		opacity: 0.1 - 0.04 * float.value,
 	}))
 
 	return (

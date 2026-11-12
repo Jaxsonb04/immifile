@@ -1,11 +1,5 @@
-import {
-	Description,
-	FieldError,
-	TextField as HeroTextField,
-	Label,
-	Radio,
-} from 'heroui-native'
-import { RadioButtonGroup } from 'heroui-native-pro'
+import { Description, FieldError, TextField as HeroTextField, Label, Radio } from 'heroui-native'
+import { RadioButtonGroup } from 'heroui-native-pro/radio-button-group'
 import { useFieldContext } from './form.context'
 import { fieldErrorText } from './form.utils'
 

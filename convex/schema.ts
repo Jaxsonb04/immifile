@@ -22,7 +22,7 @@ import {
 	reportTargetTypes,
 } from './shared/community'
 
-// Seven app-owned tables (REARCHITECTURE.md "Resolved Decisions", 2026-07-01)
+// Seven app-owned tables (docs/internal/REARCHITECTURE.md "Resolved Decisions", 2026-07-01)
 // plus the M4 community-forum tables. Every table is scoped by a server-derived
 // ownerId (convex/lib/auth.ts); ownerIds are never accepted from clients. Better
 // Auth owns identity in its own component namespace — there is no user-profile

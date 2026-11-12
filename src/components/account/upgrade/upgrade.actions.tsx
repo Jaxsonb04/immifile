@@ -1,3 +1,4 @@
+import { PasswordInput } from '@/components/core/password-input'
 import { authClient } from '@/lib/auth-client'
 import { SLOW_LOAD_RETRY_MESSAGE, resolveSlowLoadState } from '@/hooks/slow-load-state'
 import { useSlowLoad } from '@/hooks/use-slow-load'
@@ -15,7 +16,7 @@ import {
 	Typography,
 	useBottomSheetAwareHandlers,
 } from 'heroui-native'
-import { SocialAuthButton } from 'heroui-native-pro'
+import { SocialAuthButton } from 'heroui-native-pro/social-auth-button'
 import { useEffect, useRef, useState } from 'react'
 import { Alert, View } from 'react-native'
 import { useCredentialedAccountReadiness } from '../account.session'
@@ -209,11 +210,13 @@ export function UpgradeActions({
 					<TextField>
 						<Label>Name</Label>
 						<Input
+							accessibilityLabel="Name"
 							value={name}
 							onChangeText={setName}
 							placeholder="Jane Doe"
 							autoCapitalize="words"
 							textContentType="name"
+							returnKeyType="done"
 							editable={!pending}
 							{...bottomSheetInputHandlers}
 						/>
@@ -223,6 +226,7 @@ export function UpgradeActions({
 				<TextField>
 					<Label>Email</Label>
 					<Input
+						accessibilityLabel="Email"
 						value={email}
 						onChangeText={setEmail}
 						placeholder="you@example.com"
@@ -230,6 +234,7 @@ export function UpgradeActions({
 						autoComplete="email"
 						keyboardType="email-address"
 						textContentType="emailAddress"
+						returnKeyType="done"
 						editable={!pending}
 						{...bottomSheetInputHandlers}
 					/>
@@ -237,13 +242,15 @@ export function UpgradeActions({
 
 				<TextField>
 					<Label>Password</Label>
-					<Input
+					<PasswordInput
+						key={mode}
+						accessibilityLabel="Password"
 						value={password}
 						onChangeText={setPassword}
-						placeholder="••••••••"
-						secureTextEntry
+						placeholder="Enter your password"
 						autoCapitalize="none"
 						textContentType={mode === 'create' ? 'newPassword' : 'password'}
+						returnKeyType="done"
 						editable={!pending}
 						{...bottomSheetInputHandlers}
 					/>
@@ -255,8 +262,12 @@ export function UpgradeActions({
 				</Typography.Paragraph>
 			) : null}
 
-			<Button isDisabled={pending} onPress={handleEmailUpgrade}>
-				<Button.Label>
+			<Button
+				className="h-auto min-h-12 py-control"
+				isDisabled={pending}
+				onPress={handleEmailUpgrade}
+			>
+				<Button.Label className="shrink text-center">
 					{pending
 						? mode === 'create'
 							? 'Creating account…'
@@ -266,8 +277,13 @@ export function UpgradeActions({
 							: 'Sign in'}
 				</Button.Label>
 			</Button>
-			<Button variant="ghost" isDisabled={pending} onPress={switchMode}>
-				<Button.Label>
+			<Button
+				className="h-auto min-h-12 py-control"
+				variant="ghost"
+				isDisabled={pending}
+				onPress={switchMode}
+			>
+				<Button.Label className="shrink text-center">
 					{mode === 'create' ? 'Already have an account? Sign in' : 'Need an account? Create one'}
 				</Button.Label>
 			</Button>
@@ -277,7 +293,7 @@ export function UpgradeActions({
 					isDisabled={pending}
 					onPress={() => router.push('/forgot-password')}
 				>
-					<Button.Label>Forgot password?</Button.Label>
+					<Button.Label className="shrink text-center">Forgot password?</Button.Label>
 				</Button>
 			) : null}
 		</View>

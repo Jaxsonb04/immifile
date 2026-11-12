@@ -6,7 +6,6 @@ type WelcomeLayoutInput = {
 export type WelcomeLayout = {
 	compact: boolean
 	accessibilityText: boolean
-	heroHeight: number
 	headlineFontSize: number
 	headlineLineHeight: number
 	bodyLineHeight: number
@@ -22,11 +21,11 @@ export type WelcomeLayout = {
 export function resolveWelcomeLayout({ height, fontScale }: WelcomeLayoutInput): WelcomeLayout {
 	const compact = height < 750
 	const accessibilityText = fontScale > 1.2
-	const headlineFontSize = accessibilityText ? 22 : 42
+	const headlineFontSize = accessibilityText ? 26 : compact ? 36 : 42
 	// React Native's native text renderer applies the effective Dynamic Type
 	// multiplier to lineHeight itself. These remain logical base values; only
 	// the surrounding non-text button geometry is scaled explicitly below.
-	const headlineLineHeight = accessibilityText ? 28 : 46.2
+	const headlineLineHeight = accessibilityText ? 34 : compact ? 40 : 47
 	const bodyLineHeight = 24
 	const disclosureLineHeight = 18
 	const linkLineHeight = 20
@@ -35,7 +34,6 @@ export function resolveWelcomeLayout({ height, fontScale }: WelcomeLayoutInput):
 	return {
 		compact,
 		accessibilityText,
-		heroHeight: accessibilityText ? 96 : compact ? 190 : 288,
 		headlineFontSize,
 		headlineLineHeight,
 		bodyLineHeight,

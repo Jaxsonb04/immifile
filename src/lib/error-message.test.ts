@@ -17,6 +17,16 @@ describe('humanErrorMessage', () => {
 		expect(humanErrorMessage(error, 'Please try again.')).toBe('Please try again.')
 	})
 
+	test('uses the fallback for production errors with only a client stack marker', () => {
+		// Production redacts the server message; Convex appends this marker.
+		const error = new Error(
+			'[CONVEX A(auth:deleteAccount)] [Request ID: abc] Server Error\n  Called by client',
+		)
+		expect(humanErrorMessage(error, 'Check your password and try again.')).toBe(
+			'Check your password and try again.',
+		)
+	})
+
 	test('drops multiline Convex stacks and hides technical authentication failures', () => {
 		const error = new Error(
 			'[CONVEX M(cases:createCase)] [Request ID: abc] Server Error\nUncaught Error: Not authenticated\n    at requireCredentialedOwnerId (../../convex/lib/auth.ts:66:13)\n    at async handler (../convex/cases.ts:122:41)\n\nCalled by client',

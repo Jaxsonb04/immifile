@@ -101,7 +101,8 @@
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/adaptive-icon.png",
-				"backgroundColor": "#f3f7f9"
+				"backgroundColor": "#eaf4ff",
+				"monochromeImage": "./assets/images/monochrome-icon.png"
 			},
 			"predictiveBackGestureEnabled": false,
 			"package": "dev.uing.immigrationrenewalhelp",
@@ -115,7 +116,7 @@
 				{
 					"image": "./assets/images/splash-icon.png",
 					"resizeMode": "contain",
-					"backgroundColor": "#f3f7f9",
+					"backgroundColor": "#eaf4ff",
 					"dark": {
 						"image": "./assets/images/splash-icon-dark.png",
 						"backgroundColor": "#090f16"
@@ -136,6 +137,9 @@
 			"expo-asset",
 			"expo-status-bar"
 		],
+		"web": {
+			"favicon": "./assets/images/favicon.png"
+		},
 		"experiments": {
 			"typedRoutes": true,
 			"reactCompiler": true

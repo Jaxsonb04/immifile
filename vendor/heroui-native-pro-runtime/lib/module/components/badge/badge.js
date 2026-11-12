@@ -3,7 +3,7 @@
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useMemo } from 'react';
 import { View } from 'react-native';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { childrenToString, createContext } from "../../helpers/internal/utils/index.js";
 import { useBadgeRootAnimation } from "./badge.animation.js";
 import { DEFAULT_COLOR, DEFAULT_PLACEMENT, DEFAULT_SIZE, DEFAULT_VARIANT, DISPLAY_NAME } from "./badge.constants.js";

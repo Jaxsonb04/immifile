@@ -184,9 +184,11 @@ export function isUsStateCode(value: unknown): boolean {
 }
 
 // A USCIS receipt number is 3 letters (service-center code, e.g. EAC/WAC/LIN/
-// SRC/MSC/IOE) followed by 10 digits (ADR-0008). Shared so the case backend,
+// SRC/MSC/IOE) followed by 10 digits, with asterisks retained when printed
+// on the notice (https://egov.uscis.gov/e-request/ndd). Shared so the case backend,
 // the M3 case UI, and the I-765 c(26) receipt item validate identically.
-export const RECEIPT_NUMBER_RE = /^[A-Z]{3}\d{10}$/
+// At least one digit, so a fully masked placeholder never saves as a case.
+export const RECEIPT_NUMBER_RE = /^[A-Z]{3}(?=[\d*]*\d)[\d*]{10}$/
 
 // One "other name" row (I-765 Items 2-3 offer three rows).
 export const otherNameShape = z.object({
@@ -316,7 +318,10 @@ export const i765SpecificsShape = z.object({
 	// Item 29 — (c)(26) only: the H-1B spouse's most recent I-797 receipt.
 	c26SpouseReceiptNumber: z
 		.string()
-		.regex(RECEIPT_NUMBER_RE, 'A receipt number is 3 letters followed by 10 digits')
+		.regex(
+			RECEIPT_NUMBER_RE,
+			'Enter the 13-character receipt number from your notice, including any asterisks',
+		)
 		.optional(),
 	// Item 30 — (c)(8) only: the arrest/conviction question. A "yes" is
 	// fileable but requires certified court dispositions (answer-aware
@@ -415,9 +420,9 @@ export const terminalCaseStatuses: readonly CaseStatus[] = [
 
 // RECEIPT_NUMBER_RE is declared above the form shapes (which reference it).
 
-/** Trim, strip inner whitespace, and uppercase so a pasted receipt validates. */
+/** Strip whitespace and separator dashes, preserve asterisks, and uppercase. */
 export function normalizeReceiptNumber(raw: string): string {
-	return raw.replace(/\s/g, '').toUpperCase()
+	return raw.replace(/[\s-]/g, '').toUpperCase()
 }
 
 export function isValidReceiptNumber(value: string): boolean {

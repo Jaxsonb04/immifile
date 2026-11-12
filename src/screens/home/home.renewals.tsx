@@ -7,7 +7,8 @@ import { renewalStateFor, type RenewalKind, type RenewalState } from '@convex/sh
 import { useMutation, useQuery } from 'convex/react'
 import type { FunctionReturnType } from 'convex/server'
 import { Button, Label, Typography } from 'heroui-native'
-import { Calendar, DatePicker, type DatePickerOption } from 'heroui-native-pro'
+import { Calendar } from 'heroui-native-pro/calendar'
+import { DatePicker, type DatePickerOption } from 'heroui-native-pro/date-picker'
 import { useState } from 'react'
 import { Alert, Pressable, View } from 'react-native'
 

@@ -1,0 +1,21 @@
+# Start on Welcome with a fresh disposable user; does not create saved case data.
+appId: dev.uing.immigrationrenewalhelp
+---
+- tapOn: Explore Immifile
+- extendedWaitUntil:
+    visible: Got it
+    timeout: 30000
+- assertVisible: Resources
+- tapOn: Got it
+- assertVisible: Your cases start here.
+- tapOn: Resources
+- tapOn: Got it
+- assertVisible: Case status, USCIS Case Status Online
+- tapOn: Account
+- tapOn: Got it
+- assertVisible: Create account
+- tapOn: Assistant
+- tapOn: Got it
+- assertVisible: Not now
+- tapOn: Not now
+- assertVisible: Your cases start here.

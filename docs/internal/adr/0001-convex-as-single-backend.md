@@ -12,4 +12,4 @@ Variable per-form data must use typed validators, not JSONB (see [ADR-0005](./00
 
 ## Amended (2026-07-01)
 
-The autosave clause is superseded: there is **no autosave**. Every **Next** action validates the current step and persists it via an idempotent `saveApplicationStep` mutation (see REARCHITECTURE.md "Save Semantics"). The online-first consequence stands.
+The autosave clause is superseded: there is **no autosave**. Every **Next** action validates the current step and persists it via an idempotent `saveApplicationStep` mutation (see docs/internal/REARCHITECTURE.md "Save Semantics"). The online-first consequence stands.

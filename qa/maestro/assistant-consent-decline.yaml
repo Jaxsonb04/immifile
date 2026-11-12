@@ -1,0 +1,10 @@
+appId: dev.uing.immigrationrenewalhelp
+---
+- scrollUntilVisible:
+    element: "Not now"
+    direction: DOWN
+    timeout: 60000
+    speed: 90
+    centerElement: true
+- assertVisible: "Not now"
+- tapOn: "Not now"

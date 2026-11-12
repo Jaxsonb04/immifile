@@ -38,6 +38,15 @@ describe('createCase', () => {
 		expect(tracked!.statusHistory[0]).toMatchObject({ status: 'caseReceived' })
 	})
 
+	test('preserves receipt asterisks and removes pasted separator dashes', async () => {
+		const t = newT()
+		const alice = t.withIdentity({ subject: 'alice' })
+		const caseId = await alice.mutation(api.cases.createCase, {
+			receiptNumber: ' eac-*234-567-890 ',
+		})
+		expect((await alice.query(api.cases.getCase, { caseId }))?.receiptNumber).toBe('EAC*234567890')
+	})
+
 	test('requires a permanent account before storing a receipt number', async () => {
 		const t = newT()
 		const temporary = t.withIdentity({ subject: 'temp', isAnonymous: true })
@@ -56,7 +65,7 @@ describe('createCase', () => {
 		expect(tracked!.receiptNumber).toBe(RECEIPT)
 	})
 
-	test.each(['EAC123', 'EA1234567890', 'EAC12345678901', '1234567890EAC', 'EACABCDEFGHIJ'])(
+	test.each(['EAC123', 'EA1234567890', 'EAC12345678901', '1234567890EAC', 'EACABCDEFGHIJ', 'EAC**********'])(
 		'rejects malformed receipt %s',
 		async (bad) => {
 			const t = newT()
@@ -327,5 +336,23 @@ describe('listLinkableApplications', () => {
 		// Owner-scoped like everything else.
 		const bob = t.withIdentity({ subject: 'bob' })
 		expect(await bob.query(api.cases.listLinkableApplications, {})).toHaveLength(0)
+	})
+})
+
+describe('case links', () => {
+	test('returns not found for malformed deep-link identifiers', async () => {
+		const t = newT()
+		const alice = t.withIdentity({ subject: 'alice' })
+		await expect(alice.query(api.cases.getCase, { caseId: 'not-a-case-id' })).resolves.toBeNull()
+	})
+
+	test('returns not found for identifiers from another table', async () => {
+		const t = newT()
+		const alice = t.withIdentity({ subject: 'alice' })
+		const applicantId = await alice.mutation(api.applicants.createApplicant, {
+			displayName: 'Alice',
+			isSelf: true,
+		})
+		await expect(alice.query(api.cases.getCase, { caseId: applicantId })).resolves.toBeNull()
 	})
 })

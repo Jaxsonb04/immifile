@@ -13,4 +13,4 @@ Adopt `@convex-dev/migrations` early given expected schema churn (form models, p
 ## Amended (2026-07-01)
 
 - **Type direction reversed by the Zod single-source decision:** shared Zod shapes are authored once and Convex validators derive from them via `zodToConvex` — types flow Zod → storage *and* form validation. "Inferring client types from server validators" no longer describes the mechanism; the typed-not-JSONB substance stands.
-- **Migrations deferred until there is data to preserve:** the factory reset (REARCHITECTURE.md) plus the walkthrough phase's seed/reset mutations make `@convex-dev/migrations` moot pre-launch; adopt it when production data exists. "Profile" now means the applicant row — there is no user-profile table.
+- **Migrations deferred until there is data to preserve:** the factory reset (docs/internal/REARCHITECTURE.md) plus the walkthrough phase's seed/reset mutations make `@convex-dev/migrations` moot pre-launch; adopt it when production data exists. "Profile" now means the applicant row — there is no user-profile table.

@@ -42,29 +42,43 @@ export function AccountHero({ size = 120 }: AccountHeroProps) {
 	const reduceMotion = useReducedMotion()
 	const animated = !reduceMotion
 
+	// 32 / 47 / 29 share no common factor pairwise. The old 3200/4800 pair was a
+	// clean 2:3 that re-synced every 9.6s, which reads as one mechanism ticking.
 	const float = useIdleLoop(3200, animated)
-	const drift = useIdleLoop(4800, animated)
+	const drift = useIdleLoop(4700, animated)
+	const orbit = useIdleLoop(2900, animated)
 
 	const cardW = size * 1.5
 	const cardH = cardW * 0.62
 	const badge = size * 0.4
 
+	// The card lifts and tilts far enough to be read as motion rather than as a
+	// drawing. At the old 6px / 1.2deg the whole piece looked static beside
+	// `CaseTrackingHero`, whose envelope crosses 40px of rail.
 	const cardStyle = useAnimatedStyle(() => ({
-		transform: [{ translateY: -6 * float.value }, { rotate: `${-1.5 + 1.2 * drift.value}deg` }],
+		transform: [{ translateY: -13 * float.value }, { rotate: `${-1.5 + 4 * drift.value}deg` }],
 	}))
+	// The signature travel: the shield keeps its own slow arc out from the corner
+	// it guards — X on `orbit` alone, Y on `orbit` plus `float`, so the path curves
+	// instead of sliding along a line.
 	const badgeStyle = useAnimatedStyle(() => ({
-		transform: [{ translateY: -6 * float.value - 3 * drift.value }],
+		transform: [
+			{ translateX: 14 * orbit.value },
+			{ translateY: -14 * float.value - 6 * orbit.value },
+		],
 	}))
 	const shadowStyle = useAnimatedStyle(() => ({
-		transform: [{ scaleX: 1 - 0.12 * float.value }],
-		opacity: 0.1 - 0.03 * float.value,
+		transform: [{ scaleX: 1 - 0.2 * float.value }],
+		opacity: 0.1 - 0.045 * float.value,
 	}))
 
 	return (
 		<View
 			accessible={false}
 			importantForAccessibility="no-hide-descendants"
-			style={{ width: cardW * 1.3, height: cardH * 1.5 }}
+			// Wide enough that the shield's full arc stays inside the composition's
+			// own box instead of overhanging it.
+			style={{ width: cardW * 1.45, height: cardH * 1.5 }}
 			className="items-center justify-center"
 		>
 			<View style={{ width: cardW, height: cardH }}>

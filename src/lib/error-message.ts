@@ -26,7 +26,9 @@ export function humanErrorMessage(
 	// Convex development envelopes can include the full multiline server stack
 	// followed by "Called by client". Only the leading human sentence belongs in
 	// an alert.
-	message = message.split(/\n\s*(?:at\b|Called by client\b)/, 1)[0]
+	// Production can redact the entire server message, leaving the client
+	// marker at the beginning after the transport prefix is removed.
+	message = message.split(/(?:^|\n)\s*Called by client\b|\n\s*at\b/, 1)[0]
 	// Drop the trailing stack-location Convex appends to uncaught errors.
 	message = message.replace(/\s+at handler \([^)]*\)\s*$/, '').trim()
 

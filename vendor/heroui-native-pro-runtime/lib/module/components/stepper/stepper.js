@@ -5,7 +5,7 @@ import { useThemeColor } from 'heroui-native/hooks';
 import { Children, cloneElement, forwardRef, Fragment, isValidElement, useMemo } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { AnimatedCheckIcon } from "../../helpers/internal/components/index.js";
+import { AnimatedCheckIcon } from "../../helpers/internal/components/animated-check-icon.js";
 import * as StepperPrimitives from "../../primitives/stepper/index.js";
 import { StepperAnimationProvider, useStepperAnimation, useStepperRootAnimation, useStepperSeparatorFillAnimation } from "./stepper.animation.js";
 import { DISPLAY_NAME } from "./stepper.constants.js";

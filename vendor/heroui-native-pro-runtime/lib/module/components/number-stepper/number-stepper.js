@@ -3,7 +3,7 @@
 import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useCallback, useMemo } from 'react';
 import Animated, { LayoutAnimationConfig } from 'react-native-reanimated';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import * as NumberStepperPrimitives from "../../primitives/number-stepper/index.js";
 import { useNumberStepperButtonAnimation, useNumberStepperRootAnimation, useNumberStepperValueAnimation } from "./number-stepper.animation.js";
 import { DISPLAY_NAME } from "./number-stepper.constants.js";

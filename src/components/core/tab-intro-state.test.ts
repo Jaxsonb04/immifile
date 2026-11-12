@@ -8,7 +8,6 @@ describe('resolveTabIntroVisibility', () => {
 			observed = retainObservedTabIntroDismissal(observed, dismissed)
 			return resolveTabIntroVisibility({
 				dismissed: observed ? true : dismissed,
-				preparing: false,
 				dismissing: false,
 				acknowledged: false,
 			}).phase
@@ -18,7 +17,6 @@ describe('resolveTabIntroVisibility', () => {
 		expect(
 			resolveTabIntroVisibility({
 				dismissed: false,
-				preparing: false,
 				dismissing: false,
 				acknowledged: false,
 			}).phase,
@@ -29,7 +27,6 @@ describe('resolveTabIntroVisibility', () => {
 		expect(
 			resolveTabIntroVisibility({
 				dismissed: undefined,
-				preparing: false,
 				dismissing: false,
 				acknowledged: false,
 			}),
@@ -39,8 +36,7 @@ describe('resolveTabIntroVisibility', () => {
 			showIntro: false,
 			contentMounted: true,
 			contentAccessible: false,
-			contentHeaderReady: false,
-			chromeHidden: true,
+			toolbarHidden: true,
 		})
 	})
 
@@ -48,7 +44,6 @@ describe('resolveTabIntroVisibility', () => {
 		expect(
 			resolveTabIntroVisibility({
 				dismissed: false,
-				preparing: false,
 				dismissing: false,
 				acknowledged: false,
 			}),
@@ -58,35 +53,14 @@ describe('resolveTabIntroVisibility', () => {
 			showIntro: true,
 			contentMounted: true,
 			contentAccessible: false,
-			contentHeaderReady: false,
-			chromeHidden: true,
+			toolbarHidden: true,
 		})
 	})
 
-	test('reveals chrome only after Got it while an opaque cover prepares live content', () => {
+	test('keeps the cover and toolbar guard through the fade even when the preference arrives', () => {
 		expect(
 			resolveTabIntroVisibility({
 				dismissed: true,
-				preparing: true,
-				dismissing: false,
-				acknowledged: false,
-			}),
-		).toEqual({
-			phase: 'preparing',
-			showCover: true,
-			showIntro: true,
-			contentMounted: true,
-			contentAccessible: false,
-			contentHeaderReady: true,
-			chromeHidden: false,
-		})
-	})
-
-	test('keeps the cover in place but leaves acknowledged chrome visible during dismissal', () => {
-		expect(
-			resolveTabIntroVisibility({
-				dismissed: true,
-				preparing: false,
 				dismissing: true,
 				acknowledged: false,
 			}),
@@ -96,8 +70,7 @@ describe('resolveTabIntroVisibility', () => {
 			showIntro: true,
 			contentMounted: true,
 			contentAccessible: false,
-			contentHeaderReady: true,
-			chromeHidden: false,
+			toolbarHidden: true,
 		})
 	})
 
@@ -108,7 +81,6 @@ describe('resolveTabIntroVisibility', () => {
 		expect(
 			resolveTabIntroVisibility({
 				dismissed,
-				preparing: false,
 				dismissing: false,
 				acknowledged,
 			}),
@@ -118,8 +90,7 @@ describe('resolveTabIntroVisibility', () => {
 			showIntro: false,
 			contentMounted: true,
 			contentAccessible: true,
-			contentHeaderReady: true,
-			chromeHidden: false,
+			toolbarHidden: false,
 		})
 	})
 })

@@ -304,7 +304,7 @@ const stepDataValidator = v.union(
 )
 
 /**
- * The Next-save (REARCHITECTURE.md "Save Semantics"): validate, merge the
+ * The Next-save (docs/internal/REARCHITECTURE.md "Save Semantics"): validate, merge the
  * step's answers into the draft, mark the step complete, patch the progress
  * summary on the application, reconcile slots, and return the next step.
  * Idempotent per (applicationId, stepKey) — repeated taps and offline replays

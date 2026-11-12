@@ -5,7 +5,7 @@ import { forwardRef, Fragment, memo, useCallback, useEffect, useMemo, useRef, us
 import { Pressable } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { ChevronRightIcon } from "../../helpers/internal/icons/index.js";
 import { createContext as createStrictContext } from "../../helpers/internal/utils/create-context.js";
 import { useCalendarLocale, useCalendarStateContext } from "../../primitives/calendar/index.js";

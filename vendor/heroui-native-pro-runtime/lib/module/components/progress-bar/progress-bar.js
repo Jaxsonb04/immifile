@@ -4,7 +4,7 @@ import { AnimationSettingsProvider } from 'heroui-native/contexts';
 import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { View } from 'react-native';
 import Animated from 'react-native-reanimated';
-import { HeroText } from "../../helpers/internal/components/index.js";
+import { HeroText } from "../../helpers/internal/components/hero-text.js";
 import { childrenToString, createContext } from "../../helpers/internal/utils/index.js";
 import { useProgressBarFillAnimation, useProgressBarFillRootAnimation, useProgressBarIndeterminateAnimation, useProgressBarRootAnimation } from "./progress-bar.animation.js";
 import { DEFAULT_COLOR, DEFAULT_FORMAT_OPTIONS, DEFAULT_MAX_VALUE, DEFAULT_MIN_VALUE, DEFAULT_SIZE, DISPLAY_NAME } from "./progress-bar.constants.js";

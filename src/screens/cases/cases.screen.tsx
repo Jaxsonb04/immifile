@@ -1,14 +1,10 @@
-import {
-	BodyScrollView,
-	CaseTrackingHero,
-	ScreenEmpty,
-	ScreenLoading,
-	SectionHeading,
-} from '@/components/core'
+import { EmptyState } from 'heroui-native-pro/empty-state'
+import { StyledLucideIcon } from '@/components/styled-icon'
+import { BodyScrollView, ScreenLoading, SectionHeading } from '@/components/core'
 import { useSlowLoad } from '@/hooks/use-slow-load'
 import { caseStatusLabels } from '@/lib/application-labels'
 import { router } from 'expo-router'
-import { Chip, Surface, Typography } from 'heroui-native'
+import { Button, Card, Chip, Surface, Typography } from 'heroui-native'
 import { Pressable, View } from 'react-native'
 import { formatCaseDate, statusTone, useCases, type CaseSummary } from './cases.data'
 
@@ -20,8 +16,13 @@ const TONE_COLOR = {
 
 function StatusChip({ status }: { status: CaseSummary['status'] }) {
 	return (
-		<Chip variant="soft" color={TONE_COLOR[statusTone(status)]} size="sm">
-			<Chip.Label>{caseStatusLabels[status]}</Chip.Label>
+		<Chip
+			variant="soft"
+			color={TONE_COLOR[statusTone(status)]}
+			size="sm"
+			className="h-auto max-w-full py-1"
+		>
+			<Chip.Label className="shrink">{caseStatusLabels[status]}</Chip.Label>
 		</Chip>
 	)
 }
@@ -29,9 +30,16 @@ function StatusChip({ status }: { status: CaseSummary['status'] }) {
 function CaseRow({ item }: { item: CaseSummary }) {
 	return (
 		<Pressable accessibilityRole="button" onPress={() => router.push(`/cases/${item._id}`)}>
-			<Surface variant="secondary" className="gap-tight rounded-2xl p-card">
-				<View className="flex-row items-center justify-between gap-control">
-					<Typography.Paragraph className="font-mono tabular-nums">
+			<Surface className="gap-control rounded-3xl border border-border p-gutter">
+				<View className="flex-row items-center gap-tight">
+					<StyledLucideIcon name="folder" size={16} className="text-accent" />
+					<Typography.Paragraph color="muted" className="flex-1 text-xs">
+						USCIS case
+					</Typography.Paragraph>
+					<StyledLucideIcon name="chevron-right" size={16} className="text-muted" />
+				</View>
+				<View className="flex-row flex-wrap items-center justify-between gap-control">
+					<Typography.Paragraph className="font-mono-medium text-lg tabular-nums">
 						{item.receiptNumber}
 					</Typography.Paragraph>
 					<StatusChip status={item.status} />
@@ -66,12 +74,49 @@ export function CasesScreen() {
 
 	if (cases.length === 0) {
 		return (
-			<ScreenEmpty
-				visual={<CaseTrackingHero width={140} />}
-				title="No cases to track yet"
-				description="Add a USCIS receipt number to save it here and record the updates you receive. Immifile does not fetch status automatically."
-				action={{ label: 'Add a case', onPress: () => router.push('/new-case') }}
-			/>
+			<BodyScrollView contentContainerClassName="gap-section pt-gutter">
+				<Card className="rounded-3xl border border-border p-gutter">
+					<EmptyState animation="disable-all" className="gap-section px-0 py-section">
+						<EmptyState.Header>
+							<EmptyState.Media variant="icon" className="bg-accent/10">
+								<StyledLucideIcon name="folder-plus" size={28} className="text-accent" />
+							</EmptyState.Media>
+							<EmptyState.Title className="font-display text-2xl">
+								Your cases start here.
+							</EmptyState.Title>
+							<EmptyState.Description className="text-sm leading-relaxed">
+								Add the receipt number from a USCIS notice to keep your case and its updates
+								together.
+							</EmptyState.Description>
+						</EmptyState.Header>
+						<EmptyState.Content className="w-full">
+							<Button
+								className="h-auto min-h-12 w-full py-control"
+								onPress={() => router.push('/new-case')}
+							>
+								<Button.Label className="shrink text-center">Add a case</Button.Label>
+							</Button>
+						</EmptyState.Content>
+					</EmptyState>
+				</Card>
+				<View className="gap-control px-hairline">
+					<Typography.Paragraph className="font-semibold text-sm">
+						Already waiting on USCIS?
+					</Typography.Paragraph>
+					<Typography.Paragraph color="muted" className="text-sm leading-relaxed">
+						You record the updates in Immifile. For the latest official status, use USCIS Case
+						Status Online.
+					</Typography.Paragraph>
+					<Button
+						variant="ghost"
+						className="h-auto min-h-11 self-start px-0 py-tight"
+						onPress={() => router.navigate('/resources')}
+					>
+						<Button.Label className="shrink text-left">Find official tools</Button.Label>
+						<StyledLucideIcon name="arrow-right" size={16} className="text-accent" />
+					</Button>
+				</View>
+			</BodyScrollView>
 		)
 	}
 
@@ -79,7 +124,7 @@ export function CasesScreen() {
 	const previous = cases.filter((item) => item.status === 'cardDelivered')
 
 	return (
-		<BodyScrollView contentContainerClassName="gap-control py-card" restoreLargeTitleOnTabReveal>
+		<BodyScrollView contentContainerClassName="gap-card py-gutter">
 			{active.length > 0 && previous.length > 0 && (
 				<SectionHeading title="Active" count={active.length} />
 			)}

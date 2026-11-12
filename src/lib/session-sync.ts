@@ -32,7 +32,13 @@ function getSessionAtom(): SessionAtom {
  */
 export function getPersistedSessionCookie(): string {
 	const client = authClient as unknown as { getCookie?: () => string }
-	return client.getCookie?.() ?? ''
+	try {
+		return client.getCookie?.() ?? ''
+	} catch {
+		// The Expo secure-storage plugin has no persisted cookie during the web
+		// entry pass. Treat that state exactly like a signed-out browser session.
+		return ''
+	}
 }
 
 /** Whether the reactive atom currently reflects an authenticated session. */

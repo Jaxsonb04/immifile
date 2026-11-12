@@ -1,4 +1,4 @@
-import type { SocialAuthButtonProvider } from 'heroui-native-pro'
+import type { SocialAuthButtonProvider } from 'heroui-native-pro/social-auth-button'
 
 /** Apple leads per Apple's HIG; unknown deployment identifiers are ignored. */
 export type SocialProvider = Extract<SocialAuthButtonProvider, 'apple' | 'google'>

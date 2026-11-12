@@ -315,7 +315,7 @@ describe('account deletion contract', () => {
 			for (const table of TABLES) {
 				expect(await ctx.db.query(table).collect()).toHaveLength(0)
 			}
-			// No financial records or files survive (REARCHITECTURE.md).
+			// No financial records or files survive (docs/internal/REARCHITECTURE.md).
 			expect(await ctx.db.system.query('_storage').collect()).toHaveLength(0)
 		})
 	})

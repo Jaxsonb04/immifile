@@ -9,7 +9,7 @@ forum. It's for real, anxious people filing real government paperwork, so it has
 **calm, trustworthy, premium, and finished**.
 
 Run 1 (`FABLE_BRIEF.md`) fixed the assistant and laid the warm-paper design system. Run 2
-(`FABLE_BRIEF_2.md`, milestone **M6**) added the personalization spine, the temporary-account
+(`docs/internal/FABLE_BRIEF_2.md`, milestone **M6**) added the personalization spine, the temporary-account
 lifecycle, a real Profile page, and fuller tabs. The app now works and looks intentional.
 **This run is about feel and information architecture** — turning a working app into one that
 reads as a finished, premium product. Three themes:
@@ -32,7 +32,7 @@ verify your own work as you go.
 
 ## How to work
 
-This inherits the operating rules in `FABLE_BRIEF.md` and `FABLE_BRIEF_2.md` ("How to work") —
+This inherits the operating rules in `FABLE_BRIEF.md` and `docs/internal/FABLE_BRIEF_2.md` ("How to work") —
 I won't repeat them in full. The load-bearing ones, restated:
 
 - **When you have enough information to act, act.** Don't re-derive settled facts, re-litigate
@@ -88,7 +88,7 @@ I won't repeat them in full. The load-bearing ones, restated:
 1. **Tab order is `Forms · Cases · Forum · Account`** — four tabs. The current **Community** tab
    is relabeled **Forum**. Today's Profile (the account modal off the header avatar) becomes its
    own **Account** tab. The **Assistant tab is removed** (it becomes a bubble — decision 2).
-   Update `src/app/(tabs)/_layout.tsx` **and** the `MASTER_PLAN.md` "Layout" section to match.
+   Update `src/app/(tabs)/_layout.tsx` **and** the `docs/internal/MASTER_PLAN.md` "Layout" section to match.
 
 2. **The Assistant is no longer a tab — it's a small, always-available chat bubble.** Placement
    is my call after research, and here it is: a **persistent floating "Ask" bubble anchored
@@ -153,7 +153,7 @@ I won't repeat them in full. The load-bearing ones, restated:
    whatever was last pushed (see `docs/FABLE_NOTES.md`). Do all dev/test against the **dev**
    deployment (`dev:impressive-fish-50`); a production deploy is a checkpoint. `DEV_SEED_ENABLED`
    is currently `true` on dev, so the Account tab's "Seed demo data" works for simulator QA.
-3. **Extend `MASTER_PLAN.md`, don't reinvent it.** Add a new milestone block (**M7**) mirroring
+3. **Extend `docs/internal/MASTER_PLAN.md`, don't reinvent it.** Add a new milestone block (**M7**) mirroring
    the existing `status:` YAML header and the checkbox / `Status:` / `Done when:` / `Evidence:`
    format verbatim. Flip `status` back to `in_progress` and set `next_task` to your first M7
    task. A task is `DONE` only when its tests + acceptance checks pass, in the same commit that
@@ -184,7 +184,7 @@ I won't repeat them in full. The load-bearing ones, restated:
 - Build/simulator/PATH mechanics, the remote build Mac, the detached-build pattern, and the
   Maestro-driven simulator QA (screenshot helper, coordinate taps, `pbcopy`+paste for text
   entry, disabling the dev-client floating gear via the dev menu "Tools button" toggle before
-  screenshots) all still apply — reuse the appendix in `FABLE_BRIEF.md` / `FABLE_BRIEF_2.md`
+  screenshots) all still apply — reuse the appendix in `FABLE_BRIEF.md` / `docs/internal/FABLE_BRIEF_2.md`
   and the `docs/FABLE_NOTES.md` entries rather than rediscovering them.
 
 ## Where things live (start here, then confirm by reading)
@@ -276,7 +276,7 @@ Each stream de-risks the next. Parallelize within a stream where it's safe.
 ## Definition of Done
 
 - Tabs are Forms · Cases · Forum · Account; **no primary tab scrolls** (verified on a small and a
-  large device); `MASTER_PLAN.md` Layout updated. The Assistant is a floating bubble on Forms +
+  large device); `docs/internal/MASTER_PLAN.md` Layout updated. The Assistant is a floating bubble on Forms +
   Cases opening the existing assistant; it is no longer a tab.
 - The **Account tab** is a clean identity preview + progressively-disclosed sections with a
   Settings sub-screen for the noise; **Save propagates the name to the Better Auth user record
@@ -288,7 +288,7 @@ Each stream de-risks the next. Parallelize within a stream where it's safe.
   padding; the app's spacing reads intentional in both themes.
 - `npx eslint .`, `bun run typecheck`, and vitest are green. Simulator screenshots (light + dark)
   of every changed surface. Fresh-context verification passed on the Account-tab name-sync /
-  identity work. `MASTER_PLAN.md` M7 tasks are `DONE` with evidence lines.
+  identity work. `docs/internal/MASTER_PLAN.md` M7 tasks are `DONE` with evidence lines.
 
 ## Verify as you build
 

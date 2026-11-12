@@ -16,7 +16,7 @@ The codex line and the partner line are **two different architectures**
 (old: Expo monorepo `apps/` + `packages/` + Railway/Better Auth backend;
 new: flat `src/` + `convex/`). They could not be textually combined into one
 working app, so the newest deliberate direction (the Convex rearchitecture,
-see `REARCHITECTURE.md` and the ADRs) is the working tree, and the old line
+see `docs/internal/REARCHITECTURE.md` and the ADRs) is the working tree, and the old line
 is preserved in history.
 
 ## What the partner fork line contributed (in the working tree now)
@@ -26,7 +26,7 @@ is preserved in history.
 - Question-first Interview wizard on a single TanStack form (ADR-0012/0013)
 - Applications core + Home/Documents shell (post-reset walkthrough phase)
 - Compound component namespaces with provider-led context for all screens
-- Domain docs: `CONTEXT.md` glossary, ADRs 0001–0013, PRD updates, 2026-07-01 domain-modeling decisions
+- Domain docs: `docs/internal/CONTEXT.md` glossary, ADRs 0001–0013, PRD updates, 2026-07-01 domain-modeling decisions
 - In pre-reset history (reachable, not in tree): document vault on Convex storage,
   I-765 wizard tracer, I-90 wizard + I-751 guardrail, watermarked USCIS PDF preview,
   manual case tracker, anonymous→credentialed account upgrade
