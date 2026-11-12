@@ -18,10 +18,10 @@ and figure out which form they need, without pretending to be a lawyer.
 
 <br/>
 
-<img src=".github/assets/demo-welcome.gif" width="200" alt="Welcome screen typing a sample USCIS receipt number, then opening the Cases tab" />&nbsp;
-<img src=".github/assets/case-timeline.png" width="200" alt="Case detail with a manual status timeline" />&nbsp;
-<img src=".github/assets/assistant-answer.png" width="200" alt="Assistant recommending Form I-765 for a work permit renewal" />&nbsp;
-<img src=".github/assets/resources.png" width="200" alt="Official USCIS and Department of Justice resources" />
+<img src=".github/assets/demo-welcome.gif" width="190" alt="Welcome screen typing a sample USCIS receipt number, then opening the Cases tab" />&nbsp;
+<img src=".github/assets/case-timeline.png" width="190" alt="Case detail with a manual status timeline" />&nbsp;
+<img src=".github/assets/assistant-answer.png" width="190" alt="Assistant recommending Form I-765 for a work permit renewal" />&nbsp;
+<img src=".github/assets/resources.png" width="190" alt="Official USCIS and Department of Justice resources" />
 
 </div>
 
